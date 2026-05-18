@@ -1,29 +1,156 @@
-max_tickers=1000: downloading limited ticker list
-Downloading 1000 tickers from 2024-04-28 to 2026-05-19 in 13 batches
-[1/13] A ... ADEA
-  rows=40116
-[2/13] ADGM ... AIFF
-  rows=36537
-[3/13] AIFU ... ALX
-  rows=38956
-[4/13] ALXO ... APAM
-  rows=39184
-[5/13] APC ... ASIC
-  rows=39034
-[6/13] ASIX ... AVGO
-  rows=39422
-[7/13] AVIR ... BBVA
-  rows=40111
-[8/13] BBW ... BIAF
-  rows=39682
-[9/13] BIDU ... BODI
-  rows=38165
-[10/13] BOF ... BUR
-  rows=37448
-[11/13] BURL ... CATX
-  rows=38628
-[12/13] CATY ... CETY
-  rows=38942
-[13/13] CEVA ... CHRS
-  rows=19544
-Saved data/stock_data.csv rows=485769 tickers=1000
+max_tickers is empty: downloading full ticker list
+Downloading 5287 tickers from 2023-04-29 to 2026-05-19 in 67 batches
+[1/67] A ... ADEA
+  rows=58246
+[2/67] ADGM ... AIFF
+  rows=52843
+[3/67] AIFU ... ALX
+  rows=56862
+[4/67] ALXO ... APAM
+  rows=56952
+[5/67] APC ... ASIC
+  rows=56699
+[6/67] ASIX ... AVGO
+  rows=57478
+[7/67] AVIR ... BBVA
+  rows=58345
+[8/67] BBW ... BIAF
+  rows=58123
+[9/67] BIDU ... BODI
+  rows=55302
+[10/67] BOF ... BUR
+  rows=53750
+[11/67] BURL ... CATX
+  rows=56500
+[12/67] CATY ... CETY
+  rows=56479
+[13/67] CEVA ... CLIR
+  rows=56939
+[14/67] CLLS ... CODA
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CLRS"}}}
+$CLRS: possibly delisted; no timezone found
+
+1 Failed download:
+['CLRS']: possibly delisted; no timezone found
+  rows=59177
+[15/67] CODI ... CRNC
+  rows=58992
+[16/67] CRNT ... CVLG
+  rows=56116
+[17/67] CVLT ... DECK
+  rows=59254
+[18/67] DEFT ... DRH
+  rows=58135
+[19/67] DRI ... EEIQ
+  rows=59160
+[20/67] EEX ... EOG
+  rows=54436
+[21/67] EOLS ... EWCZ
+  rows=57314
+[22/67] EWTX ... FFIN
+  rows=57393
+[23/67] FFIV ... FORTY
+  rows=56022
+[24/67] FOSL ... GALT
+  rows=57872
+[25/67] GAMB ... GIS
+  rows=57919
+[26/67] GITS ... GREE
+  rows=53894
+[27/67] GRFS ... HCKT
+  rows=57641
+[28/67] HCM ... HPE
+  rows=57590
+[29/67] HPK ... IBM
+  rows=56960
+[30/67] IBN ... INDB
+  rows=59672
+[31/67] INDI ... IRWD
+  rows=57579
+[32/67] ISBA ... JRSH
+  rows=56057
+[33/67] JRVR ... KOF
+  rows=55708
+[34/67] KOP ... LCTX
+  rows=57228
+[35/67] LCUT ... LNG
+$LFTO: possibly delisted; no timezone found
+
+1 Failed download:
+['LFTO']: possibly delisted; no timezone found
+  rows=54413
+[36/67] LNKS ... LYFT
+  rows=58276
+[37/67] LYG ... MDU
+  rows=55042
+[38/67] MDV ... MLYS
+$MHM: possibly delisted; no price data found  (1d 2023-04-29 -> 2026-05-19)
+
+1 Failed download:
+['MHM']: possibly delisted; no price data found  (1d 2023-04-29 -> 2026-05-19)
+  rows=54405
+[39/67] MMA ... MSGM
+  rows=56720
+[40/67] MSGS ... NBBK
+  rows=55423
+[41/67] NBHC ... NJR
+  rows=56003
+[42/67] NKE ... NTNX
+  rows=55344
+[43/67] NTR ... OCGN
+  rows=58726
+[44/67] OCS ... OPTT
+  rows=57720
+[45/67] OPTU ... PATK
+  rows=56587
+[46/67] PAVM ... PH
+  rows=58465
+[47/67] PHAR ... POLA
+  rows=54746
+[48/67] POM ... PTHS
+  rows=58002
+[49/67] PTLE ... RCAT
+  rows=54997
+[50/67] RCEL ... RIVN
+  rows=57924
+[51/67] RJET ... RVMD
+  rows=56470
+[52/67] RVP ... SCOR
+  rows=56307
+[53/67] SCSC ... SIBN
+  rows=56171
+[54/67] SID ... SMP
+  rows=57006
+[55/67] SMPL ... SPRO
+
+1 Failed download:
+['SPACEX']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
+  rows=55932
+[56/67] SPRU ... STUB
+  rows=57476
+[57/67] STVN ... TCBK
+  rows=55943
+[58/67] TCBS ... TKNO
+  rows=57241
+[59/67] TKO ... TRNS
+
+1 Failed download:
+['TKVA']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
+  rows=57076
+[60/67] TRON ... UBCP
+  rows=58770
+[61/67] UBER ... UTI
+  rows=59681
+[62/67] UTL ... VMET
+  rows=56519
+[63/67] VMI ... WBD
+  rows=57261
+[64/67] WBI ... WRBY
+  rows=56646
+[65/67] WRD ... XTLB
+  rows=54042
+[66/67] XTNT ... ZTS
+  rows=50138
+[67/67] ZUMZ ... ZYME
+  rows=4931
+Saved data/stock_data.csv rows=3749040 tickers=5282
