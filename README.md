@@ -110,16 +110,32 @@ python scripts/run_backtest.py \
    - `years`: `1`, `2`, `5`, `10`, `20`
    - `max_tickers`: leave empty for all tickers, or use a number for quick tests
    - `position_pct`: default `0.01`
-5. Download the artifact named `rs90-backtest-outputs`.
+5. Download the artifact named `rs90-backtest-outputs`, or inspect committed files under `outputs/backtest/` and `logs/` if `commit_outputs=true`.
+
+
+## Important GitHub Actions notes
+
+- `max_tickers` empty means full ticker list. If the log says `max_tickers=500`, then the run was intentionally limited to 500 tickers.
+- A line like `Downloading 500 tickers ... in 7 batches` means **7 download batches**, not 7 stocks.
+- `commit_outputs=true` commits `outputs/backtest/` and `logs/` back to the repo.
+- `commit_stock_data=false` by default because full-universe `data/stock_data.csv` can exceed GitHub's 100MB single-file limit. It is still uploaded as an artifact.
 
 ## Outputs
 
-The workflow writes:
+The workflow writes and, by default, commits reports/logs back to the repo:
 
 ```text
 outputs/backtest/rs90_daily_recent.csv
 outputs/backtest/strategy_summary.csv
 outputs/backtest/all_reports.json
+outputs/backtest/REPORT.md
+outputs/backtest/data_summary.json
+logs/01_install.log
+logs/02_build_data.log
+logs/03_data_summary.log
+logs/04_run_backtest.log
+logs/05_output_summary.log
+logs/workflow_inputs.json
 outputs/backtest/breakout_ma10/trades.csv
 outputs/backtest/breakout_ma10/equity_curve.csv
 outputs/backtest/breakout_ma10/equity_curve.png
@@ -132,7 +148,7 @@ data/stock_data.csv
 
 ### `rs90_daily_recent.csv`
 
-Recent daily RS90 universe. By default this exports the most recent 7 trading days; use the latest 5 rows by date if you only want the latest trading week.
+Recent daily RS90 universe. By default this exports the most recent 5 trading days. Each date should contain all tickers whose point-in-time RS rank is >= 90.
 
 ### `strategy_summary.csv`
 

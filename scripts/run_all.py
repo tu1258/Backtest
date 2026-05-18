@@ -19,6 +19,8 @@ def main() -> None:
     parser.add_argument("--years", type=int, default=None)
     parser.add_argument("--max-tickers", type=int, default=None)
     parser.add_argument("--output-dir", default="outputs/backtest")
+    parser.add_argument("--position-pct", type=float, default=None)
+    parser.add_argument("--recent-days", type=int, default=None)
     parser.add_argument("--matrix", action="store_true", default=True, help="Run all 2x2 strategy combinations. Default: true.")
     args = parser.parse_args()
 
@@ -31,6 +33,10 @@ def main() -> None:
     run(build)
 
     backtest = [py, "scripts/run_backtest.py", "--config", args.config, "--output-dir", args.output_dir, "--matrix"]
+    if args.position_pct is not None:
+        backtest += ["--position-pct", str(args.position_pct)]
+    if args.recent_days is not None:
+        backtest += ["--recent-days", str(args.recent_days)]
     run(backtest)
 
 
