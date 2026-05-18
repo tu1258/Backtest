@@ -12,33 +12,17 @@ on:
         required: false
         default: ""
       recent_days:
-        description: "Recent trading days to export in rs90_daily_recent.csv"
+        description: "Recent trading days to export as RS90 membership and allow for entries"
         required: true
         default: "5"
       position_pct:
         description: "Fixed notional position size as fraction of equity"
         required: true
         default: "0.01"
-      pivot_left:
-        description: "Pivot left bars L"
-        required: true
-        default: "1"
-      pivot_right:
-        description: "Pivot right bars R"
-        required: true
-        default: "1"
       atr_period:
-        description: "ATR period for atr_trail exit"
+        description: "ATR period for trail exits. Matrix runs 0.5 ATR and 1.0 ATR."
         required: true
         default: "14"
-      atr_multiple:
-        description: "ATR multiple for atr_trail exit"
-        required: true
-        default: "1.0"
-      n_day_low_period:
-        description: "N for n_day_low exit. Stop level is previous N trading days' lowest low."
-        required: true
-        default: "10"
       commit_outputs:
         description: "Commit outputs/backtest and logs back to repo"
         required: true
@@ -79,11 +63,8 @@ jobs:
             "max_tickers": "${{ github.event.inputs.max_tickers }}",
             "recent_days": "${{ github.event.inputs.recent_days }}",
             "position_pct": "${{ github.event.inputs.position_pct }}",
-            "pivot_left": "${{ github.event.inputs.pivot_left }}",
-            "pivot_right": "${{ github.event.inputs.pivot_right }}",
             "atr_period": "${{ github.event.inputs.atr_period }}",
-            "atr_multiple": "${{ github.event.inputs.atr_multiple }}",
-            "n_day_low_period": "${{ github.event.inputs.n_day_low_period }}",
+            "matrix": "15 combos: breakout_1_1, breakout_2_2, rsi2 x trail_0_5atr, trail_1atr, ma10, 5_day_low, prev_day_low",
             "commit_outputs": "${{ github.event.inputs.commit_outputs }}",
             "commit_stock_data": "${{ github.event.inputs.commit_stock_data }}",
             "run_id": "${{ github.run_id }}",
@@ -135,7 +116,7 @@ jobs:
           Path('outputs/backtest/data_summary.json').write_text(json.dumps(summary, indent=2), encoding='utf-8')
           PY
 
-      - name: Run 2x2 strategy matrix
+      - name: Run 15 strategy matrix
         shell: bash
         run: |
           set -o pipefail
@@ -143,11 +124,7 @@ jobs:
             --matrix \
             --position-pct "${{ github.event.inputs.position_pct }}" \
             --recent-days "${{ github.event.inputs.recent_days }}" \
-            --pivot-left "${{ github.event.inputs.pivot_left }}" \
-            --pivot-right "${{ github.event.inputs.pivot_right }}" \
             --atr-period "${{ github.event.inputs.atr_period }}" \
-            --atr-multiple "${{ github.event.inputs.atr_multiple }}" \
-            --n-day-low-period "${{ github.event.inputs.n_day_low_period }}" \
             --output-dir outputs/backtest 2>&1 | tee logs/04_run_backtest.log
 
       - name: Save RS90 and report summary
@@ -178,6 +155,12 @@ jobs:
           report_md = out / 'REPORT.md'
           lines = []
           lines.append('# RS90 Backtest Report')
+          lines.append('')
+          lines.append('## Matrix')
+          lines.append('')
+          lines.append('Entries: breakout_1_1, breakout_2_2, rsi2')
+          lines.append('')
+          lines.append('Exits: trail_0_5atr, trail_1atr, ma10, 5_day_low, prev_day_low')
           lines.append('')
           lines.append('## Data summary')
           data_summary = json.loads((out / 'data_summary.json').read_text(encoding='utf-8')) if (out / 'data_summary.json').exists() else {}
@@ -225,6 +208,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No report/log changes to commit."
           else
-            git commit -m "Update backtest reports and logs"
+            git commit -m "Update 15-combo backtest reports and logs"
             git push
           fi
