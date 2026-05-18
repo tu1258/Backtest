@@ -36,6 +36,8 @@ class BacktestConfig:
     # Breakout-only filters, matching the user's original screener logic.
     breakout_require_dr_lt_adr5: bool = True
     breakout_require_near_ma5_within_adr10: bool = True
+    # Breakout must be a fresh breakout: yesterday's close must not already be above the trigger pivot.
+    breakout_require_prev_close_lte_pivot: bool = True
 
 
 @dataclass
@@ -211,7 +213,17 @@ def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
         if "breakout" in cfg.strategies and _passes_breakout_filters(row, cfg):
             pivot = row.get("confirmed_pivot_high")
             prev_low = row.get("prev_low")
+            prev_close = row.get("prev_close")
             if pd.notna(pivot) and pd.notna(prev_low) and float(row["high"]) >= float(pivot):
+                # Fresh-breakout guard:
+                # If yesterday's close was already above the pivot trigger, the breakout had already happened
+                # before the current signal day. Skip it so the strategy does not open stale positions
+                # when a new RS90 list/backtest window starts. A gap-up breakout is still allowed when
+                # prev_close <= pivot; fill price is max(open, pivot).
+                if cfg.breakout_require_prev_close_lte_pivot:
+                    if pd.isna(prev_close) or float(prev_close) > float(pivot):
+                        continue
+
                 raw_entry = max(float(row["open"]), float(pivot))
                 entry = raw_entry * (1 + cfg.slippage_bps / 10000)
                 out.append({
@@ -222,6 +234,7 @@ def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
                     "rs_rank_at_entry": float(row["rs_rank"]),
                     "signal_details": (
                         f"buy_stop=pivot_high_{cfg.pivot_left}_{cfg.pivot_right}:{float(pivot):.4f}; entry=max(open,pivot); "
+                        f"prev_close={_fmt(prev_close)}; require_prev_close_lte_pivot={cfg.breakout_require_prev_close_lte_pivot}; "
                         f"avg_value_10={_fmt(row.get('avg_value_10'))}M; adr20={_fmt(row.get('adr20'))}; "
                         f"dr={_fmt(row.get('dr'))}; adr5={_fmt(row.get('adr5'))}; "
                         f"distance_to_ma5={_fmt(row.get('distance_to_ma5'))}; adr10_price={_fmt(row.get('adr10_price'))}"
@@ -388,6 +401,7 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
             "breakout_only": {
                 "dr_lt_adr5": cfg.breakout_require_dr_lt_adr5,
                 "distance_to_ma5_lt_adr10_price": cfg.breakout_require_near_ma5_within_adr10,
+                "prev_close_lte_pivot": cfg.breakout_require_prev_close_lte_pivot,
             },
         },
     }
