@@ -1,29 +1,158 @@
-max_tickers=1000: downloading limited ticker list
-Downloading 1000 tickers from 2024-04-28 to 2026-05-19 in 13 batches
-[1/13] A ... ADEA
+max_tickers is empty: downloading full ticker list
+Downloading 5287 tickers from 2024-04-28 to 2026-05-19 in 67 batches
+[1/67] A ... ADEA
   rows=40038
-[2/13] ADGM ... AIFF
+[2/67] ADGM ... AIFF
   rows=36463
-[3/13] AIFU ... ALX
+[3/67] AIFU ... ALX
   rows=38878
-[4/13] ALXO ... APAM
+[4/67] ALXO ... APAM
   rows=39107
-[5/13] APC ... ASIC
+[5/67] APC ... ASIC
   rows=38959
-[6/13] ASIX ... AVGO
+[6/67] ASIX ... AVGO
   rows=39345
-[7/13] AVIR ... BBVA
+[7/67] AVIR ... BBVA
   rows=40032
-[8/13] BBW ... BIAF
+[8/67] BBW ... BIAF
   rows=39603
-[9/13] BIDU ... BODI
+[9/67] BIDU ... BODI
   rows=38086
-[10/13] BOF ... BUR
+[10/67] BOF ... BUR
   rows=37374
-[11/13] BURL ... CATX
+[11/67] BURL ... CATX
   rows=38552
-[12/13] CATY ... CETY
+[12/67] CATY ... CETY
   rows=38866
-[13/13] CEVA ... CHRS
-  rows=19505
-Saved data/stock_data.csv rows=484808 tickers=1000
+[13/67] CEVA ... CLIR
+  rows=39076
+[14/67] CLLS ... CODA
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CLRS"}}}
+$CLRS: possibly delisted; no timezone found
+
+1 Failed download:
+['CLRS']: possibly delisted; no timezone found
+  rows=39851
+[15/67] CODI ... CRNC
+  rows=40219
+[16/67] CRNT ... CVLG
+  rows=38831
+[17/67] CVLT ... DECK
+  rows=40153
+[18/67] DEFT ... DRH
+  rows=39614
+[19/67] DRI ... EEIQ
+  rows=40383
+[20/67] EEX ... EOG
+  rows=37420
+[21/67] EOLS ... EWCZ
+  rows=38970
+[22/67] EWTX ... FFIN
+  rows=39513
+[23/67] FFIV ... FORTY
+  rows=38658
+[24/67] FOSL ... GALT
+  rows=39327
+[25/67] GAMB ... GIS
+  rows=39687
+[26/67] GITS ... GREE
+  rows=37346
+[27/67] GRFS ... HCKT
+  rows=39710
+[28/67] HCM ... HPE
+  rows=39647
+[29/67] HPK ... IBM
+  rows=38882
+[30/67] IBN ... INDB
+  rows=40838
+[31/67] INDI ... IRWD
+  rows=39678
+[32/67] ISBA ... JRSH
+  rows=38663
+[33/67] JRVR ... KOF
+  rows=38448
+[34/67] KOP ... LCTX
+  rows=39500
+[35/67] LCUT ... LNG
+$LFTO: possibly delisted; no timezone found
+
+1 Failed download:
+['LFTO']: possibly delisted; no timezone found
+  rows=37841
+[36/67] LNKS ... LYFT
+  rows=40494
+[37/67] LYG ... MDU
+  rows=38047
+[38/67] MDV ... MLYS
+$MHM: possibly delisted; no price data found  (1d 2024-04-28 -> 2026-05-19)
+
+1 Failed download:
+['MHM']: possibly delisted; no price data found  (1d 2024-04-28 -> 2026-05-19)
+  rows=37585
+[39/67] MMA ... MSGM
+  rows=39162
+[40/67] MSGS ... NBBK
+  rows=38479
+[41/67] NBHC ... NJR
+  rows=38724
+[42/67] NKE ... NTNX
+  rows=38302
+[43/67] NTR ... OCGN
+  rows=39813
+[44/67] OCS ... OPTT
+  rows=39194
+[45/67] OPTU ... PATK
+  rows=39124
+[46/67] PAVM ... PH
+  rows=39873
+[47/67] PHAR ... POLA
+  rows=37896
+[48/67] POM ... PTHS
+  rows=39615
+[49/67] PTLE ... RCAT
+  rows=38166
+[50/67] RCEL ... RIVN
+  rows=39666
+[51/67] RJET ... RVMD
+  rows=38454
+[52/67] RVP ... SCOR
+  rows=38692
+[53/67] SCSC ... SIBN
+  rows=39047
+[54/67] SID ... SMP
+  rows=39178
+[55/67] SMPL ... SPRO
+$SPACEX: possibly delisted; no timezone found
+
+1 Failed download:
+['SPACEX']: possibly delisted; no timezone found
+  rows=39193
+[56/67] SPRU ... STUB
+  rows=39310
+[57/67] STVN ... TCBK
+  rows=38989
+[58/67] TCBS ... TKNO
+  rows=39360
+[59/67] TKO ... TRNS
+$TKVA: possibly delisted; no timezone found
+
+1 Failed download:
+['TKVA']: possibly delisted; no timezone found
+  rows=38771
+[60/67] TRON ... UBCP
+  rows=40350
+[61/67] UBER ... UTI
+  rows=40822
+[62/67] UTL ... VMET
+  rows=38549
+[63/67] VMI ... WBD
+  rows=39181
+[64/67] WBI ... WRBY
+  rows=39139
+[65/67] WRD ... XTLB
+  rows=37361
+[66/67] XTNT ... ZTS
+  rows=36565
+[67/67] ZUMZ ... ZYME
+  rows=3424
+Saved data/stock_data.csv rows=2578083 tickers=5282

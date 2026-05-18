@@ -4,7 +4,9 @@
     "position_pct": 0.01,
     "rs_threshold": 90.0,
     "exit_mode": "ma10",
-    "trade_count": 32,
+    "pivot_left": 2,
+    "pivot_right": 2,
+    "trade_count": 234,
     "filters": {
       "common": {
         "avg_value_10_millions_gt": 25.0,
@@ -17,37 +19,39 @@
         "distance_to_ma5_lt_adr10_price": true
       }
     },
-    "win_rate": 0.125,
-    "gross_profit": 4169.31,
-    "gross_loss": -15798.25,
-    "profit_factor": 0.2639,
-    "avg_r": -0.5296,
-    "median_r": -0.8002,
-    "avg_win": 1042.33,
-    "avg_loss": -564.22,
-    "avg_win_loss_ratio": 1.8474,
-    "largest_winner_r": 1.5591,
-    "largest_loser_r": -1.0,
-    "max_consecutive_losses": 24,
-    "avg_holding_days": 1.5,
+    "win_rate": 0.17094017094017094,
+    "gross_profit": 20717.44,
+    "gross_loss": -81175.48,
+    "profit_factor": 0.2552,
+    "avg_r": -0.5484,
+    "median_r": -1.0,
+    "avg_win": 517.94,
+    "avg_loss": -418.43,
+    "avg_win_loss_ratio": 1.2378,
+    "largest_winner_r": 7.3572,
+    "largest_loser_r": -2.5226,
+    "max_consecutive_losses": 135,
+    "avg_holding_days": 1.19,
     "by_strategy": {
       "breakout": {
-        "trades": 32,
-        "win_rate": 0.125,
-        "avg_r": -0.5296,
-        "profit_factor": 0.2639
+        "trades": 234,
+        "win_rate": 0.17094017094017094,
+        "avg_r": -0.5484,
+        "profit_factor": 0.2552
       }
     },
-    "final_equity": 988371.06,
-    "total_return": -0.011629,
-    "max_drawdown": -0.011641
+    "final_equity": 939541.96,
+    "total_return": -0.060458,
+    "max_drawdown": -0.060458
   },
   "breakout_pivot_low": {
     "initial_capital": 1000000.0,
     "position_pct": 0.01,
     "rs_threshold": 90.0,
     "exit_mode": "pivot_low",
-    "trade_count": 30,
+    "pivot_left": 2,
+    "pivot_right": 2,
+    "trade_count": 216,
     "filters": {
       "common": {
         "avg_value_10_millions_gt": 25.0,
@@ -60,37 +64,39 @@
         "distance_to_ma5_lt_adr10_price": true
       }
     },
-    "win_rate": 0.16666666666666666,
-    "gross_profit": 4668.7,
-    "gross_loss": -14789.77,
-    "profit_factor": 0.3157,
-    "avg_r": -0.4627,
-    "median_r": -0.7211,
-    "avg_win": 933.74,
-    "avg_loss": -591.59,
-    "avg_win_loss_ratio": 1.5784,
-    "largest_winner_r": 1.5591,
-    "largest_loser_r": -1.0,
-    "max_consecutive_losses": 14,
-    "avg_holding_days": 1.77,
+    "win_rate": 0.18981481481481483,
+    "gross_profit": 22717.33,
+    "gross_loss": -75654.27,
+    "profit_factor": 0.3003,
+    "avg_r": -0.5346,
+    "median_r": -1.0,
+    "avg_win": 554.08,
+    "avg_loss": -432.31,
+    "avg_win_loss_ratio": 1.2817,
+    "largest_winner_r": 7.3572,
+    "largest_loser_r": -2.5226,
+    "max_consecutive_losses": 129,
+    "avg_holding_days": 1.35,
     "by_strategy": {
       "breakout": {
-        "trades": 30,
-        "win_rate": 0.16666666666666666,
-        "avg_r": -0.4627,
-        "profit_factor": 0.3157
+        "trades": 216,
+        "win_rate": 0.18981481481481483,
+        "avg_r": -0.5346,
+        "profit_factor": 0.3003
       }
     },
-    "final_equity": 989878.93,
-    "total_return": -0.010121,
-    "max_drawdown": -0.010572
+    "final_equity": 947063.06,
+    "total_return": -0.052937,
+    "max_drawdown": -0.052937
   },
   "rsi2_ma10": {
     "initial_capital": 1000000.0,
     "position_pct": 0.01,
     "rs_threshold": 90.0,
     "exit_mode": "ma10",
-    "trade_count": 1,
+    "pivot_left": 2,
+    "pivot_right": 2,
+    "trade_count": 4,
     "filters": {
       "common": {
         "avg_value_10_millions_gt": 25.0,
@@ -103,29 +109,29 @@
         "distance_to_ma5_lt_adr10_price": true
       }
     },
-    "win_rate": 1.0,
-    "gross_profit": 371.12,
-    "gross_loss": 0.0,
-    "profit_factor": null,
-    "avg_r": 1.9013,
-    "median_r": 1.9013,
-    "avg_win": 371.12,
-    "avg_loss": null,
-    "avg_win_loss_ratio": null,
-    "largest_winner_r": 1.9013,
-    "largest_loser_r": 1.9013,
-    "max_consecutive_losses": 0,
+    "win_rate": 0.75,
+    "gross_profit": 49565.46,
+    "gross_loss": -31.89,
+    "profit_factor": 1554.2634,
+    "avg_r": 2.5688,
+    "median_r": 0.5938,
+    "avg_win": 16521.82,
+    "avg_loss": -31.89,
+    "avg_win_loss_ratio": 518.0878,
+    "largest_winner_r": 10.0877,
+    "largest_loser_r": -1.0,
+    "max_consecutive_losses": 1,
     "avg_holding_days": 1.0,
     "by_strategy": {
       "rsi2": {
-        "trades": 1,
-        "win_rate": 1.0,
-        "avg_r": 1.9013,
-        "profit_factor": null
+        "trades": 4,
+        "win_rate": 0.75,
+        "avg_r": 2.5688,
+        "profit_factor": 1554.2634
       }
     },
-    "final_equity": 1000371.12,
-    "total_return": 0.000371,
+    "final_equity": 1049533.57,
+    "total_return": 0.049534,
     "max_drawdown": 0.0
   },
   "rsi2_pivot_low": {
@@ -133,7 +139,9 @@
     "position_pct": 0.01,
     "rs_threshold": 90.0,
     "exit_mode": "pivot_low",
-    "trade_count": 1,
+    "pivot_left": 2,
+    "pivot_right": 2,
+    "trade_count": 4,
     "filters": {
       "common": {
         "avg_value_10_millions_gt": 25.0,
@@ -146,29 +154,29 @@
         "distance_to_ma5_lt_adr10_price": true
       }
     },
-    "win_rate": 0.0,
-    "gross_profit": 0.0,
-    "gross_loss": -195.2,
-    "profit_factor": 0.0,
-    "avg_r": -1.0,
-    "median_r": -1.0,
-    "avg_win": null,
-    "avg_loss": -195.2,
-    "avg_win_loss_ratio": null,
-    "largest_winner_r": -1.0,
+    "win_rate": 0.75,
+    "gross_profit": 50518.37,
+    "gross_loss": -31.92,
+    "profit_factor": 1582.6557,
+    "avg_r": 3.2438,
+    "median_r": 1.9438,
+    "avg_win": 16839.46,
+    "avg_loss": -31.92,
+    "avg_win_loss_ratio": 527.5519,
+    "largest_winner_r": 10.0877,
     "largest_loser_r": -1.0,
     "max_consecutive_losses": 1,
-    "avg_holding_days": 2.0,
+    "avg_holding_days": 1.75,
     "by_strategy": {
       "rsi2": {
-        "trades": 1,
-        "win_rate": 0.0,
-        "avg_r": -1.0,
-        "profit_factor": 0.0
+        "trades": 4,
+        "win_rate": 0.75,
+        "avg_r": 3.2438,
+        "profit_factor": 1582.6557
       }
     },
-    "final_equity": 999804.8,
-    "total_return": -0.000195,
-    "max_drawdown": -0.000212
+    "final_equity": 1050486.45,
+    "total_return": 0.050486,
+    "max_drawdown": 0.0
   }
 }
