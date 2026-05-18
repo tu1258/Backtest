@@ -4,11 +4,19 @@ import numpy as np
 import pandas as pd
 
 
-def add_indicators(df: pd.DataFrame, pivot_left: int = 1, pivot_right: int = 1, atr_period: int = 14) -> pd.DataFrame:
+def add_indicators(
+    df: pd.DataFrame,
+    pivot_left: int = 1,
+    pivot_right: int = 1,
+    atr_period: int = 14,
+    n_day_low_period: int = 10,
+) -> pd.DataFrame:
     if pivot_left < 1 or pivot_right < 1:
         raise ValueError("pivot_left and pivot_right must both be >= 1")
     if atr_period < 1:
         raise ValueError("atr_period must be >= 1")
+    if n_day_low_period < 1:
+        raise ValueError("n_day_low_period must be >= 1")
 
     df = df.sort_values(["ticker", "date"]).copy()
     g = df.groupby("ticker", group_keys=False)
@@ -32,6 +40,11 @@ def add_indicators(df: pd.DataFrame, pivot_left: int = 1, pivot_right: int = 1, 
     df["tr"] = tr_components.max(axis=1)
     df["atr"] = g["tr"].transform(lambda s: atr_wilder(s, atr_period))
     df["atr_period"] = int(atr_period)
+
+    # Previous N-day low used as a sell-stop exit level.
+    # Shift by 1 so the level is fully known before the current session opens.
+    df["n_day_low"] = g["low"].transform(lambda s: s.rolling(n_day_low_period, min_periods=n_day_low_period).min().shift(1))
+    df["n_day_low_period"] = int(n_day_low_period)
 
     df["adr5"] = g["dr"].transform(lambda s: s.rolling(5, min_periods=5).mean())
     df["adr10"] = g["dr"].transform(lambda s: s.rolling(10, min_periods=10).mean())

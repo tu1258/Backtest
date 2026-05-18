@@ -14,7 +14,7 @@ class BacktestConfig:
     position_pct: float = 0.01
     rs_threshold: float = 90
     recent_days: int = 7
-    exit_mode: str = "ma10"  # ma10, atr_trail
+    exit_mode: str = "ma10"  # ma10, atr_trail, n_day_low
     max_open_positions: int = 100
     max_new_positions_per_day: int = 100
     allow_same_ticker_overlap: bool = False
@@ -28,6 +28,7 @@ class BacktestConfig:
     pivot_right: int = 1
     atr_period: int = 14
     atr_multiple: float = 1.0
+    n_day_low_period: int = 10
 
     # Shared RS90 universe filters, applied to both breakout and RSI2 entries.
     min_avg_value_10: float = 25.0   # avg 10-day volume * current price, USD millions
@@ -335,6 +336,8 @@ def _exit_for_position(pos: Position, row: pd.Series, cfg: BacktestConfig) -> tu
         levels.append(("ma10_break", float(row["ma10"])))
     elif cfg.exit_mode == "atr_trail" and pos.trailing_stop is not None and pd.notna(pos.trailing_stop):
         levels.append(("atr_trail_stop", float(pos.trailing_stop)))
+    elif cfg.exit_mode == "n_day_low" and pd.notna(row.get("n_day_low")):
+        levels.append((f"n_day_low_{cfg.n_day_low_period}_break", float(row["n_day_low"])))
 
     touched = [(reason, level) for reason, level in levels if low <= level]
     if not touched:
@@ -425,6 +428,7 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
         "pivot_right": cfg.pivot_right,
         "atr_period": cfg.atr_period,
         "atr_multiple": cfg.atr_multiple,
+        "n_day_low_period": cfg.n_day_low_period,
         "trade_count": int(len(trades)),
         "filters": {
             "common": {
@@ -442,6 +446,10 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
                 "atr_period": cfg.atr_period,
                 "atr_multiple": cfg.atr_multiple,
                 "stop_formula": "highest_high_since_entry - atr_multiple * current_ATR; updated after each close",
+            },
+            "n_day_low": {
+                "period": cfg.n_day_low_period,
+                "stop_formula": "previous N trading days' lowest low; shifted 1 day so the stop is known before the session",
             },
         },
     }
