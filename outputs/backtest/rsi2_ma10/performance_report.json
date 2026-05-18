@@ -2,15 +2,20 @@
   "initial_capital": 1000000.0,
   "position_pct": 0.01,
   "rs_threshold": 90.0,
+  "strategies": [
+    "rsi2"
+  ],
+  "entry_name": "rsi2",
   "exit_mode": "ma10",
   "pivot_left": 1,
   "pivot_right": 1,
   "atr_period": 14,
-  "atr_multiple": 0.5,
-  "trade_count": 686,
+  "atr_multiple": 1.0,
+  "n_day_low_period": 5,
+  "trade_count": 624,
   "filters": {
     "common": {
-      "avg_value_10_millions_gt": 25.0,
+      "avg_value_10_min_musd": 25.0,
       "adr20_min": 2.5,
       "adr20_max": 25.0,
       "close_gt_ma50": true
@@ -22,32 +27,39 @@
     },
     "atr_trail": {
       "atr_period": 14,
-      "atr_multiple": 0.5,
-      "stop_formula": "highest_high_since_entry - atr_multiple * current_ATR; updated after each close"
+      "atr_multiple": 1.0,
+      "stop_formula": "highest_high_since_entry - atr_multiple * current_ATR; updated after each close and active next session"
+    },
+    "n_day_low": {
+      "period": 5,
+      "stop_formula": "previous N trading days' lowest low; shifted 1 day so the stop is known before the session"
+    },
+    "prev_day_low": {
+      "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
     }
   },
-  "win_rate": 0.3848396501457726,
-  "gross_profit": 204488.14,
-  "gross_loss": -117073.81,
-  "profit_factor": 1.7467,
-  "avg_r": -0.0065,
+  "win_rate": 0.38782051282051283,
+  "gross_profit": 186680.01,
+  "gross_loss": -107540.54,
+  "profit_factor": 1.7359,
+  "avg_r": 0.0084,
   "median_r": -1.0,
-  "avg_win": 774.58,
-  "avg_loss": -278.75,
-  "avg_win_loss_ratio": 2.7788,
+  "avg_win": 771.41,
+  "avg_loss": -283.0,
+  "avg_win_loss_ratio": 2.7258,
   "largest_winner_r": 17.6937,
   "largest_loser_r": -10.0,
   "max_consecutive_losses": 21,
-  "avg_holding_days": 1.38,
+  "avg_holding_days": 1.05,
   "by_strategy": {
     "rsi2": {
-      "trades": 686,
-      "win_rate": 0.3848396501457726,
-      "avg_r": -0.0065,
-      "profit_factor": 1.7467
+      "trades": 624,
+      "win_rate": 0.38782051282051283,
+      "avg_r": 0.0084,
+      "profit_factor": 1.7359
     }
   },
-  "final_equity": 1087414.33,
-  "total_return": 0.087414,
-  "max_drawdown": -0.018639
+  "final_equity": 1079139.47,
+  "total_return": 0.079139,
+  "max_drawdown": -0.018628
 }
