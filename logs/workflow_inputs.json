@@ -1,0 +1,11 @@
+{
+  "years": "2",
+  "max_tickers": "500",
+  "recent_days": "5",
+  "position_pct": "0.01",
+  "commit_outputs": "true",
+  "commit_stock_data": "false",
+  "run_id": "26032369872",
+  "run_number": "4",
+  "sha": "e2031884f4ecc476cfb9c9d0b29d5659d9f2b2dd"
+}

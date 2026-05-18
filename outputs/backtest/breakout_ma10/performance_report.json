@@ -1,0 +1,31 @@
+{
+  "initial_capital": 1000000.0,
+  "position_pct": 0.01,
+  "rs_threshold": 90.0,
+  "exit_mode": "ma10",
+  "trade_count": 3934,
+  "win_rate": 0.28164717844433146,
+  "gross_profit": 1926474.11,
+  "gross_loss": -1681886.38,
+  "profit_factor": 1.1454,
+  "avg_r": 0.0726,
+  "median_r": -0.4731,
+  "avg_win": 1738.7,
+  "avg_loss": -596.2,
+  "avg_win_loss_ratio": 2.9163,
+  "largest_winner_r": 88.1544,
+  "largest_loser_r": -1.0,
+  "max_consecutive_losses": 44,
+  "avg_holding_days": 5.02,
+  "by_strategy": {
+    "breakout": {
+      "trades": 3934,
+      "win_rate": 0.28164717844433146,
+      "avg_r": 0.0726,
+      "profit_factor": 1.1454
+    }
+  },
+  "final_equity": 1244587.74,
+  "total_return": 0.244588,
+  "max_drawdown": -0.155991
+}

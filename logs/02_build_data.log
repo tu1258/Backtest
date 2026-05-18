@@ -1,0 +1,17 @@
+max_tickers=500: downloading limited ticker list
+Downloading 500 tickers from 2024-04-28 to 2026-05-19 in 7 batches
+[1/7] A ... ADEA
+  rows=40038
+[2/7] ADGM ... AIFF
+  rows=36463
+[3/7] AIFU ... ALX
+  rows=38878
+[4/7] ALXO ... APAM
+  rows=39107
+[5/7] APC ... ASIC
+  rows=38959
+[6/7] ASIX ... AVGO
+  rows=39345
+[7/7] AVIR ... AX
+  rows=9619
+Saved data/stock_data.csv rows=242409 tickers=500

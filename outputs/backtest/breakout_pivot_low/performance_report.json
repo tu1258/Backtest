@@ -1,0 +1,31 @@
+{
+  "initial_capital": 1000000.0,
+  "position_pct": 0.01,
+  "rs_threshold": 90.0,
+  "exit_mode": "pivot_low",
+  "trade_count": 2631,
+  "win_rate": 0.35309768148992776,
+  "gross_profit": 2923670.26,
+  "gross_loss": -1751637.21,
+  "profit_factor": 1.6691,
+  "avg_r": 0.4187,
+  "median_r": -0.7011,
+  "avg_win": 3147.12,
+  "avg_loss": -1030.98,
+  "avg_win_loss_ratio": 3.0525,
+  "largest_winner_r": 87.4117,
+  "largest_loser_r": -1.0,
+  "max_consecutive_losses": 23,
+  "avg_holding_days": 10.3,
+  "by_strategy": {
+    "breakout": {
+      "trades": 2631,
+      "win_rate": 0.35309768148992776,
+      "avg_r": 0.4187,
+      "profit_factor": 1.6691
+    }
+  },
+  "final_equity": 2172033.06,
+  "total_return": 1.172033,
+  "max_drawdown": -0.165347
+}
