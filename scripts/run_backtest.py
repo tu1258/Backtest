@@ -89,6 +89,35 @@ def main() -> None:
     df = add_point_in_time_rs(df)
     rs90 = recent_rs90(df, recent_days=base_cfg.recent_days, threshold=base_cfg.rs_threshold)
 
+    # Critical semantics:
+    # The RS90 membership table itself defines where entries are allowed.
+    # Entries are allowed only when the exact (date, ticker) pair exists in rs90.
+    # If rs90 contains only the latest N trading days, older dates have no
+    # membership rows and therefore cannot generate entries. Exits remain
+    # unrestricted after entry as long as price data exists.
+    df = df.copy()
+    df["in_rs90_full_history"] = df["in_rs90"]
+    if rs90.empty:
+        print("WARNING: no RS90 membership rows found. No entries will be generated.")
+        df["entry_universe_member"] = False
+    else:
+        membership = rs90[["date", "ticker"]].drop_duplicates().copy()
+        membership["date"] = pd.to_datetime(membership["date"])
+        membership["ticker"] = membership["ticker"].astype(str).str.upper()
+        membership["entry_universe_member"] = True
+        df = df.merge(membership, on=["date", "ticker"], how="left")
+        df["entry_universe_member"] = df["entry_universe_member"].fillna(False).astype(bool)
+
+    # IMPORTANT: overwrite in_rs90 with the actual tradable membership.
+    # This means _generate_entries() can only trade exact date+ticker pairs
+    # from outputs/backtest/rs90_daily_recent.csv, not historical RS90 rows.
+    df["in_rs90"] = df["entry_universe_member"]
+
+    eligible_entry_dates = sorted(pd.to_datetime(rs90["date"]).unique()) if not rs90.empty else []
+    print("Eligible entry dates from RS90 membership:", [str(pd.Timestamp(d).date()) for d in eligible_entry_dates])
+    print(f"Allowed RS90 membership pairs: {int(df['entry_universe_member'].sum()):,}")
+    print(f"Entries are restricted to exact date+ticker pairs in rs90 membership. Exits remain unrestricted within available price data.")
+
     out_root = Path(args.output_dir)
     out_root.mkdir(parents=True, exist_ok=True)
     rs90.to_csv(out_root / "rs90_daily_recent.csv", index=False)
