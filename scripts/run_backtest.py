@@ -17,7 +17,7 @@ from rs90_backtester.universe import add_point_in_time_rs, recent_rs90
 from rs90_backtester.engine import BacktestConfig, run_backtest, save_outputs
 
 ENTRY_STRATEGIES = ("breakout", "rsi2")
-EXIT_MODES = ("ma10", "pivot_low")
+EXIT_MODES = ("ma10", "atr_trail")
 
 
 def _strategies(value):
@@ -50,6 +50,8 @@ def _base_config(args: argparse.Namespace, cfg: dict) -> BacktestConfig:
         strategies=_strategies(args.strategies) or _strategies(deep_get(cfg, "backtest.strategies", ["breakout", "rsi2"])),
         pivot_left=args.pivot_left if args.pivot_left is not None else int(deep_get(cfg, "backtest.pivot_left", 1)),
         pivot_right=args.pivot_right if args.pivot_right is not None else int(deep_get(cfg, "backtest.pivot_right", 1)),
+        atr_period=args.atr_period if args.atr_period is not None else int(deep_get(cfg, "backtest.atr_period", 14)),
+        atr_multiple=args.atr_multiple if args.atr_multiple is not None else float(deep_get(cfg, "backtest.atr_multiple", 1.0)),
     )
 
 
@@ -76,6 +78,8 @@ def main() -> None:
     parser.add_argument("--strategies", default=None, help="Comma list: breakout,rsi2")
     parser.add_argument("--pivot-left", type=int, default=None, help="Pivot left bars L. Default from config is 1.")
     parser.add_argument("--pivot-right", type=int, default=None, help="Pivot right bars R. Default from config is 1.")
+    parser.add_argument("--atr-period", type=int, default=None, help="ATR period for atr_trail exit. Default from config is 14.")
+    parser.add_argument("--atr-multiple", type=float, default=None, help="ATR multiple for atr_trail exit. Default from config is 1.0.")
     parser.add_argument("--matrix", action="store_true", help="Run all 2 entry strategies x 2 exit modes as separate reports.")
     args = parser.parse_args()
 
@@ -87,8 +91,8 @@ def main() -> None:
     prices = load_prices(price_csv)
     print(f"Rows={len(prices):,}, tickers={prices['ticker'].nunique():,}, dates={prices['date'].nunique():,}")
 
-    print(f"Computing indicators with pivot_left={base_cfg.pivot_left}, pivot_right={base_cfg.pivot_right}...")
-    df = add_indicators(prices, pivot_left=base_cfg.pivot_left, pivot_right=base_cfg.pivot_right)
+    print(f"Computing indicators with pivot_left={base_cfg.pivot_left}, pivot_right={base_cfg.pivot_right}, atr_period={base_cfg.atr_period}...")
+    df = add_indicators(prices, pivot_left=base_cfg.pivot_left, pivot_right=base_cfg.pivot_right, atr_period=base_cfg.atr_period)
     print("Computing point-in-time RS ranks...")
     df = add_point_in_time_rs(df)
     rs90 = recent_rs90(df, recent_days=base_cfg.recent_days, threshold=base_cfg.rs_threshold)
@@ -141,6 +145,8 @@ def main() -> None:
                     "exit_mode": exit_mode,
                     "pivot_left": report.get("pivot_left"),
                     "pivot_right": report.get("pivot_right"),
+                    "atr_period": report.get("atr_period"),
+                    "atr_multiple": report.get("atr_multiple"),
                     "trade_count": report.get("trade_count"),
                     "win_rate": report.get("win_rate"),
                     "profit_factor": report.get("profit_factor"),
