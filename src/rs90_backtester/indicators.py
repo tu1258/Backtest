@@ -4,9 +4,11 @@ import numpy as np
 import pandas as pd
 
 
-def add_indicators(df: pd.DataFrame, pivot_left: int = 1, pivot_right: int = 1) -> pd.DataFrame:
+def add_indicators(df: pd.DataFrame, pivot_left: int = 1, pivot_right: int = 1, atr_period: int = 14) -> pd.DataFrame:
     if pivot_left < 1 or pivot_right < 1:
         raise ValueError("pivot_left and pivot_right must both be >= 1")
+    if atr_period < 1:
+        raise ValueError("atr_period must be >= 1")
 
     df = df.sort_values(["ticker", "date"]).copy()
     g = df.groupby("ticker", group_keys=False)
@@ -19,6 +21,18 @@ def add_indicators(df: pd.DataFrame, pivot_left: int = 1, pivot_right: int = 1) 
     # Liquidity / volatility filters.
     # DR/ADR are expressed in percent, e.g. 3.5 means 3.5%.
     df["dr"] = (df["high"].astype(float) / df["low"].astype(float) - 1.0) * 100.0
+
+    # ATR uses Wilder smoothing. The value is in price units, not percent.
+    df["prev_close_for_tr"] = g["close"].shift(1)
+    tr_components = pd.concat([
+        (df["high"].astype(float) - df["low"].astype(float)).rename("hl"),
+        (df["high"].astype(float) - df["prev_close_for_tr"].astype(float)).abs().rename("h_pc"),
+        (df["low"].astype(float) - df["prev_close_for_tr"].astype(float)).abs().rename("l_pc"),
+    ], axis=1)
+    df["tr"] = tr_components.max(axis=1)
+    df["atr"] = g["tr"].transform(lambda s: atr_wilder(s, atr_period))
+    df["atr_period"] = int(atr_period)
+
     df["adr5"] = g["dr"].transform(lambda s: s.rolling(5, min_periods=5).mean())
     df["adr10"] = g["dr"].transform(lambda s: s.rolling(10, min_periods=10).mean())
     df["adr20"] = g["dr"].transform(lambda s: s.rolling(20, min_periods=20).mean())
@@ -58,6 +72,11 @@ def add_indicators(df: pd.DataFrame, pivot_left: int = 1, pivot_right: int = 1) 
     df["setup_close"] = g["close"].shift(1)
 
     return df
+
+
+def atr_wilder(tr: pd.Series, period: int = 14) -> pd.Series:
+    tr = tr.astype(float)
+    return tr.ewm(alpha=1 / period, adjust=False, min_periods=period).mean()
 
 
 def rsi_wilder(close: pd.Series, period: int = 2) -> pd.Series:

@@ -14,7 +14,7 @@ class BacktestConfig:
     position_pct: float = 0.01
     rs_threshold: float = 90
     recent_days: int = 7
-    exit_mode: str = "ma10"  # ma10, pivot_low
+    exit_mode: str = "ma10"  # ma10, atr_trail
     max_open_positions: int = 100
     max_new_positions_per_day: int = 100
     allow_same_ticker_overlap: bool = False
@@ -26,6 +26,8 @@ class BacktestConfig:
     strategies: tuple[str, ...] = ("breakout", "rsi2")
     pivot_left: int = 1
     pivot_right: int = 1
+    atr_period: int = 14
+    atr_multiple: float = 1.0
 
     # Shared RS90 universe filters, applied to both breakout and RSI2 entries.
     min_avg_value_10: float = 25.0   # avg 10-day volume * current price, USD millions
@@ -54,6 +56,7 @@ class Position:
     signal_details: str
     max_high: float
     min_low: float
+    trailing_stop: float | None = None
 
 
 @dataclass
@@ -105,15 +108,23 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
             row = day.loc[pos.ticker]
             high = float(row["high"])
             low = float(row["low"])
+
+            # Exit uses the stop levels that were available before this session.
+            # For ATR trailing stop, today's high can only tighten tomorrow's stop,
+            # not today's stop, to avoid daily-bar look-ahead.
+            exit_price, exit_reason = _exit_for_position(pos, row, cfg)
+
+            # Keep MAE/MFE inclusive of the exit day, consistent with the daily-bar model.
             pos.max_high = max(pos.max_high, high)
             pos.min_low = min(pos.min_low, low)
 
-            exit_price, exit_reason = _exit_for_position(pos, row, cfg)
             if exit_price is not None:
                 trade = _close_trade(pos, d, float(exit_price), exit_reason, cfg)
                 trades.append(trade)
                 cash_realized += trade.pnl - cfg.commission_per_trade
                 exits_today.append(pos)
+            else:
+                _update_atr_trailing_stop_after_close(pos, row, cfg)
 
         if exits_today:
             positions = [p for p in positions if p not in exits_today]
@@ -155,6 +166,7 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
                 signal_details=cand.get("signal_details", ""),
                 max_high=float(day.loc[cand["ticker"], "high"]),
                 min_low=float(day.loc[cand["ticker"], "low"]),
+                trailing_stop=float(cand["initial_stop"]),
             )
 
             # Same-day stop assumption: entered then stopped when both are possible.
@@ -166,6 +178,9 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
                 trades.append(trade)
                 cash_realized += trade.pnl - cfg.commission_per_trade
             else:
+                # Initialize tomorrow's ATR trail from the entry-day close/high if this
+                # strategy uses atr_trail. Same-day exit still uses only initial stop.
+                _update_atr_trailing_stop_after_close(pos, row, cfg)
                 positions.append(pos)
                 held_tickers.add(pos.ticker)
 
@@ -318,8 +333,8 @@ def _exit_for_position(pos: Position, row: pd.Series, cfg: BacktestConfig) -> tu
     levels: list[tuple[str, float]] = []
     if cfg.exit_mode == "ma10" and pd.notna(row.get("ma10")):
         levels.append(("ma10_break", float(row["ma10"])))
-    if cfg.exit_mode == "pivot_low" and pd.notna(row.get("confirmed_pivot_low")):
-        levels.append(("pivot_low_break", float(row["confirmed_pivot_low"])))
+    elif cfg.exit_mode == "atr_trail" and pos.trailing_stop is not None and pd.notna(pos.trailing_stop):
+        levels.append(("atr_trail_stop", float(pos.trailing_stop)))
 
     touched = [(reason, level) for reason, level in levels if low <= level]
     if not touched:
@@ -328,6 +343,24 @@ def _exit_for_position(pos: Position, row: pd.Series, cfg: BacktestConfig) -> tu
     # Without intraday order, use the closest/higher triggered level for longs.
     reason, level = max(touched, key=lambda x: x[1])
     return _sell_stop_fill_price(row, level, cfg), reason
+
+
+def _update_atr_trailing_stop_after_close(pos: Position, row: pd.Series, cfg: BacktestConfig) -> None:
+    """Tighten a long ATR trailing stop after the current daily bar closes.
+
+    Stop for the next session is:
+        max(previous_stop, highest_high_since_entry - atr_multiple * current_ATR)
+
+    The stop never moves down and never loosens below the initial stop.
+    """
+    if cfg.exit_mode != "atr_trail":
+        return
+    atr = row.get("atr")
+    if pd.isna(atr):
+        return
+    candidate = float(pos.max_high) - float(cfg.atr_multiple) * float(atr)
+    current = pos.trailing_stop if pos.trailing_stop is not None and pd.notna(pos.trailing_stop) else pos.initial_stop
+    pos.trailing_stop = max(float(current), float(pos.initial_stop), float(candidate))
 
 
 def _sell_stop_fill_price(row: pd.Series, stop_price: float, cfg: BacktestConfig) -> float:
@@ -390,6 +423,8 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
         "exit_mode": cfg.exit_mode,
         "pivot_left": cfg.pivot_left,
         "pivot_right": cfg.pivot_right,
+        "atr_period": cfg.atr_period,
+        "atr_multiple": cfg.atr_multiple,
         "trade_count": int(len(trades)),
         "filters": {
             "common": {
@@ -402,6 +437,11 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
                 "dr_lt_adr5": cfg.breakout_require_dr_lt_adr5,
                 "distance_to_ma5_lt_adr10_price": cfg.breakout_require_near_ma5_within_adr10,
                 "prev_close_lte_pivot": cfg.breakout_require_prev_close_lte_pivot,
+            },
+            "atr_trail": {
+                "atr_period": cfg.atr_period,
+                "atr_multiple": cfg.atr_multiple,
+                "stop_formula": "highest_high_since_entry - atr_multiple * current_ATR; updated after each close",
             },
         },
     }
