@@ -15,11 +15,12 @@ backtest:
   position_pct: 0.01       # fixed notional position size = equity * 1%
   rs_threshold: 90
   recent_days: 7
-  exit_mode: ma10         # ma10 or atr_trail. Matrix mode runs both.
+  exit_mode: ma10         # ma10, atr_trail, or n_day_low. Matrix mode runs all.
   pivot_left: 1           # Pivot L: number of bars to the left
   pivot_right: 1          # Pivot R: number of bars to the right
   atr_period: 14          # ATR period for atr_trail exit
   atr_multiple: 1.0       # 1.0 = one ATR trailing stop
+  n_day_low_period: 10    # N for n_day_low exit; stop is previous N trading days' lowest low
   max_open_positions: 100
   max_new_positions_per_day: 100
   allow_same_ticker_overlap: false
