@@ -15,12 +15,12 @@
 - 2026-05-15: 100
 
 ## Strategy summary
-| strategy_combo     | entry_strategy   | exit_mode   |   trade_count |   win_rate |   profit_factor |   avg_r |   median_r |   avg_win_loss_ratio |   max_consecutive_losses |   final_equity |   total_return |   max_drawdown |   avg_holding_days |
-|:-------------------|:-----------------|:------------|--------------:|-----------:|----------------:|--------:|-----------:|---------------------:|-------------------------:|---------------:|---------------:|---------------:|-------------------:|
-| breakout_ma10      | breakout         | ma10        |           136 |   0.213235 |          0.5465 | -0.3306 |    -0.6332 |               2.0163 |                       56 |         969842 |      -0.030158 |      -0.032723 |               1.42 |
-| breakout_pivot_low | breakout         | pivot_low   |           115 |   0.26087  |          0.6355 | -0.2605 |    -0.6897 |               1.8007 |                       60 |         979050 |      -0.02095  |      -0.027117 |               1.85 |
-| rsi2_ma10          | rsi2             | ma10        |             4 |   0.5      |          0.6884 |  0.4945 |     0.5383 |               0.6884 |                        1 |         999633 |      -0.000367 |      -0.001228 |               1.5  |
-| rsi2_pivot_low     | rsi2             | pivot_low   |             4 |   0.25     |          0.0891 | -0.4233 |    -0.5866 |               0.2672 |                        3 |         998177 |      -0.001823 |      -0.001823 |               1.5  |
+| strategy_combo     | entry_strategy   | exit_mode   |   trade_count |   win_rate |   profit_factor |   avg_r |   median_r |   avg_win_loss_ratio |   max_consecutive_losses |     final_equity |   total_return |   max_drawdown |   avg_holding_days |
+|:-------------------|:-----------------|:------------|--------------:|-----------:|----------------:|--------:|-----------:|---------------------:|-------------------------:|-----------------:|---------------:|---------------:|-------------------:|
+| breakout_ma10      | breakout         | ma10        |            32 |   0.125    |          0.2639 | -0.5296 |    -0.8002 |               1.8474 |                       24 | 988371           |      -0.011629 |      -0.011641 |               1.5  |
+| breakout_pivot_low | breakout         | pivot_low   |            30 |   0.166667 |          0.3157 | -0.4627 |    -0.7211 |               1.5784 |                       14 | 989879           |      -0.010121 |      -0.010572 |               1.77 |
+| rsi2_ma10          | rsi2             | ma10        |             1 |   1        |        nan      |  1.9013 |     1.9013 |             nan      |                        0 |      1.00037e+06 |       0.000371 |       0        |               1    |
+| rsi2_pivot_low     | rsi2             | pivot_low   |             1 |   0        |          0      | -1      |    -1      |             nan      |                        1 | 999805           |      -0.000195 |      -0.000212 |               2    |
 
 ## Output files
 - `outputs/backtest/REPORT.md`
@@ -36,7 +36,6 @@
 - `outputs/backtest/breakout_pivot_low/rs90_daily_recent.csv`
 - `outputs/backtest/breakout_pivot_low/trades.csv`
 - `outputs/backtest/data_summary.json`
-- `outputs/backtest/equity_curve.csv`
 - `outputs/backtest/rs90_daily_recent.csv`
 - `outputs/backtest/rsi2_ma10/equity_curve.csv`
 - `outputs/backtest/rsi2_ma10/equity_curve.png`

@@ -84,40 +84,40 @@ Collecting markdown-it-py>=2.2.0 (from rich->curl_cffi>=0.15->yfinance>=0.2.40->
 Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich->curl_cffi>=0.15->yfinance>=0.2.40->-r requirements.txt (line 3))
   Downloading mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
 Downloading pandas-3.0.3-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (11.3 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.3/11.3 MB 346.4 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.3/11.3 MB 259.9 MB/s  0:00:00
 Downloading numpy-2.4.5-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.9 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.9/16.9 MB 335.9 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.9/16.9 MB 370.2 MB/s  0:00:00
 Downloading yfinance-1.3.0-py2.py3-none-any.whl (133 kB)
 Downloading finvizfinance-1.3.0-py3-none-any.whl (44 kB)
 Downloading pyyaml-6.0.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (806 kB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 806.6/806.6 kB 158.4 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 806.6/806.6 kB 158.1 MB/s  0:00:00
 Downloading matplotlib-3.10.9-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (8.8 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8.8/8.8 MB 253.4 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8.8/8.8 MB 297.9 MB/s  0:00:00
 Downloading pytest-9.0.3-py3-none-any.whl (375 kB)
 Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
 Downloading tabulate-0.10.0-py3-none-any.whl (39 kB)
 Downloading beautifulsoup4-4.14.3-py3-none-any.whl (107 kB)
 Downloading contourpy-1.3.3-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (355 kB)
 Downloading curl_cffi-0.15.0-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (11.1 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.1/11.1 MB 312.6 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.1/11.1 MB 359.5 MB/s  0:00:00
 Downloading certifi-2026.4.22-py3-none-any.whl (135 kB)
 Downloading cffi-2.0.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (215 kB)
 Downloading cycler-0.12.1-py3-none-any.whl (8.3 kB)
 Downloading fonttools-4.63.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.1 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.1/5.1 MB 335.2 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.1/5.1 MB 356.4 MB/s  0:00:00
 Downloading frozendict-2.4.7-py3-none-any.whl (16 kB)
 Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
 Downloading kiwisolver-1.5.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (1.4 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 241.1 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 252.3 MB/s  0:00:00
 Downloading multitasking-0.0.13-py3-none-any.whl (16 kB)
 Downloading packaging-26.2-py3-none-any.whl (100 kB)
 Downloading peewee-4.0.5-py3-none-any.whl (144 kB)
 Downloading pillow-12.2.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (7.1 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7.1/7.1 MB 342.6 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7.1/7.1 MB 371.0 MB/s  0:00:00
 Downloading platformdirs-4.9.6-py3-none-any.whl (21 kB)
 Downloading protobuf-7.34.1-cp310-abi3-manylinux2014_x86_64.whl (324 kB)
 Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 207.0 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 224.6 MB/s  0:00:00
 Downloading pyparsing-3.3.2-py3-none-any.whl (122 kB)
 Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
 Downloading pytz-2026.2-py2.py3-none-any.whl (510 kB)
@@ -130,7 +130,7 @@ Downloading soupsieve-2.8.3-py3-none-any.whl (37 kB)
 Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
 Downloading websockets-16.0-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (184 kB)
 Downloading lxml-6.1.0-cp311-cp311-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl (5.2 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 251.1 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 360.3 MB/s  0:00:00
 Downloading pycparser-3.0-py3-none-any.whl (48 kB)
 Downloading rich-15.0.0-py3-none-any.whl (310 kB)
 Downloading markdown_it_py-4.2.0-py3-none-any.whl (91 kB)
@@ -150,8 +150,8 @@ Obtaining file:///home/runner/work/Backtest/Backtest
 Building wheels for collected packages: rs90-backtester
   Building editable for rs90-backtester (pyproject.toml): started
   Building editable for rs90-backtester (pyproject.toml): finished with status 'done'
-  Created wheel for rs90-backtester: filename=rs90_backtester-0.1.0-0.editable-py3-none-any.whl size=1331 sha256=bef93abf63475aeb776e32a863b4b22f3769b518dcb6bc1083599343c973e5e7
-  Stored in directory: /tmp/pip-ephem-wheel-cache-rfq7xtyx/wheels/06/84/63/ca465781d71122082be0c088d497ab8d3b1933010a93789290
+  Created wheel for rs90-backtester: filename=rs90_backtester-0.1.0-0.editable-py3-none-any.whl size=1331 sha256=13e525e2c21c9354db3169f7fadd893086746b9b87b8cdce058e705e9fb89885
+  Stored in directory: /tmp/pip-ephem-wheel-cache-bx1vhohi/wheels/06/84/63/ca465781d71122082be0c088d497ab8d3b1933010a93789290
 Successfully built rs90-backtester
 Installing collected packages: rs90-backtester
 Successfully installed rs90-backtester-0.1.0

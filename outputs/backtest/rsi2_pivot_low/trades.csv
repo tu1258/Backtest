@@ -1,5 +1,2 @@
 strategy,ticker,entry_date,entry_price,initial_stop,risk_per_share,exit_date,exit_price,exit_reason,shares,position_size,pnl,pnl_pct,r_multiple,mae,mfe,holding_days,rs_rank_at_entry,signal_details
-rsi2,ANL,2026-05-12,12.96,12.76,0.2,2026-05-12,12.76,same_day_stop_loss,771,9992.16,-154.2,-0.015432,-1.0,-1.8,3.300002,0,99.0,setup_rsi2=3.50; setup_close>ma50; next_open_entry
-rsi2,AIXI,2026-05-11,12.59,0.58,12.01,2026-05-14,10.51,pivot_low_break,794,9996.46,-1651.52,-0.16521,-0.173189,-0.189842,0.116153,3,99.0,setup_rsi2=3.83; setup_close>ma50; next_open_entry
-rsi2,AXGN,2026-05-12,40.860001,40.060001,0.799999,2026-05-14,40.060001,stop_loss,244,9969.84,-195.2,-0.019579,-1.0,-1.675002,0.937501,2,92.0,setup_rsi2=4.19; setup_close>ma50; next_open_entry
-rsi2,AIRG,2026-05-14,6.72,6.47,0.25,2026-05-15,6.84,end_of_backtest,1485,9979.2,178.2,0.017857,0.480001,-0.799999,1.120001,1,91.0,setup_rsi2=3.43; setup_close>ma50; next_open_entry
+rsi2,AXGN,2026-05-12,40.860001,40.060001,0.799999,2026-05-14,40.060001,stop_loss,244,9969.84,-195.2,-0.019579,-1.0,-1.675002,0.937501,2,92.0,setup_rsi2=4.19; next_open_entry; avg_value_10=38.1197M; adr20=5.1576; close=40.9300; ma50=35.1970

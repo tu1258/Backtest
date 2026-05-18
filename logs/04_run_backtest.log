@@ -6,19 +6,19 @@ Eligible entry dates from RS90 membership: ['2026-05-11', '2026-05-12', '2026-05
 Allowed RS90 membership pairs: 500
 Entries are restricted to exact date+ticker pairs in rs90 membership. Exits remain unrestricted within available price data.
 Running: strategies=('breakout',), exit_mode=ma10, output=outputs/backtest/breakout_ma10
-  trades=136, final_equity=969841.9, max_dd=-0.032723
+  trades=32, final_equity=988371.06, max_dd=-0.011641
 Running: strategies=('breakout',), exit_mode=pivot_low, output=outputs/backtest/breakout_pivot_low
-  trades=115, final_equity=979049.6, max_dd=-0.027117
+  trades=30, final_equity=989878.93, max_dd=-0.010572
 Running: strategies=('rsi2',), exit_mode=ma10, output=outputs/backtest/rsi2_ma10
-  trades=4, final_equity=999632.81, max_dd=-0.001228
+  trades=1, final_equity=1000371.12, max_dd=0.0
 Running: strategies=('rsi2',), exit_mode=pivot_low, output=outputs/backtest/rsi2_pivot_low
-  trades=4, final_equity=998177.28, max_dd=-0.001823
+  trades=1, final_equity=999804.8, max_dd=-0.000212
 
 Strategy matrix summary
     strategy_combo entry_strategy exit_mode  trade_count  win_rate  profit_factor   avg_r  median_r  avg_win_loss_ratio  max_consecutive_losses  final_equity  total_return  max_drawdown  avg_holding_days
-     breakout_ma10       breakout      ma10          136  0.213235         0.5465 -0.3306   -0.6332              2.0163                      56     969841.90     -0.030158     -0.032723              1.42
-breakout_pivot_low       breakout pivot_low          115  0.260870         0.6355 -0.2605   -0.6897              1.8007                      60     979049.60     -0.020950     -0.027117              1.85
-         rsi2_ma10           rsi2      ma10            4  0.500000         0.6884  0.4945    0.5383              0.6884                       1     999632.81     -0.000367     -0.001228              1.50
-    rsi2_pivot_low           rsi2 pivot_low            4  0.250000         0.0891 -0.4233   -0.5866              0.2672                       3     998177.28     -0.001823     -0.001823              1.50
+     breakout_ma10       breakout      ma10           32  0.125000         0.2639 -0.5296   -0.8002              1.8474                      24     988371.06     -0.011629     -0.011641              1.50
+breakout_pivot_low       breakout pivot_low           30  0.166667         0.3157 -0.4627   -0.7211              1.5784                      14     989878.93     -0.010121     -0.010572              1.77
+         rsi2_ma10           rsi2      ma10            1  1.000000            NaN  1.9013    1.9013                 NaN                       0    1000371.12      0.000371      0.000000              1.00
+    rsi2_pivot_low           rsi2 pivot_low            1  0.000000         0.0000 -1.0000   -1.0000                 NaN                       1     999804.80     -0.000195     -0.000212              2.00
 
 Saved matrix outputs to outputs/backtest
