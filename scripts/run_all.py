@@ -19,6 +19,7 @@ def main() -> None:
     parser.add_argument("--years", type=int, default=None)
     parser.add_argument("--max-tickers", type=int, default=None)
     parser.add_argument("--output-dir", default="outputs/backtest")
+    parser.add_argument("--matrix", action="store_true", default=True, help="Run all 2x2 strategy combinations. Default: true.")
     args = parser.parse_args()
 
     py = sys.executable
@@ -29,7 +30,7 @@ def main() -> None:
         build += ["--max-tickers", str(args.max_tickers)]
     run(build)
 
-    backtest = [py, "scripts/run_backtest.py", "--config", args.config, "--output-dir", args.output_dir]
+    backtest = [py, "scripts/run_backtest.py", "--config", args.config, "--output-dir", args.output_dir, "--matrix"]
     run(backtest)
 
 

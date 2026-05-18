@@ -14,7 +14,7 @@ class BacktestConfig:
     position_pct: float = 0.01
     rs_threshold: float = 90
     recent_days: int = 7
-    exit_mode: str = "either"  # ma10, pivot_low, either
+    exit_mode: str = "ma10"  # ma10, pivot_low
     max_open_positions: int = 100
     max_new_positions_per_day: int = 100
     allow_same_ticker_overlap: bool = False
@@ -230,9 +230,9 @@ def _exit_for_position(pos: Position, row: pd.Series, cfg: BacktestConfig) -> tu
         return pos.initial_stop * (1 - cfg.slippage_bps / 10000), "stop_loss"
 
     levels: list[tuple[str, float]] = []
-    if cfg.exit_mode in {"ma10", "either"} and pd.notna(row.get("ma10")):
+    if cfg.exit_mode == "ma10" and pd.notna(row.get("ma10")):
         levels.append(("ma10_break", float(row["ma10"])))
-    if cfg.exit_mode in {"pivot_low", "either"} and pd.notna(row.get("confirmed_pivot_low")):
+    if cfg.exit_mode == "pivot_low" and pd.notna(row.get("confirmed_pivot_low")):
         levels.append(("pivot_low_break", float(row["confirmed_pivot_low"])))
 
     touched = [(reason, level) for reason, level in levels if low <= level]

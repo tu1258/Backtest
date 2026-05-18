@@ -15,7 +15,7 @@ backtest:
   position_pct: 0.01       # fixed notional position size = equity * 1%
   rs_threshold: 90
   recent_days: 7
-  exit_mode: either        # ma10, pivot_low, either
+  exit_mode: ma10         # ma10 or pivot_low. Matrix mode runs both.
   max_open_positions: 100
   max_new_positions_per_day: 100
   allow_same_ticker_overlap: false

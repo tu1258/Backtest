@@ -1,24 +1,37 @@
 # RS90 Daily Backtester
 
-A standalone Python repo for testing a mechanical RS90 system:
+A standalone Python repo for testing a mechanical RS90 system.
+
+The default GitHub Actions flow now runs the full **2 x 2 strategy matrix**:
+
+| Entry strategy | Exit strategy | Output folder |
+|---|---|---|
+| `breakout` | `ma10` | `outputs/backtest/breakout_ma10/` |
+| `breakout` | `pivot_low` | `outputs/backtest/breakout_pivot_low/` |
+| `rsi2` | `ma10` | `outputs/backtest/rsi2_ma10/` |
+| `rsi2` | `pivot_low` | `outputs/backtest/rsi2_pivot_low/` |
+
+There is no `either` exit mode in the default workflow. Each exit rule is tested separately so the reports are directly comparable.
+
+## Workflow
 
 1. Download daily OHLCV from yfinance.
 2. Compute point-in-time daily RS rank from historical prices.
 3. Export the recent RS90 universe.
-4. Backtest two daily strategies:
-   - `breakout`: RS90 + buy stop above latest confirmed daily pivot high 1,1.
-   - `rsi2`: RS90 + prior-day RSI(2) < 5 + prior-day close > 50MA, then buy next open.
-5. Export trade log, equity curve, and performance report.
+4. Run four independent backtests:
+   - Pivot breakout + MA10 exit
+   - Pivot breakout + pivot-low exit
+   - RSI2 pullback + MA10 exit
+   - RSI2 pullback + pivot-low exit
+5. Export trade logs, equity curves, and performance reports for each strategy combination.
 
 ## Current assumptions
-
-These are intentional MVP assumptions.
 
 - Long-only.
 - Position size is fixed notional: `equity * position_pct`. Default is `1%`.
 - Initial stop is the previous day's low / setup day's low.
 - If entry and stop both happen on the same daily bar, assume the trade enters and then gets stopped.
-- If multiple exits are touched on the same daily bar, initial stop has priority.
+- If initial stop and strategy exit are both touched on the same daily bar, initial stop has priority.
 - Pivot high/low 1,1 is only tradable after confirmation. A pivot at day `t` becomes usable from day `t+2`.
 - Daily data cannot know exact intraday sequence. Use 5-minute data later for a stricter execution model.
 
@@ -66,7 +79,7 @@ Full run using the bundled ticker list:
 python scripts/run_all.py --years 2
 ```
 
-Run backtest only after data already exists:
+Run the 2 x 2 backtest matrix only after data already exists:
 
 ```bash
 python scripts/run_backtest.py \
@@ -75,7 +88,17 @@ python scripts/run_backtest.py \
   --position-pct 0.01 \
   --rs-threshold 90 \
   --recent-days 7 \
-  --exit-mode either
+  --matrix
+```
+
+Run a single strategy combination manually:
+
+```bash
+python scripts/run_backtest.py \
+  --price-csv data/stock_data.csv \
+  --output-dir outputs/backtest/single_test \
+  --strategies breakout \
+  --exit-mode ma10
 ```
 
 ## GitHub Actions usage
@@ -86,7 +109,6 @@ python scripts/run_backtest.py \
 4. Choose:
    - `years`: `1`, `2`, `5`, `10`, `20`
    - `max_tickers`: leave empty for all tickers, or use a number for quick tests
-   - `exit_mode`: `ma10`, `pivot_low`, or `either`
    - `position_pct`: default `0.01`
 5. Download the artifact named `rs90-backtest-outputs`.
 
@@ -96,14 +118,34 @@ The workflow writes:
 
 ```text
 outputs/backtest/rs90_daily_recent.csv
-outputs/backtest/trades.csv
-outputs/backtest/equity_curve.csv
-outputs/backtest/equity_curve.png
-outputs/backtest/performance_report.json
+outputs/backtest/strategy_summary.csv
+outputs/backtest/all_reports.json
+outputs/backtest/breakout_ma10/trades.csv
+outputs/backtest/breakout_ma10/equity_curve.csv
+outputs/backtest/breakout_ma10/equity_curve.png
+outputs/backtest/breakout_ma10/performance_report.json
+outputs/backtest/breakout_pivot_low/...
+outputs/backtest/rsi2_ma10/...
+outputs/backtest/rsi2_pivot_low/...
 data/stock_data.csv
 ```
 
-### `trades.csv`
+### `rs90_daily_recent.csv`
+
+Recent daily RS90 universe. By default this exports the most recent 7 trading days; use the latest 5 rows by date if you only want the latest trading week.
+
+### `strategy_summary.csv`
+
+One-row-per-strategy summary for the four strategy combinations:
+
+```text
+strategy_combo, entry_strategy, exit_mode, trade_count, win_rate,
+profit_factor, avg_r, median_r, avg_win_loss_ratio,
+max_consecutive_losses, final_equity, total_return, max_drawdown,
+avg_holding_days
+```
+
+### Per-strategy `trades.csv`
 
 Main columns:
 
@@ -113,7 +155,7 @@ exit_date, exit_price, exit_reason, shares, position_size, pnl, pnl_pct,
 r_multiple, mae, mfe, holding_days, rs_rank_at_entry, signal_details
 ```
 
-### `performance_report.json`
+### Per-strategy `performance_report.json`
 
 Includes:
 
@@ -129,7 +171,6 @@ Includes:
 - final equity
 - total return
 - max drawdown
-- strategy-level breakdown
 
 ## Strategy definitions
 
@@ -138,23 +179,16 @@ Includes:
 For each date, the system calculates RS score using only prices available up to that date.
 The formula follows the same spirit as the existing RS ranking script: average geometric monthly returns over 1 to 12 months, using 21 trading days per month.
 
-### Breakout
-
-Entry condition:
+### Breakout entry
 
 ```text
 RS rank >= 90
 current high >= latest confirmed pivot high 1,1
-```
-
-Execution:
-
-```text
 entry = max(current open, pivot high)
 initial_stop = previous day low
 ```
 
-### RSI2
+### RSI2 entry
 
 Setup condition on previous day:
 
@@ -171,27 +205,18 @@ entry = current open
 initial_stop = setup day low
 ```
 
-### Exit modes
-
-`ma10`:
+### MA10 exit
 
 ```text
 exit if low <= 10MA
 exit_price = 10MA
 ```
 
-`pivot_low`:
+### Pivot-low exit
 
 ```text
 exit if low <= latest confirmed pivot low 1,1
 exit_price = pivot low
-```
-
-`either`:
-
-```text
-use both 10MA and pivot-low stop orders; whichever level is touched is used.
-initial stop always has priority.
 ```
 
 ## Notes before trusting results

@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
+
+import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -13,6 +16,9 @@ from rs90_backtester.indicators import add_indicators
 from rs90_backtester.universe import add_point_in_time_rs, recent_rs90
 from rs90_backtester.engine import BacktestConfig, run_backtest, save_outputs
 
+ENTRY_STRATEGIES = ("breakout", "rsi2")
+EXIT_MODES = ("ma10", "pivot_low")
+
 
 def _strategies(value):
     if value is None:
@@ -20,6 +26,37 @@ def _strategies(value):
     if isinstance(value, str):
         return tuple(x.strip() for x in value.split(",") if x.strip())
     return tuple(value)
+
+
+def _base_config(args: argparse.Namespace, cfg: dict) -> BacktestConfig:
+    max_stop_pct = deep_get(cfg, "risk.max_stop_pct", None)
+    if max_stop_pct is not None:
+        max_stop_pct = float(max_stop_pct)
+
+    return BacktestConfig(
+        initial_capital=args.initial_capital if args.initial_capital is not None else float(deep_get(cfg, "backtest.initial_capital", 1_000_000)),
+        position_pct=args.position_pct if args.position_pct is not None else float(deep_get(cfg, "backtest.position_pct", 0.01)),
+        rs_threshold=args.rs_threshold if args.rs_threshold is not None else float(deep_get(cfg, "backtest.rs_threshold", 90)),
+        recent_days=args.recent_days if args.recent_days is not None else int(deep_get(cfg, "backtest.recent_days", 7)),
+        exit_mode=args.exit_mode or deep_get(cfg, "backtest.exit_mode", "ma10"),
+        max_open_positions=int(deep_get(cfg, "backtest.max_open_positions", 100)),
+        max_new_positions_per_day=int(deep_get(cfg, "backtest.max_new_positions_per_day", 100)),
+        allow_same_ticker_overlap=bool(deep_get(cfg, "backtest.allow_same_ticker_overlap", False)),
+        slippage_bps=float(deep_get(cfg, "costs.slippage_bps", 0)),
+        commission_per_trade=float(deep_get(cfg, "costs.commission_per_trade", 0)),
+        max_stop_pct=max_stop_pct,
+        start_date=args.start_date or deep_get(cfg, "backtest.start_date", None),
+        end_date=args.end_date or deep_get(cfg, "backtest.end_date", None),
+        strategies=_strategies(args.strategies) or _strategies(deep_get(cfg, "backtest.strategies", ["breakout", "rsi2"])),
+    )
+
+
+def _run_one(df: pd.DataFrame, output_dir: Path, rs90: pd.DataFrame, cfg: BacktestConfig) -> dict:
+    print(f"Running: strategies={cfg.strategies}, exit_mode={cfg.exit_mode}, output={output_dir}")
+    trades, equity, report = run_backtest(df, cfg)
+    save_outputs(output_dir, trades, equity, report, rs90)
+    print(f"  trades={len(trades):,}, final_equity={report.get('final_equity')}, max_dd={report.get('max_drawdown')}")
+    return report
 
 
 def main() -> None:
@@ -31,31 +68,16 @@ def main() -> None:
     parser.add_argument("--position-pct", type=float, default=None)
     parser.add_argument("--rs-threshold", type=float, default=None)
     parser.add_argument("--recent-days", type=int, default=None)
-    parser.add_argument("--exit-mode", choices=["ma10", "pivot_low", "either"], default=None)
+    parser.add_argument("--exit-mode", choices=list(EXIT_MODES), default=None)
     parser.add_argument("--start-date", default=None)
     parser.add_argument("--end-date", default=None)
     parser.add_argument("--strategies", default=None, help="Comma list: breakout,rsi2")
+    parser.add_argument("--matrix", action="store_true", help="Run all 2 entry strategies x 2 exit modes as separate reports.")
     args = parser.parse_args()
 
-    cfg = load_config(args.config)
-    price_csv = args.price_csv or deep_get(cfg, "data.price_csv", "data/stock_data.csv")
-
-    btcfg = BacktestConfig(
-        initial_capital=args.initial_capital or float(deep_get(cfg, "backtest.initial_capital", 1_000_000)),
-        position_pct=args.position_pct if args.position_pct is not None else float(deep_get(cfg, "backtest.position_pct", 0.01)),
-        rs_threshold=args.rs_threshold if args.rs_threshold is not None else float(deep_get(cfg, "backtest.rs_threshold", 90)),
-        recent_days=args.recent_days if args.recent_days is not None else int(deep_get(cfg, "backtest.recent_days", 7)),
-        exit_mode=args.exit_mode or deep_get(cfg, "backtest.exit_mode", "either"),
-        max_open_positions=int(deep_get(cfg, "backtest.max_open_positions", 100)),
-        max_new_positions_per_day=int(deep_get(cfg, "backtest.max_new_positions_per_day", 100)),
-        allow_same_ticker_overlap=bool(deep_get(cfg, "backtest.allow_same_ticker_overlap", False)),
-        slippage_bps=float(deep_get(cfg, "costs.slippage_bps", 0)),
-        commission_per_trade=float(deep_get(cfg, "costs.commission_per_trade", 0)),
-        max_stop_pct=deep_get(cfg, "risk.max_stop_pct", None),
-        start_date=args.start_date or deep_get(cfg, "backtest.start_date", None),
-        end_date=args.end_date or deep_get(cfg, "backtest.end_date", None),
-        strategies=_strategies(args.strategies) or _strategies(deep_get(cfg, "backtest.strategies", ["breakout", "rsi2"])),
-    )
+    cfg_dict = load_config(args.config)
+    price_csv = args.price_csv or deep_get(cfg_dict, "data.price_csv", "data/stock_data.csv")
+    base_cfg = _base_config(args, cfg_dict)
 
     print(f"Loading prices: {price_csv}")
     prices = load_prices(price_csv)
@@ -65,11 +87,49 @@ def main() -> None:
     df = add_indicators(prices)
     print("Computing point-in-time RS ranks...")
     df = add_point_in_time_rs(df)
-    rs90 = recent_rs90(df, recent_days=btcfg.recent_days, threshold=btfg_rs_threshold(btcfg))
+    rs90 = recent_rs90(df, recent_days=base_cfg.recent_days, threshold=base_cfg.rs_threshold)
 
-    print("Running backtest...")
-    trades, equity, report = run_backtest(df, btcfg)
-    save_outputs(args.output_dir, trades, equity, report, rs90)
+    out_root = Path(args.output_dir)
+    out_root.mkdir(parents=True, exist_ok=True)
+    rs90.to_csv(out_root / "rs90_daily_recent.csv", index=False)
+
+    if args.matrix:
+        summary_rows = []
+        reports = {}
+        for entry_strategy in ENTRY_STRATEGIES:
+            for exit_mode in EXIT_MODES:
+                combo_name = f"{entry_strategy}_{exit_mode}"
+                combo_cfg = BacktestConfig(**{**base_cfg.__dict__, "strategies": (entry_strategy,), "exit_mode": exit_mode})
+                report = _run_one(df, out_root / combo_name, rs90, combo_cfg)
+                reports[combo_name] = report
+                summary_rows.append({
+                    "strategy_combo": combo_name,
+                    "entry_strategy": entry_strategy,
+                    "exit_mode": exit_mode,
+                    "trade_count": report.get("trade_count"),
+                    "win_rate": report.get("win_rate"),
+                    "profit_factor": report.get("profit_factor"),
+                    "avg_r": report.get("avg_r"),
+                    "median_r": report.get("median_r"),
+                    "avg_win_loss_ratio": report.get("avg_win_loss_ratio"),
+                    "max_consecutive_losses": report.get("max_consecutive_losses"),
+                    "final_equity": report.get("final_equity"),
+                    "total_return": report.get("total_return"),
+                    "max_drawdown": report.get("max_drawdown"),
+                    "avg_holding_days": report.get("avg_holding_days"),
+                })
+        summary = pd.DataFrame(summary_rows)
+        summary.to_csv(out_root / "strategy_summary.csv", index=False)
+        with (out_root / "all_reports.json").open("w", encoding="utf-8") as f:
+            json.dump(reports, f, ensure_ascii=False, indent=2)
+
+        print("\nStrategy matrix summary")
+        print(summary.to_string(index=False))
+        print(f"\nSaved matrix outputs to {out_root}")
+        return
+
+    print("Running single backtest...")
+    report = _run_one(df, out_root, rs90, base_cfg)
 
     print("\nPerformance report")
     for k, v in report.items():
@@ -79,11 +139,7 @@ def main() -> None:
         print("  by_strategy:")
         for k, v in report["by_strategy"].items():
             print(f"    {k}: {v}")
-    print(f"\nSaved outputs to {args.output_dir}")
-
-
-def btfg_rs_threshold(cfg: BacktestConfig) -> float:
-    return cfg.rs_threshold
+    print(f"\nSaved outputs to {out_root}")
 
 
 if __name__ == "__main__":
