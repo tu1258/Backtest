@@ -27,6 +27,14 @@ on:
         description: "Pivot right bars R"
         required: true
         default: "1"
+      atr_period:
+        description: "ATR period for atr_trail exit"
+        required: true
+        default: "14"
+      atr_multiple:
+        description: "ATR multiple for atr_trail exit"
+        required: true
+        default: "1.0"
       commit_outputs:
         description: "Commit outputs/backtest and logs back to repo"
         required: true
@@ -69,6 +77,8 @@ jobs:
             "position_pct": "${{ github.event.inputs.position_pct }}",
             "pivot_left": "${{ github.event.inputs.pivot_left }}",
             "pivot_right": "${{ github.event.inputs.pivot_right }}",
+            "atr_period": "${{ github.event.inputs.atr_period }}",
+            "atr_multiple": "${{ github.event.inputs.atr_multiple }}",
             "commit_outputs": "${{ github.event.inputs.commit_outputs }}",
             "commit_stock_data": "${{ github.event.inputs.commit_stock_data }}",
             "run_id": "${{ github.run_id }}",
@@ -130,6 +140,8 @@ jobs:
             --recent-days "${{ github.event.inputs.recent_days }}" \
             --pivot-left "${{ github.event.inputs.pivot_left }}" \
             --pivot-right "${{ github.event.inputs.pivot_right }}" \
+            --atr-period "${{ github.event.inputs.atr_period }}" \
+            --atr-multiple "${{ github.event.inputs.atr_multiple }}" \
             --output-dir outputs/backtest 2>&1 | tee logs/04_run_backtest.log
 
       - name: Save RS90 and report summary
