@@ -1,0 +1,61 @@
+name: RS90 Backtest
+
+on:
+  workflow_dispatch:
+    inputs:
+      years:
+        description: "Years of daily data to download from yfinance"
+        required: true
+        default: "2"
+      max_tickers:
+        description: "Optional ticker limit for quick tests. Empty = all tickers"
+        required: false
+        default: ""
+      exit_mode:
+        description: "Exit mode: ma10, pivot_low, either"
+        required: true
+        default: "either"
+      position_pct:
+        description: "Fixed notional position size as fraction of equity"
+        required: true
+        default: "0.01"
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Build daily OHLCV data
+        run: |
+          if [ -z "${{ github.event.inputs.max_tickers }}" ]; then
+            python scripts/build_data.py --years "${{ github.event.inputs.years }}"
+          else
+            python scripts/build_data.py --years "${{ github.event.inputs.years }}" --max-tickers "${{ github.event.inputs.max_tickers }}"
+          fi
+
+      - name: Run backtest
+        run: |
+          python scripts/run_backtest.py \
+            --exit-mode "${{ github.event.inputs.exit_mode }}" \
+            --position-pct "${{ github.event.inputs.position_pct }}" \
+            --output-dir outputs/backtest
+
+      - name: Upload outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: rs90-backtest-outputs
+          path: |
+            outputs/backtest/
+            data/stock_data.csv
