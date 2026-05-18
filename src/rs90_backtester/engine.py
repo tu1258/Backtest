@@ -14,7 +14,7 @@ class BacktestConfig:
     position_pct: float = 0.01
     rs_threshold: float = 90
     recent_days: int = 7
-    exit_mode: str = "ma10"  # ma10, atr_trail, n_day_low
+    exit_mode: str = "ma10"  # ma10, atr_trail, n_day_low, prev_day_low
     max_open_positions: int = 100
     max_new_positions_per_day: int = 100
     allow_same_ticker_overlap: bool = False
@@ -24,22 +24,22 @@ class BacktestConfig:
     start_date: str | None = None
     end_date: str | None = None
     strategies: tuple[str, ...] = ("breakout", "rsi2")
+    entry_name: str | None = None
     pivot_left: int = 1
     pivot_right: int = 1
     atr_period: int = 14
     atr_multiple: float = 1.0
-    n_day_low_period: int = 10
+    n_day_low_period: int = 5
 
-    # Shared RS90 universe filters, applied to both breakout and RSI2 entries.
-    min_avg_value_10: float = 25.0   # avg 10-day volume * current price, USD millions
-    min_adr20: float = 2.5           # percent
-    max_adr20: float = 25.0          # percent
+    # Shared RS90 universe filters.
+    min_avg_value_10: float = 25.0
+    min_adr20: float = 2.5
+    max_adr20: float = 25.0
     require_close_above_ma50: bool = True
 
-    # Breakout-only filters, matching the user's original screener logic.
+    # Breakout-only filters.
     breakout_require_dr_lt_adr5: bool = True
     breakout_require_near_ma5_within_adr10: bool = True
-    # Breakout must be a fresh breakout: yesterday's close must not already be above the trigger pivot.
     breakout_require_prev_close_lte_pivot: bool = True
 
 
@@ -101,7 +101,7 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
     for d in dates:
         day = by_date[d]
 
-        # 1) Existing positions: check exits using stop-order semantics.
+        # Existing positions: check exits using stop-order semantics.
         exits_today: list[Position] = []
         for pos in list(positions):
             if pos.ticker not in day.index:
@@ -110,12 +110,9 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
             high = float(row["high"])
             low = float(row["low"])
 
-            # Exit uses the stop levels that were available before this session.
-            # For ATR trailing stop, today's high can only tighten tomorrow's stop,
-            # not today's stop, to avoid daily-bar look-ahead.
+            # Exit uses stop levels known before this session. ATR trail is updated after close.
             exit_price, exit_reason = _exit_for_position(pos, row, cfg)
 
-            # Keep MAE/MFE inclusive of the exit day, consistent with the daily-bar model.
             pos.max_high = max(pos.max_high, high)
             pos.min_low = min(pos.min_low, low)
 
@@ -130,8 +127,7 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
         if exits_today:
             positions = [p for p in positions if p not in exits_today]
 
-        # 2) New entries.
-        # User assumption: if same-day entry and stop both trigger, trade is entered then stopped.
+        # New entries. User assumption: if same-day entry and stop both trigger, trade is entered then stopped.
         new_entries = 0
         held_tickers = {p.ticker for p in positions}
         candidates = _generate_entries(day, cfg)
@@ -154,33 +150,29 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
             if shares <= 0:
                 continue
 
+            row = day.loc[cand["ticker"]]
             pos = Position(
                 strategy=cand["strategy"],
                 ticker=cand["ticker"],
                 entry_date=d,
-                entry_price=cand["entry_price"],
-                initial_stop=cand["initial_stop"],
+                entry_price=float(cand["entry_price"]),
+                initial_stop=float(cand["initial_stop"]),
                 shares=shares,
-                position_size=shares * cand["entry_price"],
-                risk_per_share=cand["entry_price"] - cand["initial_stop"],
+                position_size=shares * float(cand["entry_price"]),
+                risk_per_share=float(cand["entry_price"] - cand["initial_stop"]),
                 rs_rank_at_entry=cand.get("rs_rank_at_entry"),
                 signal_details=cand.get("signal_details", ""),
-                max_high=float(day.loc[cand["ticker"], "high"]),
-                min_low=float(day.loc[cand["ticker"], "low"]),
+                max_high=float(row["high"]),
+                min_low=float(row["low"]),
                 trailing_stop=float(cand["initial_stop"]),
             )
 
-            # Same-day stop assumption: entered then stopped when both are possible.
-            # If the bar opens below the stop, the sell stop is filled at the open.
-            row = day.loc[pos.ticker]
             if float(row["low"]) <= pos.initial_stop:
                 exit_px = _sell_stop_fill_price(row, pos.initial_stop, cfg)
                 trade = _close_trade(pos, d, exit_px, "same_day_stop_loss", cfg)
                 trades.append(trade)
                 cash_realized += trade.pnl - cfg.commission_per_trade
             else:
-                # Initialize tomorrow's ATR trail from the entry-day close/high if this
-                # strategy uses atr_trail. Same-day exit still uses only initial stop.
                 _update_atr_trailing_stop_after_close(pos, row, cfg)
                 positions.append(pos)
                 held_tickers.add(pos.ticker)
@@ -196,7 +188,6 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
             "exposure": sum(p.position_size for p in positions),
         })
 
-    # Liquidate remaining positions at final close for closed-trade metrics.
     if dates:
         last_d = dates[-1]
         last_day = by_date[last_d]
@@ -218,11 +209,9 @@ def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
     for _, row in day.iterrows():
         ticker = str(row["ticker"])
 
-        # Exact date+ticker RS90 membership check. If the current date+ticker pair
-        # is not in the allowed RS90 membership table, it cannot generate entries.
+        # Exact date+ticker RS90 membership check. If this pair is not in the allowed RS90 table, no entry.
         if not bool(row.get("in_rs90", False)) or float(row.get("rs_rank", -1)) < cfg.rs_threshold:
             continue
-
         if not _passes_common_universe_filters(row, cfg):
             continue
 
@@ -231,19 +220,14 @@ def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
             prev_low = row.get("prev_low")
             prev_close = row.get("prev_close")
             if pd.notna(pivot) and pd.notna(prev_low) and float(row["high"]) >= float(pivot):
-                # Fresh-breakout guard:
-                # If yesterday's close was already above the pivot trigger, the breakout had already happened
-                # before the current signal day. Skip it so the strategy does not open stale positions
-                # when a new RS90 list/backtest window starts. A gap-up breakout is still allowed when
-                # prev_close <= pivot; fill price is max(open, pivot).
                 if cfg.breakout_require_prev_close_lte_pivot:
                     if pd.isna(prev_close) or float(prev_close) > float(pivot):
                         continue
-
                 raw_entry = max(float(row["open"]), float(pivot))
                 entry = raw_entry * (1 + cfg.slippage_bps / 10000)
+                label = cfg.entry_name or f"breakout_{cfg.pivot_left}_{cfg.pivot_right}"
                 out.append({
-                    "strategy": "breakout",
+                    "strategy": label,
                     "ticker": ticker,
                     "entry_price": entry,
                     "initial_stop": float(prev_low),
@@ -260,149 +244,111 @@ def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
         if "rsi2" in cfg.strategies:
             setup_rsi2 = row.get("setup_rsi2")
             setup_low = row.get("setup_low")
-            if (
-                pd.notna(setup_rsi2)
-                and pd.notna(setup_low)
-                and float(setup_rsi2) < 5
-            ):
+            if pd.notna(setup_rsi2) and pd.notna(setup_low) and float(setup_rsi2) < 5:
                 entry = float(row["open"]) * (1 + cfg.slippage_bps / 10000)
                 out.append({
-                    "strategy": "rsi2",
+                    "strategy": cfg.entry_name or "rsi2",
                     "ticker": ticker,
                     "entry_price": entry,
                     "initial_stop": float(setup_low),
                     "rs_rank_at_entry": float(row["rs_rank"]),
                     "signal_details": (
                         f"setup_rsi2={float(setup_rsi2):.2f}; next_open_entry; "
-                        f"avg_value_10={_fmt(row.get('avg_value_10'))}M; adr20={_fmt(row.get('adr20'))}; "
-                        f"close={_fmt(row.get('close'))}; ma50={_fmt(row.get('ma50'))}"
+                        f"avg_value_10={_fmt(row.get('avg_value_10'))}M; adr20={_fmt(row.get('adr20'))}; close_gt_ma50=True"
                     ),
                 })
-
     return out
 
 
 def _passes_common_universe_filters(row: pd.Series, cfg: BacktestConfig) -> bool:
-    avg_value_10 = row.get("avg_value_10")
-    adr20 = row.get("adr20")
-    close = row.get("close")
-    ma50 = row.get("ma50")
-
-    if pd.isna(avg_value_10) or pd.isna(adr20):
-        return False
-    if float(avg_value_10) <= cfg.min_avg_value_10:
-        return False
-    if not (cfg.min_adr20 <= float(adr20) <= cfg.max_adr20):
-        return False
-
+    checks = [
+        pd.notna(row.get("avg_value_10")) and float(row.get("avg_value_10")) > cfg.min_avg_value_10,
+        pd.notna(row.get("adr20")) and cfg.min_adr20 <= float(row.get("adr20")) <= cfg.max_adr20,
+    ]
     if cfg.require_close_above_ma50:
-        if pd.isna(close) or pd.isna(ma50) or not (float(close) > float(ma50)):
-            return False
-
-    return True
+        checks.append(pd.notna(row.get("ma50")) and float(row.get("close")) > float(row.get("ma50")))
+    return all(checks)
 
 
 def _passes_breakout_filters(row: pd.Series, cfg: BacktestConfig) -> bool:
     if cfg.breakout_require_dr_lt_adr5:
-        dr = row.get("dr")
-        adr5 = row.get("adr5")
-        if pd.isna(dr) or pd.isna(adr5) or not (float(dr) < float(adr5)):
+        if pd.isna(row.get("dr")) or pd.isna(row.get("adr5")) or not (float(row.get("dr")) < float(row.get("adr5"))):
             return False
-
     if cfg.breakout_require_near_ma5_within_adr10:
-        distance_to_ma5 = row.get("distance_to_ma5")
-        adr10_price = row.get("adr10_price")
-        if pd.isna(distance_to_ma5) or pd.isna(adr10_price) or not (float(distance_to_ma5) < float(adr10_price)):
+        if pd.isna(row.get("distance_to_ma5")) or pd.isna(row.get("adr10_price")):
             return False
-
+        if not (float(row.get("distance_to_ma5")) < float(row.get("adr10_price"))):
+            return False
     return True
 
 
-def _fmt(value) -> str:
-    if value is None or pd.isna(value):
-        return "nan"
-    return f"{float(value):.4f}"
-
-
 def _exit_for_position(pos: Position, row: pd.Series, cfg: BacktestConfig) -> tuple[float | None, str | None]:
-    low = float(row["low"])
-
     # Conservative priority: initial stop first when several levels are touched on the same daily bar.
-    if low <= pos.initial_stop:
+    if float(row["low"]) <= pos.initial_stop:
         return _sell_stop_fill_price(row, pos.initial_stop, cfg), "stop_loss"
 
     levels: list[tuple[str, float]] = []
     if cfg.exit_mode == "ma10" and pd.notna(row.get("ma10")):
         levels.append(("ma10_break", float(row["ma10"])))
-    elif cfg.exit_mode == "atr_trail" and pos.trailing_stop is not None and pd.notna(pos.trailing_stop):
-        levels.append(("atr_trail_stop", float(pos.trailing_stop)))
+    elif cfg.exit_mode == "atr_trail" and pos.trailing_stop is not None:
+        levels.append((f"atr_trail_{cfg.atr_multiple:g}x", float(pos.trailing_stop)))
     elif cfg.exit_mode == "n_day_low" and pd.notna(row.get("n_day_low")):
-        levels.append((f"n_day_low_{cfg.n_day_low_period}_break", float(row["n_day_low"])))
+        levels.append((f"{cfg.n_day_low_period}_day_low_break", float(row["n_day_low"])))
+    elif cfg.exit_mode == "prev_day_low" and pd.notna(row.get("prev_low")):
+        levels.append(("prev_day_low_break", float(row["prev_low"])))
 
-    touched = [(reason, level) for reason, level in levels if low <= level]
+    touched = [(reason, level) for reason, level in levels if float(row["low"]) <= level]
     if not touched:
         return None, None
 
-    # Without intraday order, use the closest/higher triggered level for longs.
     reason, level = max(touched, key=lambda x: x[1])
     return _sell_stop_fill_price(row, level, cfg), reason
 
 
+def _sell_stop_fill_price(row: pd.Series, stop_price: float, cfg: BacktestConfig) -> float:
+    # If open gaps through a sell stop, fill at open; otherwise fill at stop.
+    raw = float(row["open"]) if float(row["open"]) <= float(stop_price) else float(stop_price)
+    return raw * (1 - cfg.slippage_bps / 10000)
+
+
 def _update_atr_trailing_stop_after_close(pos: Position, row: pd.Series, cfg: BacktestConfig) -> None:
-    """Tighten a long ATR trailing stop after the current daily bar closes.
-
-    Stop for the next session is:
-        max(previous_stop, highest_high_since_entry - atr_multiple * current_ATR)
-
-    The stop never moves down and never loosens below the initial stop.
-    """
     if cfg.exit_mode != "atr_trail":
         return
     atr = row.get("atr")
     if pd.isna(atr):
         return
-    candidate = float(pos.max_high) - float(cfg.atr_multiple) * float(atr)
-    current = pos.trailing_stop if pos.trailing_stop is not None and pd.notna(pos.trailing_stop) else pos.initial_stop
-    pos.trailing_stop = max(float(current), float(pos.initial_stop), float(candidate))
-
-
-def _sell_stop_fill_price(row: pd.Series, stop_price: float, cfg: BacktestConfig) -> float:
-    """Daily-bar sell stop fill model for long exits.
-
-    If the session opens below the stop level, the stop order is filled at the
-    open. Otherwise it is filled at the stop level. Slippage is applied after
-    the gap/open rule.
-    """
-    open_price = float(row["open"])
-    raw_fill = open_price if open_price <= float(stop_price) else float(stop_price)
-    return raw_fill * (1 - cfg.slippage_bps / 10000)
+    new_stop = pos.max_high - cfg.atr_multiple * float(atr)
+    floor = pos.initial_stop
+    if pos.trailing_stop is None:
+        pos.trailing_stop = max(floor, new_stop)
+    else:
+        pos.trailing_stop = max(pos.trailing_stop, floor, new_stop)
 
 
 def _close_trade(pos: Position, exit_date: pd.Timestamp, exit_price: float, exit_reason: str, cfg: BacktestConfig) -> Trade:
     pnl = (exit_price - pos.entry_price) * pos.shares - cfg.commission_per_trade
     pnl_pct = (exit_price / pos.entry_price - 1) if pos.entry_price else np.nan
-    r_mult = (exit_price - pos.entry_price) / pos.risk_per_share if pos.risk_per_share > 0 else np.nan
-    mae = (pos.min_low - pos.entry_price) / pos.risk_per_share if pos.risk_per_share > 0 else np.nan
-    mfe = (pos.max_high - pos.entry_price) / pos.risk_per_share if pos.risk_per_share > 0 else np.nan
-    holding_days = max(0, int((pd.Timestamp(exit_date) - pd.Timestamp(pos.entry_date)).days))
-
+    r_multiple = (exit_price - pos.entry_price) / pos.risk_per_share if pos.risk_per_share else np.nan
+    mae = (pos.min_low - pos.entry_price) / pos.risk_per_share if pos.risk_per_share else np.nan
+    mfe = (pos.max_high - pos.entry_price) / pos.risk_per_share if pos.risk_per_share else np.nan
+    holding_days = int(np.busday_count(pd.Timestamp(pos.entry_date).date(), pd.Timestamp(exit_date).date()))
     return Trade(
         strategy=pos.strategy,
         ticker=pos.ticker,
         entry_date=pd.Timestamp(pos.entry_date).strftime("%Y-%m-%d"),
-        entry_price=round(pos.entry_price, 6),
-        initial_stop=round(pos.initial_stop, 6),
-        risk_per_share=round(pos.risk_per_share, 6),
+        entry_price=round(pos.entry_price, 4),
+        initial_stop=round(pos.initial_stop, 4),
+        risk_per_share=round(pos.risk_per_share, 4),
         exit_date=pd.Timestamp(exit_date).strftime("%Y-%m-%d"),
-        exit_price=round(exit_price, 6),
+        exit_price=round(float(exit_price), 4),
         exit_reason=exit_reason,
-        shares=pos.shares,
+        shares=int(pos.shares),
         position_size=round(pos.position_size, 2),
-        pnl=round(pnl, 2),
-        pnl_pct=round(pnl_pct, 6),
-        r_multiple=round(r_mult, 6) if pd.notna(r_mult) else np.nan,
-        mae=round(mae, 6) if pd.notna(mae) else np.nan,
-        mfe=round(mfe, 6) if pd.notna(mfe) else np.nan,
+        pnl=round(float(pnl), 2),
+        pnl_pct=round(float(pnl_pct), 6),
+        r_multiple=round(float(r_multiple), 4) if pd.notna(r_multiple) else np.nan,
+        mae=round(float(mae), 4) if pd.notna(mae) else np.nan,
+        mfe=round(float(mfe), 4) if pd.notna(mfe) else np.nan,
         holding_days=holding_days,
         rs_rank_at_entry=pos.rs_rank_at_entry,
         signal_details=pos.signal_details,
@@ -410,19 +356,21 @@ def _close_trade(pos: Position, exit_date: pd.Timestamp, exit_price: float, exit
 
 
 def _mark_to_market_equity(cash_realized: float, positions: list[Position], day: pd.DataFrame) -> float:
-    equity = cash_realized
+    unrealized = 0.0
     for pos in positions:
         if pos.ticker in day.index:
             close = float(day.loc[pos.ticker, "close"])
-            equity += (close - pos.entry_price) * pos.shares
-    return float(equity)
+            unrealized += (close - pos.entry_price) * pos.shares
+    return cash_realized + unrealized
 
 
 def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: BacktestConfig) -> dict:
-    report: dict = {
+    report = {
         "initial_capital": cfg.initial_capital,
         "position_pct": cfg.position_pct,
         "rs_threshold": cfg.rs_threshold,
+        "strategies": list(cfg.strategies),
+        "entry_name": cfg.entry_name,
         "exit_mode": cfg.exit_mode,
         "pivot_left": cfg.pivot_left,
         "pivot_right": cfg.pivot_right,
@@ -432,7 +380,7 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
         "trade_count": int(len(trades)),
         "filters": {
             "common": {
-                "avg_value_10_millions_gt": cfg.min_avg_value_10,
+                "avg_value_10_min_musd": cfg.min_avg_value_10,
                 "adr20_min": cfg.min_adr20,
                 "adr20_max": cfg.max_adr20,
                 "close_gt_ma50": cfg.require_close_above_ma50,
@@ -445,11 +393,14 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
             "atr_trail": {
                 "atr_period": cfg.atr_period,
                 "atr_multiple": cfg.atr_multiple,
-                "stop_formula": "highest_high_since_entry - atr_multiple * current_ATR; updated after each close",
+                "stop_formula": "highest_high_since_entry - atr_multiple * current_ATR; updated after each close and active next session",
             },
             "n_day_low": {
                 "period": cfg.n_day_low_period,
                 "stop_formula": "previous N trading days' lowest low; shifted 1 day so the stop is known before the session",
+            },
+            "prev_day_low": {
+                "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low",
             },
         },
     }
@@ -518,24 +469,32 @@ def max_consecutive_losses(pnls: list[float]) -> int:
 
 
 def save_outputs(output_dir: str | Path, trades: pd.DataFrame, equity: pd.DataFrame, report: dict, rs90_recent: pd.DataFrame) -> None:
-    out = Path(output_dir)
-    out.mkdir(parents=True, exist_ok=True)
-    trades.to_csv(out / "trades.csv", index=False)
-    equity.to_csv(out / "equity_curve.csv", index=False)
-    rs90_recent.to_csv(out / "rs90_daily_recent.csv", index=False)
-    with (out / "performance_report.json").open("w", encoding="utf-8") as f:
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    trades.to_csv(output_dir / "trades.csv", index=False)
+    equity.to_csv(output_dir / "equity_curve.csv", index=False)
+    rs90_recent.to_csv(output_dir / "rs90_daily_recent.csv", index=False)
+    with (output_dir / "performance_report.json").open("w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=2)
 
     try:
         import matplotlib.pyplot as plt
         if not equity.empty:
-            ax = equity.assign(date=pd.to_datetime(equity["date"])).plot(x="date", y="equity", legend=False, figsize=(10, 5))
-            ax.set_title("Equity Curve")
+            ax = equity.assign(date=pd.to_datetime(equity["date"])).plot(x="date", y="equity", legend=False, title="Equity Curve")
             ax.set_xlabel("Date")
             ax.set_ylabel("Equity")
             fig = ax.get_figure()
             fig.tight_layout()
-            fig.savefig(out / "equity_curve.png", dpi=150)
+            fig.savefig(output_dir / "equity_curve.png", dpi=150)
             plt.close(fig)
-    except Exception as exc:
-        print(f"Could not generate equity curve plot: {exc}")
+    except Exception as e:
+        print(f"Warning: failed to save equity curve plot: {e}")
+
+
+def _fmt(value) -> str:
+    try:
+        if pd.isna(value):
+            return "nan"
+        return f"{float(value):.4f}"
+    except Exception:
+        return str(value)

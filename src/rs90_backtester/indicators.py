@@ -5,91 +5,92 @@ import pandas as pd
 
 
 def add_indicators(
-    df: pd.DataFrame,
+    prices: pd.DataFrame,
+    *,
     pivot_left: int = 1,
     pivot_right: int = 1,
     atr_period: int = 14,
-    n_day_low_period: int = 10,
+    n_day_low_period: int = 5,
 ) -> pd.DataFrame:
+    """Add daily indicators used by the RS90 backtester.
+
+    Important anti-lookahead rules:
+    - Confirmed pivot high/low is shifted by pivot_right + 1 bars so it can only
+      be traded after the right-side confirmation bar has closed.
+    - n_day_low is shifted by 1 bar, so today's stop only uses lows known before
+      today's session.
+    """
     if pivot_left < 1 or pivot_right < 1:
-        raise ValueError("pivot_left and pivot_right must both be >= 1")
+        raise ValueError("pivot_left and pivot_right must be >= 1")
     if atr_period < 1:
         raise ValueError("atr_period must be >= 1")
     if n_day_low_period < 1:
         raise ValueError("n_day_low_period must be >= 1")
 
-    df = df.sort_values(["ticker", "date"]).copy()
+    required = {"ticker", "date", "open", "high", "low", "close", "volume"}
+    missing = required - set(prices.columns)
+    if missing:
+        raise ValueError(f"missing required price columns: {sorted(missing)}")
+
+    df = prices.copy()
+    df["date"] = pd.to_datetime(df["date"])
+    df["ticker"] = df["ticker"].astype(str).str.upper()
+    df = df.sort_values(["ticker", "date"]).reset_index(drop=True)
+
     g = df.groupby("ticker", group_keys=False)
 
     # Moving averages
     df["ma5"] = g["close"].transform(lambda s: s.rolling(5, min_periods=5).mean())
     df["ma10"] = g["close"].transform(lambda s: s.rolling(10, min_periods=10).mean())
+    df["ma20"] = g["close"].transform(lambda s: s.rolling(20, min_periods=20).mean())
     df["ma50"] = g["close"].transform(lambda s: s.rolling(50, min_periods=50).mean())
 
-    # Liquidity / volatility filters.
-    # DR/ADR are expressed in percent, e.g. 3.5 means 3.5%.
+    # Dollar volume filter: average of daily volume * close, USD millions.
+    df["dollar_volume"] = df["volume"].astype(float) * df["close"].astype(float)
+    df["avg_value_10"] = g["dollar_volume"].transform(lambda s: s.rolling(10, min_periods=10).mean()) / 1_000_000
+
+    # Daily range / ADR filters.
     df["dr"] = (df["high"].astype(float) / df["low"].astype(float) - 1.0) * 100.0
-
-    # ATR uses Wilder smoothing. The value is in price units, not percent.
-    df["prev_close_for_tr"] = g["close"].shift(1)
-    tr_components = pd.concat([
-        (df["high"].astype(float) - df["low"].astype(float)).rename("hl"),
-        (df["high"].astype(float) - df["prev_close_for_tr"].astype(float)).abs().rename("h_pc"),
-        (df["low"].astype(float) - df["prev_close_for_tr"].astype(float)).abs().rename("l_pc"),
-    ], axis=1)
-    df["tr"] = tr_components.max(axis=1)
-    df["atr"] = g["tr"].transform(lambda s: atr_wilder(s, atr_period))
-    df["atr_period"] = int(atr_period)
-
-    # Previous N-day low used as a sell-stop exit level.
-    # Shift by 1 so the level is fully known before the current session opens.
-    df["n_day_low"] = g["low"].transform(lambda s: s.rolling(n_day_low_period, min_periods=n_day_low_period).min().shift(1))
-    df["n_day_low_period"] = int(n_day_low_period)
-
     df["adr5"] = g["dr"].transform(lambda s: s.rolling(5, min_periods=5).mean())
     df["adr10"] = g["dr"].transform(lambda s: s.rolling(10, min_periods=10).mean())
     df["adr20"] = g["dr"].transform(lambda s: s.rolling(20, min_periods=20).mean())
-
-    # Average 10-day dollar volume in USD millions.
-    # This is avg(volume * close), not avg(volume) * current close.
-    df["dollar_volume"] = df["volume"].astype(float) * df["close"].astype(float)
-    df["avg_value_10"] = g["dollar_volume"].transform(lambda s: s.rolling(10, min_periods=10).mean()) / 1_000_000.0
-
-    # Breakout consolidation filter:
-    # abs(avg_bar - ma5) < adr10 / 100 * close
     df["avg_bar"] = (df["close"].astype(float) + df["high"].astype(float) + df["low"].astype(float)) / 3.0
     df["distance_to_ma5"] = (df["avg_bar"] - df["ma5"]).abs()
     df["adr10_price"] = df["adr10"] / 100.0 * df["close"].astype(float)
 
-    # RSI and pivots
+    # RSI(2)
     df["rsi2"] = g["close"].transform(lambda s: rsi_wilder(s, 2))
-    df["pivot_high_raw"] = g.apply(lambda x: pivot_high(x["high"], left=pivot_left, right=pivot_right)).reset_index(level=0, drop=True)
-    df["pivot_low_raw"] = g.apply(lambda x: pivot_low(x["low"], left=pivot_left, right=pivot_right)).reset_index(level=0, drop=True)
 
-    # A pivot at day t is confirmed only after t + right closes.
-    # It becomes tradable from t + right + 1.
-    confirmation_shift = pivot_right + 1
-    df["confirmed_pivot_high"] = g["pivot_high_raw"].transform(lambda s: s.shift(confirmation_shift).ffill())
-    df["confirmed_pivot_low"] = g["pivot_low_raw"].transform(lambda s: s.shift(confirmation_shift).ffill())
-
-    df["pivot_left"] = int(pivot_left)
-    df["pivot_right"] = int(pivot_right)
-
-    df["prev_low"] = g["low"].shift(1)
+    # ATR
     df["prev_close"] = g["close"].shift(1)
+    tr1 = df["high"].astype(float) - df["low"].astype(float)
+    tr2 = (df["high"].astype(float) - df["prev_close"].astype(float)).abs()
+    tr3 = (df["low"].astype(float) - df["prev_close"].astype(float)).abs()
+    df["true_range"] = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+    df["atr"] = g["true_range"].transform(lambda s: s.rolling(atr_period, min_periods=atr_period).mean())
 
-    # RSI2 setup uses the previous completed daily bar, then enters next open.
+    # Pivot L,R raw points and confirmed tradable levels.
+    df["pivot_high_raw"] = g["high"].transform(lambda s: pivot_high_lr(s, pivot_left, pivot_right))
+    df["pivot_low_raw"] = g["low"].transform(lambda s: pivot_low_lr(s, pivot_left, pivot_right))
+
+    # A pivot at t is only known after t + R closes; use it from t + R + 1.
+    pivot_shift = pivot_right + 1
+    df["confirmed_pivot_high"] = g["pivot_high_raw"].transform(lambda s: s.shift(pivot_shift).ffill())
+    df["confirmed_pivot_low"] = g["pivot_low_raw"].transform(lambda s: s.shift(pivot_shift).ffill())
+
+    # Setup / stop fields.
+    df["prev_low"] = g["low"].shift(1)
     df["setup_low"] = g["low"].shift(1)
     df["setup_rsi2"] = g["rsi2"].shift(1)
     df["setup_ma50"] = g["ma50"].shift(1)
     df["setup_close"] = g["close"].shift(1)
+    df["n_day_low"] = g["low"].transform(lambda s: s.rolling(n_day_low_period, min_periods=n_day_low_period).min().shift(1))
 
+    df.attrs["pivot_left"] = pivot_left
+    df.attrs["pivot_right"] = pivot_right
+    df.attrs["atr_period"] = atr_period
+    df.attrs["n_day_low_period"] = n_day_low_period
     return df
-
-
-def atr_wilder(tr: pd.Series, period: int = 14) -> pd.Series:
-    tr = tr.astype(float)
-    return tr.ewm(alpha=1 / period, adjust=False, min_periods=period).mean()
 
 
 def rsi_wilder(close: pd.Series, period: int = 2) -> pd.Series:
@@ -106,7 +107,7 @@ def rsi_wilder(close: pd.Series, period: int = 2) -> pd.Series:
     return rsi
 
 
-def pivot_high(high: pd.Series, left: int = 1, right: int = 1) -> pd.Series:
+def pivot_high_lr(high: pd.Series, left: int = 1, right: int = 1) -> pd.Series:
     h = high.astype(float)
     out = pd.Series(np.nan, index=h.index, dtype=float)
     mask = pd.Series(True, index=h.index)
@@ -118,7 +119,7 @@ def pivot_high(high: pd.Series, left: int = 1, right: int = 1) -> pd.Series:
     return out
 
 
-def pivot_low(low: pd.Series, left: int = 1, right: int = 1) -> pd.Series:
+def pivot_low_lr(low: pd.Series, left: int = 1, right: int = 1) -> pd.Series:
     l = low.astype(float)
     out = pd.Series(np.nan, index=l.index, dtype=float)
     mask = pd.Series(True, index=l.index)
@@ -128,12 +129,3 @@ def pivot_low(low: pd.Series, left: int = 1, right: int = 1) -> pd.Series:
         mask &= l < l.shift(-i)
     out.loc[mask] = l.loc[mask]
     return out
-
-
-# Backward-compatible names for existing tests/imports.
-def pivot_high_11(high: pd.Series) -> pd.Series:
-    return pivot_high(high, left=1, right=1)
-
-
-def pivot_low_11(low: pd.Series) -> pd.Series:
-    return pivot_low(low, left=1, right=1)
