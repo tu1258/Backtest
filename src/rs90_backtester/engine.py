@@ -24,6 +24,8 @@ class BacktestConfig:
     start_date: str | None = None
     end_date: str | None = None
     strategies: tuple[str, ...] = ("breakout", "rsi2")
+    pivot_left: int = 1
+    pivot_right: int = 1
 
     # Shared RS90 universe filters, applied to both breakout and RSI2 entries.
     min_avg_value_10: float = 25.0   # avg 10-day volume * current price, USD millions
@@ -154,9 +156,11 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
             )
 
             # Same-day stop assumption: entered then stopped when both are possible.
+            # If the bar opens below the stop, the sell stop is filled at the open.
             row = day.loc[pos.ticker]
             if float(row["low"]) <= pos.initial_stop:
-                trade = _close_trade(pos, d, pos.initial_stop, "same_day_stop_loss", cfg)
+                exit_px = _sell_stop_fill_price(row, pos.initial_stop, cfg)
+                trade = _close_trade(pos, d, exit_px, "same_day_stop_loss", cfg)
                 trades.append(trade)
                 cash_realized += trade.pnl - cfg.commission_per_trade
             else:
@@ -217,7 +221,7 @@ def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
                     "initial_stop": float(prev_low),
                     "rs_rank_at_entry": float(row["rs_rank"]),
                     "signal_details": (
-                        f"buy_stop=pivot_high_1_1:{float(pivot):.4f}; entry=max(open,pivot); "
+                        f"buy_stop=pivot_high_{cfg.pivot_left}_{cfg.pivot_right}:{float(pivot):.4f}; entry=max(open,pivot); "
                         f"avg_value_10={_fmt(row.get('avg_value_10'))}M; adr20={_fmt(row.get('adr20'))}; "
                         f"dr={_fmt(row.get('dr'))}; adr5={_fmt(row.get('adr5'))}; "
                         f"distance_to_ma5={_fmt(row.get('distance_to_ma5'))}; adr10_price={_fmt(row.get('adr10_price'))}"
@@ -296,7 +300,7 @@ def _exit_for_position(pos: Position, row: pd.Series, cfg: BacktestConfig) -> tu
 
     # Conservative priority: initial stop first when several levels are touched on the same daily bar.
     if low <= pos.initial_stop:
-        return pos.initial_stop * (1 - cfg.slippage_bps / 10000), "stop_loss"
+        return _sell_stop_fill_price(row, pos.initial_stop, cfg), "stop_loss"
 
     levels: list[tuple[str, float]] = []
     if cfg.exit_mode == "ma10" and pd.notna(row.get("ma10")):
@@ -310,7 +314,19 @@ def _exit_for_position(pos: Position, row: pd.Series, cfg: BacktestConfig) -> tu
 
     # Without intraday order, use the closest/higher triggered level for longs.
     reason, level = max(touched, key=lambda x: x[1])
-    return level * (1 - cfg.slippage_bps / 10000), reason
+    return _sell_stop_fill_price(row, level, cfg), reason
+
+
+def _sell_stop_fill_price(row: pd.Series, stop_price: float, cfg: BacktestConfig) -> float:
+    """Daily-bar sell stop fill model for long exits.
+
+    If the session opens below the stop level, the stop order is filled at the
+    open. Otherwise it is filled at the stop level. Slippage is applied after
+    the gap/open rule.
+    """
+    open_price = float(row["open"])
+    raw_fill = open_price if open_price <= float(stop_price) else float(stop_price)
+    return raw_fill * (1 - cfg.slippage_bps / 10000)
 
 
 def _close_trade(pos: Position, exit_date: pd.Timestamp, exit_price: float, exit_reason: str, cfg: BacktestConfig) -> Trade:
@@ -359,6 +375,8 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
         "position_pct": cfg.position_pct,
         "rs_threshold": cfg.rs_threshold,
         "exit_mode": cfg.exit_mode,
+        "pivot_left": cfg.pivot_left,
+        "pivot_right": cfg.pivot_right,
         "trade_count": int(len(trades)),
         "filters": {
             "common": {
