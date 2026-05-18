@@ -8,19 +8,22 @@ data:
   auto_adjust: true
   batch_size: 80
   sleep_seconds: 1
-  max_tickers: null   # set an integer for quick tests
+  max_tickers: null
 
 backtest:
   initial_capital: 1000000
-  position_pct: 0.01       # fixed notional position size = equity * 1%
+  position_pct: 0.01
   rs_threshold: 90
-  recent_days: 7
-  exit_mode: ma10         # ma10, atr_trail, or n_day_low. Matrix mode runs all.
-  pivot_left: 1           # Pivot L: number of bars to the left
-  pivot_right: 1          # Pivot R: number of bars to the right
-  atr_period: 14          # ATR period for atr_trail exit
-  atr_multiple: 1.0       # 1.0 = one ATR trailing stop
-  n_day_low_period: 10    # N for n_day_low exit; stop is previous N trading days' lowest low
+  recent_days: 5
+  exit_mode: ma10
+  # Single-run defaults. Matrix mode ignores these pivot values and runs breakout_1_1 plus breakout_2_2.
+  pivot_left: 1
+  pivot_right: 1
+  atr_period: 14
+  # Single-run defaults. Matrix mode runs ATR multiples 0.5 and 1.0.
+  atr_multiple: 1.0
+  # Single-run default. Matrix mode runs 5-day low.
+  n_day_low_period: 5
   max_open_positions: 100
   max_new_positions_per_day: 100
   allow_same_ticker_overlap: false
@@ -35,7 +38,4 @@ costs:
   commission_per_trade: 0
 
 risk:
-  # Current user rule: stop = previous day's low.
-  # Optional risk filter: skip entries if stop distance is greater than max_stop_pct.
-  # Set to null to disable.
   max_stop_pct: null
