@@ -35,6 +35,10 @@ on:
         description: "ATR multiple for atr_trail exit"
         required: true
         default: "1.0"
+      n_day_low_period:
+        description: "N for n_day_low exit. Stop level is previous N trading days' lowest low."
+        required: true
+        default: "10"
       commit_outputs:
         description: "Commit outputs/backtest and logs back to repo"
         required: true
@@ -79,6 +83,7 @@ jobs:
             "pivot_right": "${{ github.event.inputs.pivot_right }}",
             "atr_period": "${{ github.event.inputs.atr_period }}",
             "atr_multiple": "${{ github.event.inputs.atr_multiple }}",
+            "n_day_low_period": "${{ github.event.inputs.n_day_low_period }}",
             "commit_outputs": "${{ github.event.inputs.commit_outputs }}",
             "commit_stock_data": "${{ github.event.inputs.commit_stock_data }}",
             "run_id": "${{ github.run_id }}",
@@ -142,6 +147,7 @@ jobs:
             --pivot-right "${{ github.event.inputs.pivot_right }}" \
             --atr-period "${{ github.event.inputs.atr_period }}" \
             --atr-multiple "${{ github.event.inputs.atr_multiple }}" \
+            --n-day-low-period "${{ github.event.inputs.n_day_low_period }}" \
             --output-dir outputs/backtest 2>&1 | tee logs/04_run_backtest.log
 
       - name: Save RS90 and report summary
