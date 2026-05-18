@@ -11,10 +11,6 @@ on:
         description: "Optional ticker limit for quick tests. Empty = all tickers"
         required: false
         default: ""
-      exit_mode:
-        description: "Exit mode: ma10, pivot_low, either"
-        required: true
-        default: "either"
       position_pct:
         description: "Fixed notional position size as fraction of equity"
         required: true
@@ -45,10 +41,10 @@ jobs:
             python scripts/build_data.py --years "${{ github.event.inputs.years }}" --max-tickers "${{ github.event.inputs.max_tickers }}"
           fi
 
-      - name: Run backtest
+      - name: Run 2x2 strategy matrix
         run: |
           python scripts/run_backtest.py \
-            --exit-mode "${{ github.event.inputs.exit_mode }}" \
+            --matrix \
             --position-pct "${{ github.event.inputs.position_pct }}" \
             --output-dir outputs/backtest
 
