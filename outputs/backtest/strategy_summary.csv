@@ -1,5 +1,5 @@
 strategy_combo,entry_strategy,exit_mode,pivot_left,pivot_right,trade_count,win_rate,profit_factor,avg_r,median_r,avg_win_loss_ratio,max_consecutive_losses,final_equity,total_return,max_drawdown,avg_holding_days
-breakout_ma10,breakout,ma10,2,2,234,0.17094017094017094,0.2552,-0.5484,-1.0,1.2378,135,939541.96,-0.060458,-0.060458,1.19
-breakout_pivot_low,breakout,pivot_low,2,2,216,0.18981481481481483,0.3003,-0.5346,-1.0,1.2817,129,947063.06,-0.052937,-0.052937,1.35
-rsi2_ma10,rsi2,ma10,2,2,4,0.75,1554.2634,2.5688,0.5938,518.0878,1,1049533.57,0.049534,0.0,1.0
-rsi2_pivot_low,rsi2,pivot_low,2,2,4,0.75,1582.6557,3.2438,1.9438,527.5519,1,1050486.45,0.050486,0.0,1.75
+breakout_ma10,breakout,ma10,2,2,11,0.09090909090909091,0.0095,-0.7198,-0.685,0.0947,10,994252.14,-0.005748,-0.005908,1.0
+breakout_pivot_low,breakout,pivot_low,2,2,11,0.09090909090909091,0.0074,-0.8578,-1.0,0.0745,10,992686.67,-0.007313,-0.007473,2.18
+rsi2_ma10,rsi2,ma10,2,2,1,1.0,,0.0875,0.0875,,0,1000017.08,1.7e-05,0.0,1.0
+rsi2_pivot_low,rsi2,pivot_low,2,2,1,1.0,,0.0875,0.0875,,0,1000017.08,1.7e-05,0.0,1.0

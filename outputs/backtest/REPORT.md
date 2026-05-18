@@ -2,25 +2,25 @@
 
 ## Data summary
 - ticker_list_rows: 5288
-- downloaded_price_rows: 2578083
-- downloaded_unique_tickers: 5282
+- downloaded_price_rows: 485769
+- downloaded_unique_tickers: 1000
 - date_min: 2024-04-29
-- date_max: 2026-05-15
+- date_max: 2026-05-18
 
 ## Recent RS90 counts
-- 2026-05-11: 525
-- 2026-05-12: 525
-- 2026-05-13: 525
-- 2026-05-14: 525
-- 2026-05-15: 525
+- 2026-05-12: 100
+- 2026-05-13: 100
+- 2026-05-14: 100
+- 2026-05-15: 100
+- 2026-05-18: 96
 
 ## Strategy summary
 | strategy_combo     | entry_strategy   | exit_mode   |   pivot_left |   pivot_right |   trade_count |   win_rate |   profit_factor |   avg_r |   median_r |   avg_win_loss_ratio |   max_consecutive_losses |     final_equity |   total_return |   max_drawdown |   avg_holding_days |
 |:-------------------|:-----------------|:------------|-------------:|--------------:|--------------:|-----------:|----------------:|--------:|-----------:|---------------------:|-------------------------:|-----------------:|---------------:|---------------:|-------------------:|
-| breakout_ma10      | breakout         | ma10        |            2 |             2 |           234 |   0.17094  |          0.2552 | -0.5484 |    -1      |               1.2378 |                      135 | 939542           |      -0.060458 |      -0.060458 |               1.19 |
-| breakout_pivot_low | breakout         | pivot_low   |            2 |             2 |           216 |   0.189815 |          0.3003 | -0.5346 |    -1      |               1.2817 |                      129 | 947063           |      -0.052937 |      -0.052937 |               1.35 |
-| rsi2_ma10          | rsi2             | ma10        |            2 |             2 |             4 |   0.75     |       1554.26   |  2.5688 |     0.5938 |             518.088  |                        1 |      1.04953e+06 |       0.049534 |       0        |               1    |
-| rsi2_pivot_low     | rsi2             | pivot_low   |            2 |             2 |             4 |   0.75     |       1582.66   |  3.2438 |     1.9438 |             527.552  |                        1 |      1.05049e+06 |       0.050486 |       0        |               1.75 |
+| breakout_ma10      | breakout         | ma10        |            2 |             2 |            11 |  0.0909091 |          0.0095 | -0.7198 |    -0.685  |               0.0947 |                       10 | 994252           |      -0.005748 |      -0.005908 |               1    |
+| breakout_pivot_low | breakout         | pivot_low   |            2 |             2 |            11 |  0.0909091 |          0.0074 | -0.8578 |    -1      |               0.0745 |                       10 | 992687           |      -0.007313 |      -0.007473 |               2.18 |
+| rsi2_ma10          | rsi2             | ma10        |            2 |             2 |             1 |  1         |        nan      |  0.0875 |     0.0875 |             nan      |                        0 |      1.00002e+06 |       1.7e-05  |       0        |               1    |
+| rsi2_pivot_low     | rsi2             | pivot_low   |            2 |             2 |             1 |  1         |        nan      |  0.0875 |     0.0875 |             nan      |                        0 |      1.00002e+06 |       1.7e-05  |       0        |               1    |
 
 ## Output files
 - `outputs/backtest/REPORT.md`
