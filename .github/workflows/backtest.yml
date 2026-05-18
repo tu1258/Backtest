@@ -19,6 +19,14 @@ on:
         description: "Fixed notional position size as fraction of equity"
         required: true
         default: "0.01"
+      pivot_left:
+        description: "Pivot left bars L"
+        required: true
+        default: "1"
+      pivot_right:
+        description: "Pivot right bars R"
+        required: true
+        default: "1"
       commit_outputs:
         description: "Commit outputs/backtest and logs back to repo"
         required: true
@@ -59,6 +67,8 @@ jobs:
             "max_tickers": "${{ github.event.inputs.max_tickers }}",
             "recent_days": "${{ github.event.inputs.recent_days }}",
             "position_pct": "${{ github.event.inputs.position_pct }}",
+            "pivot_left": "${{ github.event.inputs.pivot_left }}",
+            "pivot_right": "${{ github.event.inputs.pivot_right }}",
             "commit_outputs": "${{ github.event.inputs.commit_outputs }}",
             "commit_stock_data": "${{ github.event.inputs.commit_stock_data }}",
             "run_id": "${{ github.run_id }}",
@@ -118,6 +128,8 @@ jobs:
             --matrix \
             --position-pct "${{ github.event.inputs.position_pct }}" \
             --recent-days "${{ github.event.inputs.recent_days }}" \
+            --pivot-left "${{ github.event.inputs.pivot_left }}" \
+            --pivot-right "${{ github.event.inputs.pivot_right }}" \
             --output-dir outputs/backtest 2>&1 | tee logs/04_run_backtest.log
 
       - name: Save RS90 and report summary
