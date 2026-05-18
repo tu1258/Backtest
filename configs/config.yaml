@@ -16,6 +16,8 @@ backtest:
   rs_threshold: 90
   recent_days: 7
   exit_mode: ma10         # ma10 or pivot_low. Matrix mode runs both.
+  pivot_left: 1           # Pivot L: number of bars to the left
+  pivot_right: 1          # Pivot R: number of bars to the right
   max_open_positions: 100
   max_new_positions_per_day: 100
   allow_same_ticker_overlap: false
