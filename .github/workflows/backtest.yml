@@ -11,10 +11,33 @@ on:
         description: "Optional ticker limit for quick tests. Empty = all tickers"
         required: false
         default: ""
+      recent_days:
+        description: "Recent trading days to export in rs90_daily_recent.csv"
+        required: true
+        default: "5"
       position_pct:
         description: "Fixed notional position size as fraction of equity"
         required: true
         default: "0.01"
+      commit_outputs:
+        description: "Commit outputs/backtest and logs back to repo"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+      commit_stock_data:
+        description: "Commit data/stock_data.csv too. Not recommended for full universe because GitHub has a 100MB file limit."
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: write
 
 jobs:
   backtest:
@@ -27,31 +50,151 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Prepare log folders
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -e .
+          mkdir -p logs outputs/backtest
+          cat > logs/workflow_inputs.json <<EOF
+          {
+            "years": "${{ github.event.inputs.years }}",
+            "max_tickers": "${{ github.event.inputs.max_tickers }}",
+            "recent_days": "${{ github.event.inputs.recent_days }}",
+            "position_pct": "${{ github.event.inputs.position_pct }}",
+            "commit_outputs": "${{ github.event.inputs.commit_outputs }}",
+            "commit_stock_data": "${{ github.event.inputs.commit_stock_data }}",
+            "run_id": "${{ github.run_id }}",
+            "run_number": "${{ github.run_number }}",
+            "sha": "${{ github.sha }}"
+          }
+          EOF
+          cat logs/workflow_inputs.json
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pip install --upgrade pip 2>&1 | tee logs/01_install.log
+          pip install -r requirements.txt 2>&1 | tee -a logs/01_install.log
+          pip install -e . 2>&1 | tee -a logs/01_install.log
 
       - name: Build daily OHLCV data
+        shell: bash
         run: |
+          set -o pipefail
           if [ -z "${{ github.event.inputs.max_tickers }}" ]; then
-            python scripts/build_data.py --years "${{ github.event.inputs.years }}"
+            echo "max_tickers is empty: downloading full ticker list" | tee logs/02_build_data.log
+            python scripts/build_data.py --years "${{ github.event.inputs.years }}" 2>&1 | tee -a logs/02_build_data.log
           else
-            python scripts/build_data.py --years "${{ github.event.inputs.years }}" --max-tickers "${{ github.event.inputs.max_tickers }}"
+            echo "max_tickers=${{ github.event.inputs.max_tickers }}: downloading limited ticker list" | tee logs/02_build_data.log
+            python scripts/build_data.py --years "${{ github.event.inputs.years }}" --max-tickers "${{ github.event.inputs.max_tickers }}" 2>&1 | tee -a logs/02_build_data.log
           fi
 
-      - name: Run 2x2 strategy matrix
+      - name: Save downloaded data summary
+        shell: bash
         run: |
+          set -o pipefail
+          python - <<'PY' 2>&1 | tee logs/03_data_summary.log
+          import json
+          import pandas as pd
+          from pathlib import Path
+          tickers = pd.read_csv('data/stock_ticker.csv')
+          prices = pd.read_csv('data/stock_data.csv')
+          summary = {
+              'ticker_list_rows': int(len(tickers)),
+              'downloaded_price_rows': int(len(prices)),
+              'downloaded_unique_tickers': int(prices['ticker'].nunique()),
+              'date_min': str(prices['date'].min()),
+              'date_max': str(prices['date'].max()),
+          }
+          print(json.dumps(summary, indent=2))
+          Path('outputs/backtest').mkdir(parents=True, exist_ok=True)
+          Path('outputs/backtest/data_summary.json').write_text(json.dumps(summary, indent=2), encoding='utf-8')
+          PY
+
+      - name: Run 2x2 strategy matrix
+        shell: bash
+        run: |
+          set -o pipefail
           python scripts/run_backtest.py \
             --matrix \
             --position-pct "${{ github.event.inputs.position_pct }}" \
-            --output-dir outputs/backtest
+            --recent-days "${{ github.event.inputs.recent_days }}" \
+            --output-dir outputs/backtest 2>&1 | tee logs/04_run_backtest.log
 
-      - name: Upload outputs
+      - name: Save RS90 and report summary
+        shell: bash
+        run: |
+          set -o pipefail
+          python - <<'PY' 2>&1 | tee logs/05_output_summary.log
+          import json
+          from pathlib import Path
+          import pandas as pd
+
+          out = Path('outputs/backtest')
+          rs = pd.read_csv(out / 'rs90_daily_recent.csv')
+          rs_counts = rs.groupby('date')['ticker'].nunique().to_dict() if not rs.empty else {}
+          print('rs90_rows=', len(rs))
+          print('rs90_dates=', sorted(rs['date'].unique().tolist()) if not rs.empty else [])
+          print('rs90_count_by_date=')
+          print(rs.groupby('date')['ticker'].nunique().to_string() if not rs.empty else '(empty)')
+
+          summary_path = out / 'strategy_summary.csv'
+          if summary_path.exists():
+              summary = pd.read_csv(summary_path)
+              print('\nstrategy_summary=')
+              print(summary.to_string(index=False))
+          else:
+              summary = pd.DataFrame()
+
+          report_md = out / 'REPORT.md'
+          lines = []
+          lines.append('# RS90 Backtest Report')
+          lines.append('')
+          lines.append('## Data summary')
+          data_summary = json.loads((out / 'data_summary.json').read_text(encoding='utf-8')) if (out / 'data_summary.json').exists() else {}
+          for k, v in data_summary.items():
+              lines.append(f'- {k}: {v}')
+          lines.append('')
+          lines.append('## Recent RS90 counts')
+          for d, n in rs_counts.items():
+              lines.append(f'- {d}: {n}')
+          lines.append('')
+          lines.append('## Strategy summary')
+          if not summary.empty:
+              lines.append(summary.to_markdown(index=False))
+          else:
+              lines.append('(No strategy_summary.csv found)')
+          lines.append('')
+          lines.append('## Output files')
+          for p in sorted(out.rglob('*')):
+              if p.is_file():
+                  lines.append(f'- `{p.as_posix()}`')
+          report_md.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          print(f'Wrote {report_md}')
+          PY
+
+      - name: Upload outputs and logs
         uses: actions/upload-artifact@v4
         with:
           name: rs90-backtest-outputs
           path: |
             outputs/backtest/
+            logs/
             data/stock_data.csv
+
+      - name: Commit reports and logs
+        if: ${{ github.event.inputs.commit_outputs == 'true' }}
+        shell: bash
+        run: |
+          set -o pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add outputs/backtest logs
+          if [ "${{ github.event.inputs.commit_stock_data }}" = "true" ]; then
+            git add data/stock_data.csv
+          fi
+          if git diff --cached --quiet; then
+            echo "No report/log changes to commit."
+          else
+            git commit -m "Update backtest reports and logs"
+            git push
+          fi
