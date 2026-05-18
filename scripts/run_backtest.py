@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import pandas as pd
@@ -16,8 +17,24 @@ from rs90_backtester.indicators import add_indicators
 from rs90_backtester.universe import add_point_in_time_rs, recent_rs90
 from rs90_backtester.engine import BacktestConfig, run_backtest, save_outputs
 
-ENTRY_STRATEGIES = ("breakout", "rsi2")
-EXIT_MODES = ("ma10", "atr_trail", "n_day_low")
+# Fixed 15-combo matrix requested by user:
+# 3 entries: breakout 1,1 / breakout 2,2 / RSI2
+# 4 exits: 0.5 ATR trail / 1 ATR trail / MA10 / 5-day low
+ENTRY_VARIANTS = (
+    {"name": "breakout_1_1", "strategy": "breakout", "pivot_left": 1, "pivot_right": 1},
+    {"name": "breakout_2_2", "strategy": "breakout", "pivot_left": 2, "pivot_right": 2},
+    {"name": "rsi2", "strategy": "rsi2", "pivot_left": 1, "pivot_right": 1},
+)
+
+EXIT_VARIANTS = (
+    {"name": "trail_0_5atr", "exit_mode": "atr_trail", "atr_multiple": 0.5, "n_day_low_period": None},
+    {"name": "trail_1atr", "exit_mode": "atr_trail", "atr_multiple": 1.0, "n_day_low_period": None},
+    {"name": "ma10", "exit_mode": "ma10", "atr_multiple": None, "n_day_low_period": None},
+    {"name": "5_day_low", "exit_mode": "n_day_low", "atr_multiple": None, "n_day_low_period": 5},
+    {"name": "prev_day_low", "exit_mode": "prev_day_low", "atr_multiple": None, "n_day_low_period": None},
+)
+
+EXIT_MODES = ("ma10", "atr_trail", "n_day_low", "prev_day_low")
 
 
 def _strategies(value):
@@ -48,20 +65,70 @@ def _base_config(args: argparse.Namespace, cfg: dict) -> BacktestConfig:
         start_date=args.start_date or deep_get(cfg, "backtest.start_date", None),
         end_date=args.end_date or deep_get(cfg, "backtest.end_date", None),
         strategies=_strategies(args.strategies) or _strategies(deep_get(cfg, "backtest.strategies", ["breakout", "rsi2"])),
-        pivot_left=args.pivot_left if args.pivot_left is not None else int(deep_get(cfg, "backtest.pivot_left", 1)),
-        pivot_right=args.pivot_right if args.pivot_right is not None else int(deep_get(cfg, "backtest.pivot_right", 1)),
+        pivot_left=int(deep_get(cfg, "backtest.pivot_left", 1)),
+        pivot_right=int(deep_get(cfg, "backtest.pivot_right", 1)),
         atr_period=args.atr_period if args.atr_period is not None else int(deep_get(cfg, "backtest.atr_period", 14)),
         atr_multiple=args.atr_multiple if args.atr_multiple is not None else float(deep_get(cfg, "backtest.atr_multiple", 1.0)),
-        n_day_low_period=args.n_day_low_period if args.n_day_low_period is not None else int(deep_get(cfg, "backtest.n_day_low_period", 10)),
+        n_day_low_period=args.n_day_low_period if args.n_day_low_period is not None else int(deep_get(cfg, "backtest.n_day_low_period", 5)),
     )
 
 
+def _apply_entry_membership(df: pd.DataFrame, rs90: pd.DataFrame) -> pd.DataFrame:
+    """Restrict entries to exact date+ticker pairs in the exported RS90 table.
+
+    This is the critical semantics: if RS90 membership only exists for recent N
+    trading days, older dates cannot generate entries even if full-history RS
+    ranks were computed for indicator purposes. Exits remain unrestricted.
+    """
+    df = df.copy()
+    df["in_rs90_full_history"] = df.get("in_rs90", False)
+    if rs90.empty:
+        print("WARNING: no RS90 membership rows found. No entries will be generated.")
+        df["entry_universe_member"] = False
+    else:
+        membership = rs90[["date", "ticker"]].drop_duplicates().copy()
+        membership["date"] = pd.to_datetime(membership["date"])
+        membership["ticker"] = membership["ticker"].astype(str).str.upper()
+        membership["entry_universe_member"] = True
+        df = df.merge(membership, on=["date", "ticker"], how="left")
+        df["entry_universe_member"] = df["entry_universe_member"].fillna(False).astype(bool)
+    df["in_rs90"] = df["entry_universe_member"]
+    return df
+
+
+def _prepare_df(
+    prices: pd.DataFrame,
+    *,
+    pivot_left: int,
+    pivot_right: int,
+    atr_period: int,
+    n_day_low_period: int,
+) -> pd.DataFrame:
+    df = add_indicators(
+        prices,
+        pivot_left=pivot_left,
+        pivot_right=pivot_right,
+        atr_period=atr_period,
+        n_day_low_period=n_day_low_period,
+    )
+    df = add_point_in_time_rs(df)
+    return df
+
+
 def _run_one(df: pd.DataFrame, output_dir: Path, rs90: pd.DataFrame, cfg: BacktestConfig) -> dict:
-    print(f"Running: strategies={cfg.strategies}, exit_mode={cfg.exit_mode}, output={output_dir}")
+    print(
+        f"Running: entry={cfg.entry_name or cfg.strategies}, exit={cfg.exit_mode}, "
+        f"pivot=({cfg.pivot_left},{cfg.pivot_right}), atr_multiple={cfg.atr_multiple}, "
+        f"n_day_low_period={cfg.n_day_low_period}, output={output_dir}"
+    )
     trades, equity, report = run_backtest(df, cfg)
     save_outputs(output_dir, trades, equity, report, rs90)
     print(f"  trades={len(trades):,}, final_equity={report.get('final_equity')}, max_dd={report.get('max_drawdown')}")
     return report
+
+
+def _combo_name(entry: dict, exit_variant: dict) -> str:
+    return f"{entry['name']}_{exit_variant['name']}"
 
 
 def main() -> None:
@@ -77,12 +144,13 @@ def main() -> None:
     parser.add_argument("--start-date", default=None)
     parser.add_argument("--end-date", default=None)
     parser.add_argument("--strategies", default=None, help="Comma list: breakout,rsi2")
-    parser.add_argument("--pivot-left", type=int, default=None, help="Pivot left bars L. Default from config is 1.")
-    parser.add_argument("--pivot-right", type=int, default=None, help="Pivot right bars R. Default from config is 1.")
-    parser.add_argument("--atr-period", type=int, default=None, help="ATR period for atr_trail exit. Default from config is 14.")
-    parser.add_argument("--atr-multiple", type=float, default=None, help="ATR multiple for atr_trail exit. Default from config is 1.0.")
-    parser.add_argument("--n-day-low-period", type=int, default=None, help="N for n_day_low exit. Stop level is previous N trading days' lowest low. Default from config is 10.")
-    parser.add_argument("--matrix", action="store_true", help="Run all 2 entry strategies x 3 exit modes as separate reports.")
+    parser.add_argument("--atr-period", type=int, default=None, help="ATR period for atr_trail exits. Matrix uses multiples 0.5 and 1.0.")
+    parser.add_argument("--atr-multiple", type=float, default=None, help="Single-run ATR multiple. Matrix ignores this and runs 0.5 plus 1.0.")
+    parser.add_argument("--n-day-low-period", type=int, default=None, help="Single-run N-day low period. Matrix uses 5-day low.")
+    parser.add_argument("--pivot-left", type=int, default=None, help="Single-run pivot L. Matrix ignores this and runs breakout 1,1 plus 2,2.")
+    parser.add_argument("--pivot-right", type=int, default=None, help="Single-run pivot R. Matrix ignores this and runs breakout 1,1 plus 2,2.")
+    parser.add_argument("--entry-name", default=None, help="Optional label for single-run trade logs.")
+    parser.add_argument("--matrix", action="store_true", help="Run fixed 15-combo matrix: breakout 1,1 / breakout 2,2 / RSI2 x 4 exits.")
     args = parser.parse_args()
 
     cfg_dict = load_config(args.config)
@@ -93,68 +161,66 @@ def main() -> None:
     prices = load_prices(price_csv)
     print(f"Rows={len(prices):,}, tickers={prices['ticker'].nunique():,}, dates={prices['date'].nunique():,}")
 
-    print(
-        f"Computing indicators with pivot_left={base_cfg.pivot_left}, "
-        f"pivot_right={base_cfg.pivot_right}, atr_period={base_cfg.atr_period}, "
-        f"n_day_low_period={base_cfg.n_day_low_period}..."
-    )
-    df = add_indicators(
+    out_root = Path(args.output_dir)
+    out_root.mkdir(parents=True, exist_ok=True)
+
+    print("Computing base indicators and point-in-time RS ranks for RS90 membership...")
+    base_df = _prepare_df(
         prices,
-        pivot_left=base_cfg.pivot_left,
-        pivot_right=base_cfg.pivot_right,
+        pivot_left=1,
+        pivot_right=1,
         atr_period=base_cfg.atr_period,
-        n_day_low_period=base_cfg.n_day_low_period,
+        n_day_low_period=5,
     )
-    print("Computing point-in-time RS ranks...")
-    df = add_point_in_time_rs(df)
-    rs90 = recent_rs90(df, recent_days=base_cfg.recent_days, threshold=base_cfg.rs_threshold)
-
-    # Critical semantics:
-    # The RS90 membership table itself defines where entries are allowed.
-    # Entries are allowed only when the exact (date, ticker) pair exists in rs90.
-    # If rs90 contains only the latest N trading days, older dates have no
-    # membership rows and therefore cannot generate entries. Exits remain
-    # unrestricted after entry as long as price data exists.
-    df = df.copy()
-    df["in_rs90_full_history"] = df["in_rs90"]
-    if rs90.empty:
-        print("WARNING: no RS90 membership rows found. No entries will be generated.")
-        df["entry_universe_member"] = False
-    else:
-        membership = rs90[["date", "ticker"]].drop_duplicates().copy()
-        membership["date"] = pd.to_datetime(membership["date"])
-        membership["ticker"] = membership["ticker"].astype(str).str.upper()
-        membership["entry_universe_member"] = True
-        df = df.merge(membership, on=["date", "ticker"], how="left")
-        df["entry_universe_member"] = df["entry_universe_member"].fillna(False).astype(bool)
-
-    # IMPORTANT: overwrite in_rs90 with the actual tradable membership.
-    # This means _generate_entries() can only trade exact date+ticker pairs
-    # from outputs/backtest/rs90_daily_recent.csv, not historical RS90 rows.
-    df["in_rs90"] = df["entry_universe_member"]
+    rs90 = recent_rs90(base_df, recent_days=base_cfg.recent_days, threshold=base_cfg.rs_threshold)
+    rs90.to_csv(out_root / "rs90_daily_recent.csv", index=False)
 
     eligible_entry_dates = sorted(pd.to_datetime(rs90["date"]).unique()) if not rs90.empty else []
     print("Eligible entry dates from RS90 membership:", [str(pd.Timestamp(d).date()) for d in eligible_entry_dates])
-    print(f"Allowed RS90 membership pairs: {int(df['entry_universe_member'].sum()):,}")
-    print(f"Entries are restricted to exact date+ticker pairs in rs90 membership. Exits remain unrestricted within available price data.")
-
-    out_root = Path(args.output_dir)
-    out_root.mkdir(parents=True, exist_ok=True)
-    rs90.to_csv(out_root / "rs90_daily_recent.csv", index=False)
+    print(f"Allowed RS90 membership pairs: {len(rs90):,}")
+    print("Entries are restricted to exact date+ticker pairs in rs90 membership. Exits remain unrestricted within available price data.")
 
     if args.matrix:
         summary_rows = []
         reports = {}
-        for entry_strategy in ENTRY_STRATEGIES:
-            for exit_mode in EXIT_MODES:
-                combo_name = f"{entry_strategy}_{exit_mode}"
-                combo_cfg = BacktestConfig(**{**base_cfg.__dict__, "strategies": (entry_strategy,), "exit_mode": exit_mode})
-                report = _run_one(df, out_root / combo_name, rs90, combo_cfg)
+        prepared_cache: dict[tuple[int, int, int, int], pd.DataFrame] = {}
+
+        for entry in ENTRY_VARIANTS:
+            for exit_variant in EXIT_VARIANTS:
+                combo_name = _combo_name(entry, exit_variant)
+                n_day = int(exit_variant["n_day_low_period"] or 5)
+                key = (entry["pivot_left"], entry["pivot_right"], base_cfg.atr_period, n_day)
+                if key not in prepared_cache:
+                    print(
+                        f"Computing indicators for combo family: pivot=({key[0]},{key[1]}), "
+                        f"atr_period={key[2]}, n_day_low_period={key[3]}"
+                    )
+                    df = _prepare_df(
+                        prices,
+                        pivot_left=key[0],
+                        pivot_right=key[1],
+                        atr_period=key[2],
+                        n_day_low_period=key[3],
+                    )
+                    prepared_cache[key] = _apply_entry_membership(df, rs90)
+
+                combo_df = prepared_cache[key]
+                combo_cfg = replace(
+                    base_cfg,
+                    strategies=(entry["strategy"],),
+                    entry_name=entry["name"],
+                    pivot_left=entry["pivot_left"],
+                    pivot_right=entry["pivot_right"],
+                    exit_mode=exit_variant["exit_mode"],
+                    atr_multiple=float(exit_variant["atr_multiple"] if exit_variant["atr_multiple"] is not None else base_cfg.atr_multiple),
+                    n_day_low_period=n_day,
+                )
+                report = _run_one(combo_df, out_root / combo_name, rs90, combo_cfg)
                 reports[combo_name] = report
                 summary_rows.append({
                     "strategy_combo": combo_name,
-                    "entry_strategy": entry_strategy,
-                    "exit_mode": exit_mode,
+                    "entry_strategy": entry["name"],
+                    "exit_mode": exit_variant["name"],
                     "pivot_left": report.get("pivot_left"),
                     "pivot_right": report.get("pivot_right"),
                     "atr_period": report.get("atr_period"),
@@ -172,6 +238,7 @@ def main() -> None:
                     "max_drawdown": report.get("max_drawdown"),
                     "avg_holding_days": report.get("avg_holding_days"),
                 })
+
         summary = pd.DataFrame(summary_rows)
         summary.to_csv(out_root / "strategy_summary.csv", index=False)
         with (out_root / "all_reports.json").open("w", encoding="utf-8") as f:
@@ -179,11 +246,30 @@ def main() -> None:
 
         print("\nStrategy matrix summary")
         print(summary.to_string(index=False))
-        print(f"\nSaved matrix outputs to {out_root}")
+        print(f"\nSaved 15-combo matrix outputs to {out_root}")
         return
 
+    # Single-run mode remains available for debugging.
+    pivot_left = args.pivot_left if args.pivot_left is not None else base_cfg.pivot_left
+    pivot_right = args.pivot_right if args.pivot_right is not None else base_cfg.pivot_right
+    n_day_low_period = args.n_day_low_period if args.n_day_low_period is not None else base_cfg.n_day_low_period
+    df = _prepare_df(
+        prices,
+        pivot_left=pivot_left,
+        pivot_right=pivot_right,
+        atr_period=base_cfg.atr_period,
+        n_day_low_period=n_day_low_period,
+    )
+    df = _apply_entry_membership(df, rs90)
+    single_cfg = replace(
+        base_cfg,
+        pivot_left=pivot_left,
+        pivot_right=pivot_right,
+        n_day_low_period=n_day_low_period,
+        entry_name=args.entry_name,
+    )
     print("Running single backtest...")
-    report = _run_one(df, out_root, rs90, base_cfg)
+    report = _run_one(df, out_root, rs90, single_cfg)
 
     print("\nPerformance report")
     for k, v in report.items():
