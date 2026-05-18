@@ -1,13 +1,15 @@
 {
   "years": "3",
   "max_tickers": "",
-  "recent_days": "250",
+  "recent_days": "300",
   "position_pct": "0.01",
-  "pivot_left": "2",
-  "pivot_right": "2",
+  "pivot_left": "1",
+  "pivot_right": "1",
+  "atr_period": "14",
+  "atr_multiple": "0.5",
   "commit_outputs": "true",
   "commit_stock_data": "false",
-  "run_id": "26038718242",
-  "run_number": "10",
-  "sha": "31e220c77bb1daf67347fe5746ee16ca7231d708"
+  "run_id": "26043985888",
+  "run_number": "12",
+  "sha": "be83ba702ad9626b101b908f1fe8cc3ebe097f0b"
 }

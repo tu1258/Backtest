@@ -3,9 +3,11 @@
   "position_pct": 0.01,
   "rs_threshold": 90.0,
   "exit_mode": "ma10",
-  "pivot_left": 2,
-  "pivot_right": 2,
-  "trade_count": 631,
+  "pivot_left": 1,
+  "pivot_right": 1,
+  "atr_period": 14,
+  "atr_multiple": 0.5,
+  "trade_count": 686,
   "filters": {
     "common": {
       "avg_value_10_millions_gt": 25.0,
@@ -17,30 +19,35 @@
       "dr_lt_adr5": true,
       "distance_to_ma5_lt_adr10_price": true,
       "prev_close_lte_pivot": true
+    },
+    "atr_trail": {
+      "atr_period": 14,
+      "atr_multiple": 0.5,
+      "stop_formula": "highest_high_since_entry - atr_multiple * current_ATR; updated after each close"
     }
   },
-  "win_rate": 0.3866877971473851,
-  "gross_profit": 202355.74,
-  "gross_loss": -109277.87,
-  "profit_factor": 1.8518,
-  "avg_r": 0.0071,
+  "win_rate": 0.3848396501457726,
+  "gross_profit": 204488.14,
+  "gross_loss": -117073.81,
+  "profit_factor": 1.7467,
+  "avg_r": -0.0065,
   "median_r": -1.0,
-  "avg_win": 829.33,
-  "avg_loss": -283.84,
-  "avg_win_loss_ratio": 2.9218,
+  "avg_win": 774.58,
+  "avg_loss": -278.75,
+  "avg_win_loss_ratio": 2.7788,
   "largest_winner_r": 17.6937,
   "largest_loser_r": -10.0,
   "max_consecutive_losses": 21,
-  "avg_holding_days": 1.39,
+  "avg_holding_days": 1.38,
   "by_strategy": {
     "rsi2": {
-      "trades": 631,
-      "win_rate": 0.3866877971473851,
-      "avg_r": 0.0071,
-      "profit_factor": 1.8518
+      "trades": 686,
+      "win_rate": 0.3848396501457726,
+      "avg_r": -0.0065,
+      "profit_factor": 1.7467
     }
   },
-  "final_equity": 1093077.87,
-  "total_return": 0.093078,
-  "max_drawdown": -0.018624
+  "final_equity": 1087414.33,
+  "total_return": 0.087414,
+  "max_drawdown": -0.018639
 }
