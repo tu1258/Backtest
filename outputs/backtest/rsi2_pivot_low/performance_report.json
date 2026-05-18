@@ -3,29 +3,29 @@
   "position_pct": 0.01,
   "rs_threshold": 90.0,
   "exit_mode": "pivot_low",
-  "trade_count": 283,
-  "win_rate": 0.18374558303886926,
-  "gross_profit": 91857.53,
-  "gross_loss": -85673.42,
-  "profit_factor": 1.0722,
-  "avg_r": 0.2313,
+  "trade_count": 559,
+  "win_rate": 0.2039355992844365,
+  "gross_profit": 172084.31,
+  "gross_loss": -154332.24,
+  "profit_factor": 1.115,
+  "avg_r": 0.287,
   "median_r": -1.0,
-  "avg_win": 1766.49,
-  "avg_loss": -370.88,
-  "avg_win_loss_ratio": 4.763,
+  "avg_win": 1509.51,
+  "avg_loss": -348.38,
+  "avg_win_loss_ratio": 4.3329,
   "largest_winner_r": 39.0003,
   "largest_loser_r": -1.0,
-  "max_consecutive_losses": 24,
-  "avg_holding_days": 5.25,
+  "max_consecutive_losses": 23,
+  "avg_holding_days": 5.55,
   "by_strategy": {
     "rsi2": {
-      "trades": 283,
-      "win_rate": 0.18374558303886926,
-      "avg_r": 0.2313,
-      "profit_factor": 1.0722
+      "trades": 559,
+      "win_rate": 0.2039355992844365,
+      "avg_r": 0.287,
+      "profit_factor": 1.115
     }
   },
-  "final_equity": 1006184.11,
-  "total_return": 0.006184,
-  "max_drawdown": -0.036652
+  "final_equity": 1017752.07,
+  "total_return": 0.017752,
+  "max_drawdown": -0.045111
 }

@@ -1,17 +1,29 @@
-max_tickers=500: downloading limited ticker list
-Downloading 500 tickers from 2024-04-28 to 2026-05-19 in 7 batches
-[1/7] A ... ADEA
+max_tickers=1000: downloading limited ticker list
+Downloading 1000 tickers from 2024-04-28 to 2026-05-19 in 13 batches
+[1/13] A ... ADEA
   rows=40038
-[2/7] ADGM ... AIFF
+[2/13] ADGM ... AIFF
   rows=36463
-[3/7] AIFU ... ALX
+[3/13] AIFU ... ALX
   rows=38878
-[4/7] ALXO ... APAM
+[4/13] ALXO ... APAM
   rows=39107
-[5/7] APC ... ASIC
+[5/13] APC ... ASIC
   rows=38959
-[6/7] ASIX ... AVGO
+[6/13] ASIX ... AVGO
   rows=39345
-[7/7] AVIR ... AX
-  rows=9619
-Saved data/stock_data.csv rows=242409 tickers=500
+[7/13] AVIR ... BBVA
+  rows=40032
+[8/13] BBW ... BIAF
+  rows=39603
+[9/13] BIDU ... BODI
+  rows=38086
+[10/13] BOF ... BUR
+  rows=37374
+[11/13] BURL ... CATX
+  rows=38552
+[12/13] CATY ... CETY
+  rows=38866
+[13/13] CEVA ... CHRS
+  rows=19505
+Saved data/stock_data.csv rows=484808 tickers=1000
