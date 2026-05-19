@@ -46,9 +46,15 @@ EXIT_VARIANTS = {
     "rsi2_gt_80": {"exit_name": "rsi2_gt_80"},
 }
 
-DEFAULT_ENTRIES = "rsi2_next_open"
-DEFAULT_EXITS = "hold_1d_open,hold_2d_open,hold_3d_open,hold_4d_open,hold_5d_open,rsi2_gt_50,rsi2_gt_60,rsi2_gt_70,rsi2_gt_80"
-DEFAULT_RS_BUCKETS = "90_100"
+DEFAULT_ENTRIES = "rsi2_next_open,rsi2_intraday_limit"
+DEFAULT_EXITS = (
+    "trail_0_5atr,trail_1atr,"
+    "1_day_low,2_day_low,3_day_low,4_day_low,5_day_low,"
+    "hold_1d_open,hold_2d_open,hold_3d_open,hold_4d_open,hold_5d_open,"
+    "hold_0d_close,hold_1d_close,hold_2d_close,hold_3d_close,hold_4d_close,hold_5d_close,"
+    "rsi2_gt_50,rsi2_gt_60,rsi2_gt_70,rsi2_gt_80"
+)
+DEFAULT_RS_BUCKETS = "0_10,10_20,20_30,30_40,40_50,50_60,60_70,70_80,80_90,90_100"
 
 
 def _parse_list(value: str | None, default: str) -> list[str]:
@@ -72,7 +78,7 @@ def _parse_rs_bucket(label: str) -> tuple[float, float]:
 
 
 def _make_rs_membership(df: pd.DataFrame, recent_days: int, bucket: str) -> pd.DataFrame:
-    """Build an entry-date membership table from the previous completed daily bar.
+    """Build entry-date membership from the previous completed daily bar.
 
     If a trade can enter on date D, RS bucket membership is computed from D-1.
     This avoids using D's final close/RS rank before the trade exists.
@@ -83,6 +89,7 @@ def _make_rs_membership(df: pd.DataFrame, recent_days: int, bucket: str) -> pd.D
         return pd.DataFrame(columns=["date", "decision_date", "ticker", "rs_rank", "rs_score", "rs_bucket"])
 
     selected_trade_dates = dates[-recent_days:] if recent_days and recent_days > 0 else dates[1:]
+
     date_map = pd.DataFrame({"date": dates})
     date_map["trade_date"] = date_map["date"].shift(-1)
     date_map = date_map.rename(columns={"date": "decision_date"}).dropna(subset=["trade_date"])
@@ -107,7 +114,6 @@ def _apply_membership(df: pd.DataFrame, membership: pd.DataFrame) -> pd.DataFram
     keys["in_rs_universe"] = True
     out = df.merge(keys, on=["date", "ticker"], how="left")
     out["in_rs_universe"] = out["in_rs_universe"].fillna(False)
-    # Keep compatibility with older engine/report names.
     out["in_rs90"] = out["in_rs_universe"]
     return out
 
@@ -115,7 +121,8 @@ def _apply_membership(df: pd.DataFrame, membership: pd.DataFrame) -> pd.DataFram
 def _summarize_membership(membership: pd.DataFrame) -> None:
     print(f"membership_rows={len(membership)}")
     if not membership.empty:
-        print("membership_dates=", [pd.Timestamp(x).strftime("%Y-%m-%d") for x in sorted(membership["date"].unique())[:3]], "...", [pd.Timestamp(x).strftime("%Y-%m-%d") for x in sorted(membership["date"].unique())[-3:]])
+        dates = sorted(membership["date"].unique())
+        print("membership_dates=", [pd.Timestamp(x).strftime("%Y-%m-%d") for x in dates[:3]], "...", [pd.Timestamp(x).strftime("%Y-%m-%d") for x in dates[-3:]])
         print("membership_count_by_bucket=")
         print(membership.groupby("rs_bucket").size().to_string())
         print("membership_recent_count_by_date=")
@@ -147,7 +154,6 @@ def main() -> None:
 
     print("Computing indicators...")
     df = add_indicators(prices, atr_period=args.atr_period)
-
     print("Computing point-in-time RS ranks...")
     df = add_point_in_time_rs(df)
 
@@ -184,6 +190,7 @@ def main() -> None:
         membership = _make_rs_membership(df, args.recent_days, bucket)
         all_memberships.append(membership)
         _summarize_membership(membership)
+
         sim_df = _apply_membership(df, membership)
         if not membership.empty:
             first_entry_date = membership["date"].min()
@@ -224,6 +231,7 @@ def main() -> None:
 
     if all_memberships:
         pd.concat(all_memberships, ignore_index=True).to_csv(out_root / "rs_membership_recent.csv", index=False)
+
     summary = pd.DataFrame(summary_rows)
     summary.to_csv(out_root / "strategy_summary.csv", index=False)
     with (out_root / "all_reports.json").open("w", encoding="utf-8") as f:
