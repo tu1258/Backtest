@@ -24,7 +24,6 @@ ENTRY_VARIANTS = {
 EXIT_VARIANTS = {
     "trail_0_5atr": {"exit_name": "trail_0_5atr"},
     "trail_1atr": {"exit_name": "trail_1atr"},
-    "hold_0d_open": {"exit_name": "hold_0d_open"},
     "hold_1d_open": {"exit_name": "hold_1d_open"},
     "hold_2d_open": {"exit_name": "hold_2d_open"},
     "hold_3d_open": {"exit_name": "hold_3d_open"},
