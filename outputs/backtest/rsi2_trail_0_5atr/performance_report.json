@@ -12,7 +12,9 @@
   "atr_period": 14,
   "atr_multiple": 0.5,
   "n_day_low_period": 5,
-  "trade_count": 1968,
+  "same_day_stop_rule": "red_candle_only",
+  "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+  "trade_count": 5,
   "filters": {
     "common": {
       "avg_value_10_min_musd": 25.0,
@@ -36,30 +38,34 @@
     },
     "prev_day_low": {
       "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+    },
+    "same_day_stop": {
+      "rule": "red_candle_only",
+      "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
     }
   },
-  "win_rate": 0.3318089430894309,
-  "gross_profit": 440612.55,
-  "gross_loss": -293750.62,
-  "profit_factor": 1.5,
-  "avg_r": 0.2419,
-  "median_r": -1.0,
-  "avg_win": 674.75,
-  "avg_loss": -223.9,
-  "avg_win_loss_ratio": 3.0137,
-  "largest_winner_r": 172.8531,
-  "largest_loser_r": -75.3344,
-  "max_consecutive_losses": 26,
-  "avg_holding_days": 0.96,
+  "win_rate": 0.4,
+  "gross_profit": 32085.05,
+  "gross_loss": -586.66,
+  "profit_factor": 54.691,
+  "avg_r": 0.876,
+  "median_r": -0.3317,
+  "avg_win": 16042.52,
+  "avg_loss": -195.55,
+  "avg_win_loss_ratio": 82.0366,
+  "largest_winner_r": 6.5825,
+  "largest_loser_r": -1.0,
+  "max_consecutive_losses": 2,
+  "avg_holding_days": 0.8,
   "by_strategy": {
     "rsi2": {
-      "trades": 1968,
-      "win_rate": 0.3318089430894309,
-      "avg_r": 0.2419,
-      "profit_factor": 1.5
+      "trades": 5,
+      "win_rate": 0.4,
+      "avg_r": 0.876,
+      "profit_factor": 54.691
     }
   },
-  "final_equity": 1146861.93,
-  "total_return": 0.146862,
-  "max_drawdown": -0.019938
+  "final_equity": 1031498.39,
+  "total_return": 0.031498,
+  "max_drawdown": -0.00933
 }

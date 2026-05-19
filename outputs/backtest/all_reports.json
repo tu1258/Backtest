@@ -13,7 +13,9 @@
     "atr_period": 14,
     "atr_multiple": 0.5,
     "n_day_low_period": 5,
-    "trade_count": 8756,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 65,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -37,32 +39,36 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.2720420283234354,
-    "gross_profit": 538311.79,
-    "gross_loss": -1142079.57,
-    "profit_factor": 0.4713,
-    "avg_r": -0.2425,
-    "median_r": -0.2936,
-    "avg_win": 225.99,
-    "avg_loss": -179.4,
-    "avg_win_loss_ratio": 1.2597,
-    "largest_winner_r": 24.9716,
-    "largest_loser_r": -14.6774,
-    "max_consecutive_losses": 42,
-    "avg_holding_days": 1.39,
+    "win_rate": 0.06153846153846154,
+    "gross_profit": 749.15,
+    "gross_loss": -26074.41,
+    "profit_factor": 0.0287,
+    "avg_r": -0.5601,
+    "median_r": -0.4452,
+    "avg_win": 187.29,
+    "avg_loss": -427.45,
+    "avg_win_loss_ratio": 0.4382,
+    "largest_winner_r": 1.1547,
+    "largest_loser_r": -1.8013,
+    "max_consecutive_losses": 33,
+    "avg_holding_days": 0.94,
     "by_strategy": {
       "breakout_1_1": {
-        "trades": 8756,
-        "win_rate": 0.2720420283234354,
-        "avg_r": -0.2425,
-        "profit_factor": 0.4713
+        "trades": 65,
+        "win_rate": 0.06153846153846154,
+        "avg_r": -0.5601,
+        "profit_factor": 0.0287
       }
     },
-    "final_equity": 396232.22,
-    "total_return": -0.603768,
-    "max_drawdown": -0.606568
+    "final_equity": 974674.74,
+    "total_return": -0.025325,
+    "max_drawdown": -0.024471
   },
   "breakout_1_1_trail_1atr": {
     "initial_capital": 1000000.0,
@@ -78,7 +84,9 @@
     "atr_period": 14,
     "atr_multiple": 1.0,
     "n_day_low_period": 5,
-    "trade_count": 7512,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 57,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -102,32 +110,36 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.28634185303514376,
-    "gross_profit": 873939.97,
-    "gross_loss": -1398367.14,
-    "profit_factor": 0.625,
-    "avg_r": -0.1994,
-    "median_r": -0.4851,
-    "avg_win": 406.29,
-    "avg_loss": -261.04,
-    "avg_win_loss_ratio": 1.5565,
-    "largest_winner_r": 26.7309,
-    "largest_loser_r": -13.0,
-    "max_consecutive_losses": 38,
-    "avg_holding_days": 2.79,
+    "win_rate": 0.08771929824561403,
+    "gross_profit": 1166.5,
+    "gross_loss": -29257.74,
+    "profit_factor": 0.0399,
+    "avg_r": -0.6244,
+    "median_r": -0.6462,
+    "avg_win": 233.3,
+    "avg_loss": -562.65,
+    "avg_win_loss_ratio": 0.4146,
+    "largest_winner_r": 1.3947,
+    "largest_loser_r": -1.8013,
+    "max_consecutive_losses": 36,
+    "avg_holding_days": 1.32,
     "by_strategy": {
       "breakout_1_1": {
-        "trades": 7512,
-        "win_rate": 0.28634185303514376,
-        "avg_r": -0.1994,
-        "profit_factor": 0.625
+        "trades": 57,
+        "win_rate": 0.08771929824561403,
+        "avg_r": -0.6244,
+        "profit_factor": 0.0399
       }
     },
-    "final_equity": 475572.83,
-    "total_return": -0.524427,
-    "max_drawdown": -0.538694
+    "final_equity": 971908.76,
+    "total_return": -0.028091,
+    "max_drawdown": -0.02724
   },
   "breakout_1_1_ma10": {
     "initial_capital": 1000000.0,
@@ -143,7 +155,9 @@
     "atr_period": 14,
     "atr_multiple": 1.0,
     "n_day_low_period": 5,
-    "trade_count": 7044,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 56,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -167,32 +181,36 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.2278534923339012,
-    "gross_profit": 757985.37,
-    "gross_loss": -1361501.77,
-    "profit_factor": 0.5567,
-    "avg_r": -0.2534,
-    "median_r": -0.5475,
-    "avg_win": 472.27,
-    "avg_loss": -250.55,
-    "avg_win_loss_ratio": 1.8849,
-    "largest_winner_r": 31.1543,
-    "largest_loser_r": -14.6774,
-    "max_consecutive_losses": 56,
-    "avg_holding_days": 3.87,
+    "win_rate": 0.10714285714285714,
+    "gross_profit": 2465.51,
+    "gross_loss": -31643.99,
+    "profit_factor": 0.0779,
+    "avg_r": -0.6197,
+    "median_r": -0.9193,
+    "avg_win": 410.92,
+    "avg_loss": -632.88,
+    "avg_win_loss_ratio": 0.6493,
+    "largest_winner_r": 1.3947,
+    "largest_loser_r": -1.4139,
+    "max_consecutive_losses": 45,
+    "avg_holding_days": 1.48,
     "by_strategy": {
       "breakout_1_1": {
-        "trades": 7044,
-        "win_rate": 0.2278534923339012,
-        "avg_r": -0.2534,
-        "profit_factor": 0.5567
+        "trades": 56,
+        "win_rate": 0.10714285714285714,
+        "avg_r": -0.6197,
+        "profit_factor": 0.0779
       }
     },
-    "final_equity": 396483.6,
-    "total_return": -0.603516,
-    "max_drawdown": -0.617831
+    "final_equity": 970821.52,
+    "total_return": -0.029178,
+    "max_drawdown": -0.028328
   },
   "breakout_1_1_5_day_low": {
     "initial_capital": 1000000.0,
@@ -208,7 +226,9 @@
     "atr_period": 14,
     "atr_multiple": 1.0,
     "n_day_low_period": 5,
-    "trade_count": 6107,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 55,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -232,32 +252,36 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.25871950221057805,
-    "gross_profit": 1249863.28,
-    "gross_loss": -1681083.19,
-    "profit_factor": 0.7435,
-    "avg_r": -0.1501,
+    "win_rate": 0.10909090909090909,
+    "gross_profit": 2465.47,
+    "gross_loss": -35858.52,
+    "profit_factor": 0.0688,
+    "avg_r": -0.7265,
     "median_r": -1.0,
-    "avg_win": 791.05,
-    "avg_loss": -372.0,
-    "avg_win_loss_ratio": 2.1265,
-    "largest_winner_r": 29.8362,
-    "largest_loser_r": -13.0,
-    "max_consecutive_losses": 41,
-    "avg_holding_days": 6.71,
+    "avg_win": 410.91,
+    "avg_loss": -731.81,
+    "avg_win_loss_ratio": 0.5615,
+    "largest_winner_r": 1.3947,
+    "largest_loser_r": -1.4139,
+    "max_consecutive_losses": 40,
+    "avg_holding_days": 1.78,
     "by_strategy": {
       "breakout_1_1": {
-        "trades": 6107,
-        "win_rate": 0.25871950221057805,
-        "avg_r": -0.1501,
-        "profit_factor": 0.7435
+        "trades": 55,
+        "win_rate": 0.10909090909090909,
+        "avg_r": -0.7265,
+        "profit_factor": 0.0688
       }
     },
-    "final_equity": 568780.09,
-    "total_return": -0.43122,
-    "max_drawdown": -0.463606
+    "final_equity": 966606.95,
+    "total_return": -0.033393,
+    "max_drawdown": -0.032546
   },
   "breakout_1_1_prev_day_low": {
     "initial_capital": 1000000.0,
@@ -273,7 +297,9 @@
     "atr_period": 14,
     "atr_multiple": 1.0,
     "n_day_low_period": 5,
-    "trade_count": 8013,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 57,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -297,32 +323,36 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.2608261574940721,
-    "gross_profit": 721605.3,
-    "gross_loss": -1287341.96,
-    "profit_factor": 0.5605,
-    "avg_r": -0.2391,
-    "median_r": -0.4034,
-    "avg_win": 345.27,
-    "avg_loss": -218.23,
-    "avg_win_loss_ratio": 1.5821,
-    "largest_winner_r": 18.2453,
-    "largest_loser_r": -14.6774,
-    "max_consecutive_losses": 46,
-    "avg_holding_days": 2.01,
+    "win_rate": 0.07017543859649122,
+    "gross_profit": 763.75,
+    "gross_loss": -27673.03,
+    "profit_factor": 0.0276,
+    "avg_r": -0.6064,
+    "median_r": -0.5955,
+    "avg_win": 190.94,
+    "avg_loss": -522.13,
+    "avg_win_loss_ratio": 0.3657,
+    "largest_winner_r": 0.8278,
+    "largest_loser_r": -1.4139,
+    "max_consecutive_losses": 35,
+    "avg_holding_days": 1.25,
     "by_strategy": {
       "breakout_1_1": {
-        "trades": 8013,
-        "win_rate": 0.2608261574940721,
-        "avg_r": -0.2391,
-        "profit_factor": 0.5605
+        "trades": 57,
+        "win_rate": 0.07017543859649122,
+        "avg_r": -0.6064,
+        "profit_factor": 0.0276
       }
     },
-    "final_equity": 434263.34,
-    "total_return": -0.565737,
-    "max_drawdown": -0.572873
+    "final_equity": 973090.72,
+    "total_return": -0.026909,
+    "max_drawdown": -0.026057
   },
   "breakout_2_2_trail_0_5atr": {
     "initial_capital": 1000000.0,
@@ -338,7 +368,9 @@
     "atr_period": 14,
     "atr_multiple": 0.5,
     "n_day_low_period": 5,
-    "trade_count": 6095,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 47,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -362,32 +394,36 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.27399507793273176,
-    "gross_profit": 441573.43,
-    "gross_loss": -878004.65,
-    "profit_factor": 0.5029,
-    "avg_r": -0.2362,
-    "median_r": -0.2981,
-    "avg_win": 264.42,
-    "avg_loss": -198.64,
-    "avg_win_loss_ratio": 1.3311,
-    "largest_winner_r": 24.9209,
-    "largest_loser_r": -7.1884,
-    "max_consecutive_losses": 45,
-    "avg_holding_days": 1.35,
+    "win_rate": 0.0,
+    "gross_profit": 0.0,
+    "gross_loss": -18423.96,
+    "profit_factor": 0.0,
+    "avg_r": -0.586,
+    "median_r": -0.4527,
+    "avg_win": null,
+    "avg_loss": -392.0,
+    "avg_win_loss_ratio": null,
+    "largest_winner_r": -0.0526,
+    "largest_loser_r": -1.4139,
+    "max_consecutive_losses": 47,
+    "avg_holding_days": 0.94,
     "by_strategy": {
       "breakout_2_2": {
-        "trades": 6095,
-        "win_rate": 0.27399507793273176,
-        "avg_r": -0.2362,
-        "profit_factor": 0.5029
+        "trades": 47,
+        "win_rate": 0.0,
+        "avg_r": -0.586,
+        "profit_factor": 0.0
       }
     },
-    "final_equity": 563568.78,
-    "total_return": -0.436431,
-    "max_drawdown": -0.43873
+    "final_equity": 981576.04,
+    "total_return": -0.018424,
+    "max_drawdown": -0.017307
   },
   "breakout_2_2_trail_1atr": {
     "initial_capital": 1000000.0,
@@ -403,7 +439,9 @@
     "atr_period": 14,
     "atr_multiple": 1.0,
     "n_day_low_period": 5,
-    "trade_count": 5390,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 40,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -427,32 +465,36 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.28274582560296846,
-    "gross_profit": 717420.52,
-    "gross_loss": -1078779.02,
-    "profit_factor": 0.665,
-    "avg_r": -0.1965,
-    "median_r": -0.5054,
-    "avg_win": 470.75,
-    "avg_loss": -279.11,
-    "avg_win_loss_ratio": 1.6866,
-    "largest_winner_r": 15.2419,
-    "largest_loser_r": -7.1884,
-    "max_consecutive_losses": 32,
-    "avg_holding_days": 2.7,
+    "win_rate": 0.075,
+    "gross_profit": 871.96,
+    "gross_loss": -19678.24,
+    "profit_factor": 0.0443,
+    "avg_r": -0.6692,
+    "median_r": -0.8424,
+    "avg_win": 290.65,
+    "avg_loss": -531.84,
+    "avg_win_loss_ratio": 0.5465,
+    "largest_winner_r": 1.3947,
+    "largest_loser_r": -1.4139,
+    "max_consecutive_losses": 20,
+    "avg_holding_days": 1.35,
     "by_strategy": {
       "breakout_2_2": {
-        "trades": 5390,
-        "win_rate": 0.28274582560296846,
-        "avg_r": -0.1965,
-        "profit_factor": 0.665
+        "trades": 40,
+        "win_rate": 0.075,
+        "avg_r": -0.6692,
+        "profit_factor": 0.0443
       }
     },
-    "final_equity": 638641.5,
-    "total_return": -0.361359,
-    "max_drawdown": -0.377801
+    "final_equity": 981193.72,
+    "total_return": -0.018806,
+    "max_drawdown": -0.017689
   },
   "breakout_2_2_ma10": {
     "initial_capital": 1000000.0,
@@ -468,7 +510,9 @@
     "atr_period": 14,
     "atr_multiple": 1.0,
     "n_day_low_period": 5,
-    "trade_count": 5071,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 39,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -492,32 +536,36 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.227765726681128,
-    "gross_profit": 655221.97,
-    "gross_loss": -1101258.17,
-    "profit_factor": 0.595,
-    "avg_r": -0.2524,
-    "median_r": -0.5957,
-    "avg_win": 567.29,
-    "avg_loss": -281.29,
-    "avg_win_loss_ratio": 2.0167,
-    "largest_winner_r": 18.1311,
-    "largest_loser_r": -7.1884,
-    "max_consecutive_losses": 40,
-    "avg_holding_days": 3.88,
+    "win_rate": 0.05128205128205128,
+    "gross_profit": 1795.22,
+    "gross_loss": -18945.72,
+    "profit_factor": 0.0948,
+    "avg_r": -0.5975,
+    "median_r": -0.6604,
+    "avg_win": 897.61,
+    "avg_loss": -512.05,
+    "avg_win_loss_ratio": 1.753,
+    "largest_winner_r": 2.1501,
+    "largest_loser_r": -1.4139,
+    "max_consecutive_losses": 34,
+    "avg_holding_days": 1.36,
     "by_strategy": {
       "breakout_2_2": {
-        "trades": 5071,
-        "win_rate": 0.227765726681128,
-        "avg_r": -0.2524,
-        "profit_factor": 0.595
+        "trades": 39,
+        "win_rate": 0.05128205128205128,
+        "avg_r": -0.5975,
+        "profit_factor": 0.0948
       }
     },
-    "final_equity": 553963.8,
-    "total_return": -0.446036,
-    "max_drawdown": -0.463735
+    "final_equity": 982849.5,
+    "total_return": -0.017151,
+    "max_drawdown": -0.016265
   },
   "breakout_2_2_5_day_low": {
     "initial_capital": 1000000.0,
@@ -533,7 +581,9 @@
     "atr_period": 14,
     "atr_multiple": 1.0,
     "n_day_low_period": 5,
-    "trade_count": 4528,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 39,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -557,32 +607,36 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.25463780918727913,
-    "gross_profit": 1002664.52,
-    "gross_loss": -1296294.44,
-    "profit_factor": 0.7735,
-    "avg_r": -0.1437,
+    "win_rate": 0.07692307692307693,
+    "gross_profit": 1990.95,
+    "gross_loss": -23570.92,
+    "profit_factor": 0.0845,
+    "avg_r": -0.7459,
     "median_r": -1.0,
-    "avg_win": 869.61,
-    "avg_loss": -384.54,
-    "avg_win_loss_ratio": 2.2614,
-    "largest_winner_r": 112.929,
-    "largest_loser_r": -7.1884,
-    "max_consecutive_losses": 38,
-    "avg_holding_days": 6.53,
+    "avg_win": 663.65,
+    "avg_loss": -654.75,
+    "avg_win_loss_ratio": 1.0136,
+    "largest_winner_r": 2.1501,
+    "largest_loser_r": -1.4139,
+    "max_consecutive_losses": 30,
+    "avg_holding_days": 1.85,
     "by_strategy": {
       "breakout_2_2": {
-        "trades": 4528,
-        "win_rate": 0.25463780918727913,
-        "avg_r": -0.1437,
-        "profit_factor": 0.7735
+        "trades": 39,
+        "win_rate": 0.07692307692307693,
+        "avg_r": -0.7459,
+        "profit_factor": 0.0845
       }
     },
-    "final_equity": 706370.08,
-    "total_return": -0.29363,
-    "max_drawdown": -0.338717
+    "final_equity": 978420.03,
+    "total_return": -0.02158,
+    "max_drawdown": -0.020466
   },
   "breakout_2_2_prev_day_low": {
     "initial_capital": 1000000.0,
@@ -598,7 +652,9 @@
     "atr_period": 14,
     "atr_multiple": 1.0,
     "n_day_low_period": 5,
-    "trade_count": 5677,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 40,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -622,32 +678,36 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.2527743526510481,
-    "gross_profit": 601330.81,
-    "gross_loss": -998994.33,
-    "profit_factor": 0.6019,
-    "avg_r": -0.2318,
-    "median_r": -0.4139,
-    "avg_win": 419.05,
-    "avg_loss": -236.5,
-    "avg_win_loss_ratio": 1.7718,
-    "largest_winner_r": 12.9412,
-    "largest_loser_r": -7.1884,
-    "max_consecutive_losses": 41,
-    "avg_holding_days": 1.97,
+    "win_rate": 0.05,
+    "gross_profit": 243.33,
+    "gross_loss": -16723.54,
+    "profit_factor": 0.0146,
+    "avg_r": -0.6171,
+    "median_r": -0.5015,
+    "avg_win": 121.66,
+    "avg_loss": -440.09,
+    "avg_win_loss_ratio": 0.2765,
+    "largest_winner_r": 0.2114,
+    "largest_loser_r": -1.4139,
+    "max_consecutive_losses": 34,
+    "avg_holding_days": 1.27,
     "by_strategy": {
       "breakout_2_2": {
-        "trades": 5677,
-        "win_rate": 0.2527743526510481,
-        "avg_r": -0.2318,
-        "profit_factor": 0.6019
+        "trades": 40,
+        "win_rate": 0.05,
+        "avg_r": -0.6171,
+        "profit_factor": 0.0146
       }
     },
-    "final_equity": 602336.48,
-    "total_return": -0.397664,
-    "max_drawdown": -0.406261
+    "final_equity": 983519.79,
+    "total_return": -0.01648,
+    "max_drawdown": -0.015361
   },
   "rsi2_trail_0_5atr": {
     "initial_capital": 1000000.0,
@@ -663,7 +723,9 @@
     "atr_period": 14,
     "atr_multiple": 0.5,
     "n_day_low_period": 5,
-    "trade_count": 1968,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 5,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -687,32 +749,36 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.3318089430894309,
-    "gross_profit": 440612.55,
-    "gross_loss": -293750.62,
-    "profit_factor": 1.5,
-    "avg_r": 0.2419,
-    "median_r": -1.0,
-    "avg_win": 674.75,
-    "avg_loss": -223.9,
-    "avg_win_loss_ratio": 3.0137,
-    "largest_winner_r": 172.8531,
-    "largest_loser_r": -75.3344,
-    "max_consecutive_losses": 26,
-    "avg_holding_days": 0.96,
+    "win_rate": 0.4,
+    "gross_profit": 32085.05,
+    "gross_loss": -586.66,
+    "profit_factor": 54.691,
+    "avg_r": 0.876,
+    "median_r": -0.3317,
+    "avg_win": 16042.52,
+    "avg_loss": -195.55,
+    "avg_win_loss_ratio": 82.0366,
+    "largest_winner_r": 6.5825,
+    "largest_loser_r": -1.0,
+    "max_consecutive_losses": 2,
+    "avg_holding_days": 0.8,
     "by_strategy": {
       "rsi2": {
-        "trades": 1968,
-        "win_rate": 0.3318089430894309,
-        "avg_r": 0.2419,
-        "profit_factor": 1.5
+        "trades": 5,
+        "win_rate": 0.4,
+        "avg_r": 0.876,
+        "profit_factor": 54.691
       }
     },
-    "final_equity": 1146861.93,
-    "total_return": 0.146862,
-    "max_drawdown": -0.019938
+    "final_equity": 1031498.39,
+    "total_return": 0.031498,
+    "max_drawdown": -0.00933
   },
   "rsi2_trail_1atr": {
     "initial_capital": 1000000.0,
@@ -728,7 +794,9 @@
     "atr_period": 14,
     "atr_multiple": 1.0,
     "n_day_low_period": 5,
-    "trade_count": 1932,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 5,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -752,32 +820,36 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.2815734989648033,
-    "gross_profit": 528660.1,
-    "gross_loss": -360706.83,
-    "profit_factor": 1.4656,
-    "avg_r": 0.2876,
+    "win_rate": 0.4,
+    "gross_profit": 32083.18,
+    "gross_loss": -717.11,
+    "profit_factor": 44.7396,
+    "avg_r": 0.7424,
     "median_r": -1.0,
-    "avg_win": 971.8,
-    "avg_loss": -260.25,
-    "avg_win_loss_ratio": 3.7341,
-    "largest_winner_r": 126.7113,
-    "largest_loser_r": -75.3344,
-    "max_consecutive_losses": 35,
-    "avg_holding_days": 1.83,
+    "avg_win": 16041.59,
+    "avg_loss": -239.04,
+    "avg_win_loss_ratio": 67.1093,
+    "largest_winner_r": 6.5825,
+    "largest_loser_r": -1.0,
+    "max_consecutive_losses": 2,
+    "avg_holding_days": 1.0,
     "by_strategy": {
       "rsi2": {
-        "trades": 1932,
-        "win_rate": 0.2815734989648033,
-        "avg_r": 0.2876,
-        "profit_factor": 1.4656
+        "trades": 5,
+        "win_rate": 0.4,
+        "avg_r": 0.7424,
+        "profit_factor": 44.7396
       }
     },
-    "final_equity": 1167953.27,
-    "total_return": 0.167953,
-    "max_drawdown": -0.029063
+    "final_equity": 1031366.07,
+    "total_return": 0.031366,
+    "max_drawdown": -0.00933
   },
   "rsi2_ma10": {
     "initial_capital": 1000000.0,
@@ -793,7 +865,9 @@
     "atr_period": 14,
     "atr_multiple": 1.0,
     "n_day_low_period": 5,
-    "trade_count": 2000,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 5,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -817,32 +891,36 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.388,
-    "gross_profit": 454324.42,
-    "gross_loss": -299538.84,
-    "profit_factor": 1.5167,
-    "avg_r": 0.1421,
-    "median_r": -1.0,
-    "avg_win": 585.47,
-    "avg_loss": -245.93,
-    "avg_win_loss_ratio": 2.3807,
-    "largest_winner_r": 49.1101,
-    "largest_loser_r": -75.3344,
-    "max_consecutive_losses": 21,
-    "avg_holding_days": 1.02,
+    "win_rate": 0.6,
+    "gross_profit": 46447.97,
+    "gross_loss": -529.62,
+    "profit_factor": 87.7006,
+    "avg_r": 1.5486,
+    "median_r": 0.0875,
+    "avg_win": 15482.66,
+    "avg_loss": -264.81,
+    "avg_win_loss_ratio": 58.467,
+    "largest_winner_r": 9.5263,
+    "largest_loser_r": -1.0,
+    "max_consecutive_losses": 2,
+    "avg_holding_days": 1.0,
     "by_strategy": {
       "rsi2": {
-        "trades": 2000,
-        "win_rate": 0.388,
-        "avg_r": 0.1421,
-        "profit_factor": 1.5167
+        "trades": 5,
+        "win_rate": 0.6,
+        "avg_r": 1.5486,
+        "profit_factor": 87.7006
       }
     },
-    "final_equity": 1154785.58,
-    "total_return": 0.154786,
-    "max_drawdown": -0.018632
+    "final_equity": 1045918.35,
+    "total_return": 0.045918,
+    "max_drawdown": -0.003183
   },
   "rsi2_5_day_low": {
     "initial_capital": 1000000.0,
@@ -858,7 +936,9 @@
     "atr_period": 14,
     "atr_multiple": 1.0,
     "n_day_low_period": 5,
-    "trade_count": 1918,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 5,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -882,32 +962,36 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.2210636079249218,
-    "gross_profit": 688760.55,
-    "gross_loss": -478253.12,
-    "profit_factor": 1.4402,
-    "avg_r": 0.547,
+    "win_rate": 0.4,
+    "gross_profit": 46422.74,
+    "gross_loss": -724.34,
+    "profit_factor": 64.0897,
+    "avg_r": 1.3311,
     "median_r": -1.0,
-    "avg_win": 1624.44,
-    "avg_loss": -321.41,
-    "avg_win_loss_ratio": 5.0541,
-    "largest_winner_r": 372.9914,
-    "largest_loser_r": -75.3344,
-    "max_consecutive_losses": 46,
-    "avg_holding_days": 4.44,
+    "avg_win": 23211.37,
+    "avg_loss": -241.45,
+    "avg_win_loss_ratio": 96.1346,
+    "largest_winner_r": 9.5263,
+    "largest_loser_r": -1.0,
+    "max_consecutive_losses": 3,
+    "avg_holding_days": 1.2,
     "by_strategy": {
       "rsi2": {
-        "trades": 1918,
-        "win_rate": 0.2210636079249218,
-        "avg_r": 0.547,
-        "profit_factor": 1.4402
+        "trades": 5,
+        "win_rate": 0.4,
+        "avg_r": 1.3311,
+        "profit_factor": 64.0897
       }
     },
-    "final_equity": 1210507.44,
-    "total_return": 0.210507,
-    "max_drawdown": -0.057007
+    "final_equity": 1045698.4,
+    "total_return": 0.045698,
+    "max_drawdown": -0.003183
   },
   "rsi2_prev_day_low": {
     "initial_capital": 1000000.0,
@@ -923,7 +1007,9 @@
     "atr_period": 14,
     "atr_multiple": 1.0,
     "n_day_low_period": 5,
-    "trade_count": 1950,
+    "same_day_stop_rule": "red_candle_only",
+    "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+    "trade_count": 5,
     "filters": {
       "common": {
         "avg_value_10_min_musd": 25.0,
@@ -947,31 +1033,35 @@
       },
       "prev_day_low": {
         "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+      },
+      "same_day_stop": {
+        "rule": "red_candle_only",
+        "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
       }
     },
-    "win_rate": 0.2723076923076923,
-    "gross_profit": 490252.06,
-    "gross_loss": -333804.54,
-    "profit_factor": 1.4687,
-    "avg_r": 0.2524,
-    "median_r": -1.0,
-    "avg_win": 923.26,
-    "avg_loss": -237.58,
-    "avg_win_loss_ratio": 3.8861,
-    "largest_winner_r": 158.9964,
-    "largest_loser_r": -75.3344,
-    "max_consecutive_losses": 36,
-    "avg_holding_days": 1.46,
+    "win_rate": 0.4,
+    "gross_profit": 46428.17,
+    "gross_loss": -539.38,
+    "profit_factor": 86.0769,
+    "avg_r": 1.5211,
+    "median_r": -0.05,
+    "avg_win": 23214.08,
+    "avg_loss": -179.79,
+    "avg_win_loss_ratio": 129.1154,
+    "largest_winner_r": 9.5263,
+    "largest_loser_r": -1.0,
+    "max_consecutive_losses": 3,
+    "avg_holding_days": 1.0,
     "by_strategy": {
       "rsi2": {
-        "trades": 1950,
-        "win_rate": 0.2723076923076923,
-        "avg_r": 0.2524,
-        "profit_factor": 1.4687
+        "trades": 5,
+        "win_rate": 0.4,
+        "avg_r": 1.5211,
+        "profit_factor": 86.0769
       }
     },
-    "final_equity": 1156447.52,
-    "total_return": 0.156448,
-    "max_drawdown": -0.024917
+    "final_equity": 1045888.79,
+    "total_return": 0.045889,
+    "max_drawdown": -0.003183
   }
 }

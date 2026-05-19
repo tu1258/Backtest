@@ -12,7 +12,9 @@
   "atr_period": 14,
   "atr_multiple": 0.5,
   "n_day_low_period": 5,
-  "trade_count": 6095,
+  "same_day_stop_rule": "red_candle_only",
+  "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+  "trade_count": 47,
   "filters": {
     "common": {
       "avg_value_10_min_musd": 25.0,
@@ -36,30 +38,34 @@
     },
     "prev_day_low": {
       "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+    },
+    "same_day_stop": {
+      "rule": "red_candle_only",
+      "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
     }
   },
-  "win_rate": 0.27399507793273176,
-  "gross_profit": 441573.43,
-  "gross_loss": -878004.65,
-  "profit_factor": 0.5029,
-  "avg_r": -0.2362,
-  "median_r": -0.2981,
-  "avg_win": 264.42,
-  "avg_loss": -198.64,
-  "avg_win_loss_ratio": 1.3311,
-  "largest_winner_r": 24.9209,
-  "largest_loser_r": -7.1884,
-  "max_consecutive_losses": 45,
-  "avg_holding_days": 1.35,
+  "win_rate": 0.0,
+  "gross_profit": 0.0,
+  "gross_loss": -18423.96,
+  "profit_factor": 0.0,
+  "avg_r": -0.586,
+  "median_r": -0.4527,
+  "avg_win": null,
+  "avg_loss": -392.0,
+  "avg_win_loss_ratio": null,
+  "largest_winner_r": -0.0526,
+  "largest_loser_r": -1.4139,
+  "max_consecutive_losses": 47,
+  "avg_holding_days": 0.94,
   "by_strategy": {
     "breakout_2_2": {
-      "trades": 6095,
-      "win_rate": 0.27399507793273176,
-      "avg_r": -0.2362,
-      "profit_factor": 0.5029
+      "trades": 47,
+      "win_rate": 0.0,
+      "avg_r": -0.586,
+      "profit_factor": 0.0
     }
   },
-  "final_equity": 563568.78,
-  "total_return": -0.436431,
-  "max_drawdown": -0.43873
+  "final_equity": 981576.04,
+  "total_return": -0.018424,
+  "max_drawdown": -0.017307
 }

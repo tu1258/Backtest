@@ -12,7 +12,9 @@
   "atr_period": 14,
   "atr_multiple": 1.0,
   "n_day_low_period": 5,
-  "trade_count": 6107,
+  "same_day_stop_rule": "red_candle_only",
+  "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+  "trade_count": 55,
   "filters": {
     "common": {
       "avg_value_10_min_musd": 25.0,
@@ -36,30 +38,34 @@
     },
     "prev_day_low": {
       "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
+    },
+    "same_day_stop": {
+      "rule": "red_candle_only",
+      "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
     }
   },
-  "win_rate": 0.25871950221057805,
-  "gross_profit": 1249863.28,
-  "gross_loss": -1681083.19,
-  "profit_factor": 0.7435,
-  "avg_r": -0.1501,
+  "win_rate": 0.10909090909090909,
+  "gross_profit": 2465.47,
+  "gross_loss": -35858.52,
+  "profit_factor": 0.0688,
+  "avg_r": -0.7265,
   "median_r": -1.0,
-  "avg_win": 791.05,
-  "avg_loss": -372.0,
-  "avg_win_loss_ratio": 2.1265,
-  "largest_winner_r": 29.8362,
-  "largest_loser_r": -13.0,
-  "max_consecutive_losses": 41,
-  "avg_holding_days": 6.71,
+  "avg_win": 410.91,
+  "avg_loss": -731.81,
+  "avg_win_loss_ratio": 0.5615,
+  "largest_winner_r": 1.3947,
+  "largest_loser_r": -1.4139,
+  "max_consecutive_losses": 40,
+  "avg_holding_days": 1.78,
   "by_strategy": {
     "breakout_1_1": {
-      "trades": 6107,
-      "win_rate": 0.25871950221057805,
-      "avg_r": -0.1501,
-      "profit_factor": 0.7435
+      "trades": 55,
+      "win_rate": 0.10909090909090909,
+      "avg_r": -0.7265,
+      "profit_factor": 0.0688
     }
   },
-  "final_equity": 568780.09,
-  "total_return": -0.43122,
-  "max_drawdown": -0.463606
+  "final_equity": 966606.95,
+  "total_return": -0.033393,
+  "max_drawdown": -0.032546
 }
