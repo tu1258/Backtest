@@ -1,203 +1,155 @@
 max_tickers is empty: downloading full ticker list
-Downloading 5287 tickers from 2023-04-29 to 2026-05-19 in 67 batches
+Downloading 5287 tickers from 2020-04-29 to 2026-05-20 in 67 batches
 [1/67] A ... ADEA
-  rows=58247
+  rows=108127
 [2/67] ADGM ... AIFF
-  rows=52847
+  rows=98550
 [3/67] AIFU ... ALX
-  rows=56863
+  rows=104667
 [4/67] ALXO ... APAM
-  rows=56954
+  rows=104330
 [5/67] APC ... ASIC
-  rows=56702
+  rows=105134
 [6/67] ASIX ... AVGO
-  rows=57481
+  rows=104037
 [7/67] AVIR ... BBVA
-  rows=58345
+  rows=108097
 [8/67] BBW ... BIAF
-  rows=58123
+  rows=107960
 [9/67] BIDU ... BODI
-  rows=55303
+  rows=101127
 [10/67] BOF ... BUR
-  rows=53754
+  rows=96899
 [11/67] BURL ... CATX
-  rows=56503
+  rows=106983
 [12/67] CATY ... CETY
-  rows=56481
+  rows=104165
 [13/67] CEVA ... CLIR
-  rows=56939
+  rows=106058
 [14/67] CLLS ... CODA
 HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CLRS"}}}
 $CLRS: possibly delisted; no timezone found
 
 1 Failed download:
 ['CLRS']: possibly delisted; no timezone found
-  rows=59178
+  rows=112016
 [15/67] CODI ... CRNC
-  rows=58995
+  rows=108884
 [16/67] CRNT ... CVLG
-  rows=56116
+  rows=104634
 [17/67] CVLT ... DECK
-  rows=59255
+  rows=110952
 [18/67] DEFT ... DRH
-  rows=58136
+  rows=108191
 [19/67] DRI ... EEIQ
-  rows=59163
+  rows=108615
 [20/67] EEX ... EOG
-  rows=54439
+  rows=100846
 [21/67] EOLS ... EWCZ
-  rows=57314
+  rows=108442
 [22/67] EWTX ... FFIN
-  rows=57394
+  rows=107296
 [23/67] FFIV ... FORTY
-  rows=56024
+  rows=103212
 [24/67] FOSL ... GALT
-  rows=57873
+  rows=109112
 [25/67] GAMB ... GIS
-  rows=57920
+  rows=103926
 [26/67] GITS ... GREE
-  rows=53894
+  rows=97773
 [27/67] GRFS ... HCKT
-  rows=57643
+  rows=105553
 [28/67] HCM ... HPE
-  rows=57590
+  rows=103267
 [29/67] HPK ... IBM
-  rows=56961
+  rows=106179
 [30/67] IBN ... INDB
-  rows=59674
+  rows=110422
 [31/67] INDI ... IRWD
-  rows=57583
+  rows=105956
 [32/67] ISBA ... JRSH
-  rows=56059
+  rows=104233
 [33/67] JRVR ... KOF
-
-3 Failed downloads:
-['JYD', 'KGEI', 'KE']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=53415
+  rows=102057
 [34/67] KOP ... LCTX
-
-1 Failed download:
-['KZR']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=56468
+  rows=104892
 [35/67] LCUT ... LNG
 
-2 Failed downloads:
-['LDI', 'LFTO']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=53649
+1 Failed download:
+['LFTO']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
+  rows=100064
 [36/67] LNKS ... LYFT
-
-1 Failed download:
-['LTH']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=57513
+  rows=105851
 [37/67] LYG ... MDU
-
-1 Failed download:
-['MCB']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=54279
+  rows=101769
 [38/67] MDV ... MLYS
-$MHM: possibly delisted; no price data found  (1d 2023-04-29 -> 2026-05-19)
+$MHM: possibly delisted; no price data found  (1d 2020-04-29 -> 2026-05-20)
 
 1 Failed download:
-['MHM']: possibly delisted; no price data found  (1d 2023-04-29 -> 2026-05-19)
-  rows=54407
+['MHM']: possibly delisted; no price data found  (1d 2020-04-29 -> 2026-05-20)
+  rows=98477
 [39/67] MMA ... MSGM
-
-1 Failed download:
-['MSEX']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=55955
+  rows=102902
 [40/67] MSGS ... NBBK
-  rows=55425
+  rows=102032
 [41/67] NBHC ... NJR
-  rows=56004
+  rows=104598
 [42/67] NKE ... NTNX
-
-2 Failed downloads:
-['NMFC', 'NRP']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=53814
+  rows=102175
 [43/67] NTR ... OCGN
-  rows=58728
+  rows=106300
 [44/67] OCS ... OPTT
-  rows=57720
+  rows=106435
 [45/67] OPTU ... PATK
-
-1 Failed download:
-['PAGS']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=55823
+  rows=105474
 [46/67] PAVM ... PH
-  rows=58467
+  rows=110370
 [47/67] PHAR ... POLA
-  rows=54749
+  rows=101785
 [48/67] POM ... PTHS
-
-1 Failed download:
-['PSTL']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=57239
+  rows=108893
 [49/67] PTLE ... RCAT
-  rows=54998
+  rows=102230
 [50/67] RCEL ... RIVN
-  rows=57925
+  rows=108098
 [51/67] RJET ... RVMD
-  rows=56470
+  rows=105760
 [52/67] RVP ... SCOR
-  rows=56308
+  rows=103743
 [53/67] SCSC ... SIBN
-
-1 Failed download:
-['SCYX']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=55408
+  rows=99668
 [54/67] SID ... SMP
-
-1 Failed download:
-['SITM']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=56241
+  rows=106268
 [55/67] SMPL ... SPRO
 
-2 Failed downloads:
-['SPACEX', 'SNDK']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=55616
+1 Failed download:
+['SPACEX']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
+  rows=99245
 [56/67] SPRU ... STUB
-
-1 Failed download:
-['SSP']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=56715
+  rows=106068
 [57/67] STVN ... TCBK
-  rows=55944
+  rows=101863
 [58/67] TCBS ... TKNO
-
-1 Failed download:
-['TCRT']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=56477
+  rows=106871
 [59/67] TKO ... TRNS
 
 1 Failed download:
 ['TKVA']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=57076
+  rows=104610
 [60/67] TRON ... UBCP
-  rows=58770
+  rows=110567
 [61/67] UBER ... UTI
-  rows=59682
+  rows=110612
 [62/67] UTL ... VMET
-
-1 Failed download:
-['VERX']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=55756
+  rows=105676
 [63/67] VMI ... WBD
-
-1 Failed download:
-['VRM']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=56951
+  rows=105041
 [64/67] WBI ... WRBY
-
-1 Failed download:
-['WDAY']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=55881
+  rows=105631
 [65/67] WRD ... XTLB
-  rows=54045
+  rows=100787
 [66/67] XTNT ... ZTS
-
-1 Failed download:
-['YCBD']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=49374
+  rows=87025
 [67/67] ZUMZ ... ZYME
-  rows=4931
-Saved data/stock_data.csv rows=3733976 tickers=5261
+  rows=8429
+Saved data/stock_data.csv rows=6917909 tickers=5282

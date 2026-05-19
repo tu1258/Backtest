@@ -12,7 +12,7 @@
   "atr_period": 14,
   "atr_multiple": 1.0,
   "n_day_low_period": 5,
-  "trade_count": 2858,
+  "trade_count": 8013,
   "filters": {
     "common": {
       "avg_value_10_min_musd": 25.0,
@@ -38,28 +38,28 @@
       "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low"
     }
   },
-  "win_rate": 0.2491252624212736,
-  "gross_profit": 385568.42,
-  "gross_loss": -681963.86,
-  "profit_factor": 0.5654,
-  "avg_r": -0.2528,
-  "median_r": -0.4041,
-  "avg_win": 541.53,
-  "avg_loss": -318.53,
-  "avg_win_loss_ratio": 1.7001,
-  "largest_winner_r": 12.5305,
-  "largest_loser_r": -5.2706,
-  "max_consecutive_losses": 45,
-  "avg_holding_days": 1.95,
+  "win_rate": 0.2608261574940721,
+  "gross_profit": 721605.3,
+  "gross_loss": -1287341.96,
+  "profit_factor": 0.5605,
+  "avg_r": -0.2391,
+  "median_r": -0.4034,
+  "avg_win": 345.27,
+  "avg_loss": -218.23,
+  "avg_win_loss_ratio": 1.5821,
+  "largest_winner_r": 18.2453,
+  "largest_loser_r": -14.6774,
+  "max_consecutive_losses": 46,
+  "avg_holding_days": 2.01,
   "by_strategy": {
     "breakout_1_1": {
-      "trades": 2858,
-      "win_rate": 0.2491252624212736,
-      "avg_r": -0.2528,
-      "profit_factor": 0.5654
+      "trades": 8013,
+      "win_rate": 0.2608261574940721,
+      "avg_r": -0.2391,
+      "profit_factor": 0.5605
     }
   },
-  "final_equity": 703604.56,
-  "total_return": -0.296395,
-  "max_drawdown": -0.296395
+  "final_equity": 434263.34,
+  "total_return": -0.565737,
+  "max_drawdown": -0.572873
 }
