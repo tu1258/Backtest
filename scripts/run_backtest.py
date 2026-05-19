@@ -17,9 +17,9 @@ from rs90_backtester.indicators import add_indicators
 from rs90_backtester.universe import add_point_in_time_rs, recent_rs90
 from rs90_backtester.engine import BacktestConfig, run_backtest, save_outputs
 
-# Fixed 15-combo matrix requested by user:
-# 3 entries: breakout 1,1 / breakout 2,2 / RSI2
-# 4 exits: 0.5 ATR trail / 1 ATR trail / MA10 / 5-day low
+# Selectable strategy matrix.
+# Available entries: breakout_1_1 / breakout_2_2 / rsi2
+# Available exits: trail_0_5atr / trail_1atr / ma10 / 5_day_low / prev_day_low
 ENTRY_VARIANTS = (
     {"name": "breakout_1_1", "strategy": "breakout", "pivot_left": 1, "pivot_right": 1},
     {"name": "breakout_2_2", "strategy": "breakout", "pivot_left": 2, "pivot_right": 2},
@@ -35,6 +35,34 @@ EXIT_VARIANTS = (
 )
 
 EXIT_MODES = ("ma10", "atr_trail", "n_day_low", "prev_day_low")
+
+ENTRY_MAP = {item["name"]: item for item in ENTRY_VARIANTS}
+EXIT_MAP = {item["name"]: item for item in EXIT_VARIANTS}
+
+
+def _parse_list(value, default=None):
+    if value is None:
+        return tuple(default or ())
+    if isinstance(value, str):
+        return tuple(x.strip() for x in value.split(",") if x.strip())
+    return tuple(str(x).strip() for x in value if str(x).strip())
+
+
+def _select_variants(requested, mapping, kind):
+    names = _parse_list(requested, mapping.keys())
+    invalid = [name for name in names if name not in mapping]
+    if invalid:
+        raise ValueError(f"Invalid {kind}: {invalid}. Available {kind}: {sorted(mapping)}")
+    # Keep user order, but deduplicate.
+    seen = set()
+    out = []
+    for name in names:
+        if name not in seen:
+            out.append(mapping[name])
+            seen.add(name)
+    if not out:
+        raise ValueError(f"No {kind} selected. Available {kind}: {sorted(mapping)}")
+    return tuple(out)
 
 
 def _strategies(value):
@@ -171,7 +199,9 @@ def main() -> None:
     parser.add_argument("--pivot-left", type=int, default=None, help="Single-run pivot L. Matrix ignores this and runs breakout 1,1 plus 2,2.")
     parser.add_argument("--pivot-right", type=int, default=None, help="Single-run pivot R. Matrix ignores this and runs breakout 1,1 plus 2,2.")
     parser.add_argument("--entry-name", default=None, help="Optional label for single-run trade logs.")
-    parser.add_argument("--matrix", action="store_true", help="Run fixed 15-combo matrix: breakout 1,1 / breakout 2,2 / RSI2 x 4 exits.")
+    parser.add_argument("--matrix", action="store_true", help="Run selectable matrix from --entries x --exits.")
+    parser.add_argument("--entries", default=None, help="Comma list of entry variants: breakout_1_1,breakout_2_2,rsi2. Default from config or all.")
+    parser.add_argument("--exits", default=None, help="Comma list of exit variants: trail_0_5atr,trail_1atr,ma10,5_day_low,prev_day_low. Default from config or all.")
     args = parser.parse_args()
 
     cfg_dict = load_config(args.config)
@@ -184,6 +214,14 @@ def main() -> None:
 
     out_root = Path(args.output_dir)
     out_root.mkdir(parents=True, exist_ok=True)
+
+    selected_entry_source = args.entries if args.entries is not None else deep_get(cfg_dict, "matrix.entries", None)
+    selected_exit_source = args.exits if args.exits is not None else deep_get(cfg_dict, "matrix.exits", None)
+    selected_entries = _select_variants(selected_entry_source, ENTRY_MAP, "entries")
+    selected_exits = _select_variants(selected_exit_source, EXIT_MAP, "exits")
+    print("Selected entries:", ",".join(e["name"] for e in selected_entries))
+    print("Selected exits:", ",".join(e["name"] for e in selected_exits))
+    print(f"Selected strategy combos: {len(selected_entries)} x {len(selected_exits)} = {len(selected_entries) * len(selected_exits)}")
 
     print("Computing base indicators and point-in-time RS ranks for RS90 membership...")
     base_df = _prepare_df(
@@ -213,7 +251,7 @@ def main() -> None:
         # DataFrames can get the GitHub runner killed with exit code 143.
         # Instead, prepare one entry family, run all exits for it, write outputs,
         # then release it before moving to the next family.
-        for entry in ENTRY_VARIANTS:
+        for entry in selected_entries:
             print(
                 f"\nPreparing entry family: {entry['name']} "
                 f"pivot=({entry['pivot_left']},{entry['pivot_right']})"
@@ -228,7 +266,7 @@ def main() -> None:
             df = _apply_entry_membership(df, rs90)
             df = _slice_to_entry_window(df, rs90)
 
-            for exit_variant in EXIT_VARIANTS:
+            for exit_variant in selected_exits:
                 combo_name = _combo_name(entry, exit_variant)
                 n_day = int(exit_variant["n_day_low_period"] or 5)
                 combo_cfg = replace(
@@ -276,7 +314,7 @@ def main() -> None:
 
         print("\nStrategy matrix summary")
         print(summary.to_string(index=False))
-        print(f"\nSaved 15-combo matrix outputs to {out_root}")
+        print(f"\nSaved selectable matrix outputs to {out_root}")
         return
 
     # Single-run mode remains available for debugging.
