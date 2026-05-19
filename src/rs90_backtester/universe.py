@@ -5,41 +5,67 @@ import pandas as pd
 
 
 def add_point_in_time_rs(df: pd.DataFrame, months: range = range(1, 13)) -> pd.DataFrame:
-    """Add point-in-time RS score/rank using only data up to each row date.
+    """Add point-in-time RS score/rank using only information known at each date.
 
-    Formula mirrors the user's current rs_ranking.py idea: average geometric monthly
-    returns over 1..12 months, using 21 trading days per month.
+    Memory-optimized version:
+    - Does not materialize a 12-column concat table for monthly components.
+    - Accumulates sum/count arrays directly.
+    - Computes daily percentile rank with a vectorized groupby rank.
+
+    Formula:
+        For each n in 1..12 months, use n*21 trading-day return.
+        Convert cumulative return to geometric monthly return.
+        RS score = average of available monthly geometric returns.
+        RS rank = daily percentile rank bucket 0..99.
     """
-    df = df.sort_values(["ticker", "date"]).copy()
-    g = df.groupby("ticker", group_keys=False)
-    components: list[pd.Series] = []
+    required = {"ticker", "date", "close"}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError(f"missing required columns for RS ranking: {sorted(missing)}")
+
+    out = df.sort_values(["ticker", "date"]).copy()
+    out["ticker"] = out["ticker"].astype(str).str.upper()
+    out["date"] = pd.to_datetime(out["date"])
+
+    close = out["close"].astype("float64")
+    g = out.groupby("ticker", sort=False)["close"]
+
+    score_sum = np.zeros(len(out), dtype="float64")
+    score_count = np.zeros(len(out), dtype="int16")
+
     for n in months:
-        shift_n = n * 21
-        ret = g["close"].transform(lambda s, n=n: (s / s.shift(n * 21) - 1))
-        geo = np.sign(1 + ret) * np.power(np.abs(1 + ret), 1 / n) - 1
-        # Invalid if return <= -100%; should not happen in adjusted OHLCV, but keep safe.
-        geo = geo.where((1 + ret) > 0)
-        components.append(geo)
-    score = pd.concat(components, axis=1).mean(axis=1, skipna=True)
-    df["rs_score"] = score * 100
+        shift_n = int(n) * 21
+        prev = g.shift(shift_n).astype("float64")
+        ret = close / prev - 1.0
+        valid = ret.notna() & ((1.0 + ret) > 0.0)
+        geo = np.empty(len(out), dtype="float64")
+        geo[:] = np.nan
+        vals = ret.to_numpy(dtype="float64", copy=False)
+        valid_np = valid.to_numpy(dtype=bool, copy=False)
+        geo[valid_np] = np.power(1.0 + vals[valid_np], 1.0 / int(n)) - 1.0
+        score_sum[valid_np] += geo[valid_np]
+        score_count[valid_np] += 1
 
-    def rank_one_day(s: pd.Series) -> pd.Series:
-        valid = s.notna()
-        out = pd.Series(np.nan, index=s.index, dtype=float)
-        if valid.sum() < 2:
-            return out
-        pct = s[valid].rank(method="average", pct=True)
-        out.loc[valid] = np.floor(pct * 100).clip(0, 99)
-        return out
+    rs_score = np.full(len(out), np.nan, dtype="float64")
+    valid_score = score_count > 0
+    rs_score[valid_score] = (score_sum[valid_score] / score_count[valid_score]) * 100.0
+    out["rs_score"] = rs_score
 
-    df["rs_rank"] = df.groupby("date", group_keys=False)["rs_score"].apply(rank_one_day)
-    df["in_rs90"] = df["rs_rank"] >= 90
-    return df
+    # Vectorized daily percentile ranking. pct=True gives rank in (0,1].
+    # floor(pct*100) can become 100 for the top rank, so clip to 99.
+    pct_rank = out.groupby("date", sort=False)["rs_score"].rank(method="average", pct=True)
+    out["rs_rank"] = np.floor(pct_rank * 100.0).clip(lower=0, upper=99)
+    out.loc[out["rs_score"].isna(), "rs_rank"] = np.nan
+    out["in_rs90"] = out["rs_rank"] >= 90
+    return out
 
 
 def recent_rs90(df: pd.DataFrame, recent_days: int = 7, threshold: float = 90) -> pd.DataFrame:
-    dates = sorted(df["date"].dropna().unique())
-    use_dates = dates[-recent_days:]
+    dates = sorted(pd.to_datetime(df["date"].dropna()).unique())
+    use_dates = dates[-int(recent_days):]
     cols = ["date", "ticker", "rs_rank", "rs_score", "close", "volume"]
-    out = df[(df["date"].isin(use_dates)) & (df["rs_rank"] >= threshold)][cols].copy()
+    missing = [c for c in cols if c not in df.columns]
+    if missing:
+        raise ValueError(f"missing columns for recent_rs90: {missing}")
+    out = df[(df["date"].isin(use_dates)) & (df["rs_rank"] >= float(threshold))][cols].copy()
     return out.sort_values(["date", "rs_rank", "rs_score"], ascending=[True, False, False])
