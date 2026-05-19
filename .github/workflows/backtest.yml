@@ -63,6 +63,7 @@ jobs:
   backtest:
     runs-on: ubuntu-latest
     timeout-minutes: 360
+
     steps:
       - uses: actions/checkout@v4
 
@@ -73,7 +74,7 @@ jobs:
       - name: Prepare log folders
         run: |
           mkdir -p logs outputs/backtest
-          cat > logs/workflow_inputs.json <<JSON
+          cat > logs/workflow_inputs.json <<'JSON'
           {
             "years": "${{ github.event.inputs.years }}",
             "max_tickers": "${{ github.event.inputs.max_tickers }}",
@@ -83,9 +84,7 @@ jobs:
             "rs_buckets": "${{ github.event.inputs.rs_buckets }}",
             "position_pct": "${{ github.event.inputs.position_pct }}",
             "slippage_bps": "${{ github.event.inputs.slippage_bps }}",
-            "atr_period": "${{ github.event.inputs.atr_period }}",
-            "commit_outputs": "${{ github.event.inputs.commit_outputs }}",
-            "commit_stock_data": "${{ github.event.inputs.commit_stock_data }}"
+            "atr_period": "${{ github.event.inputs.atr_period }}"
           }
           JSON
 
@@ -93,7 +92,8 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          pip install -r requirements.txt 2>&1 | tee logs/01_install.log
+          python -m pip install --upgrade pip 2>&1 | tee logs/01_install.log
+          pip install -r requirements.txt 2>&1 | tee -a logs/01_install.log
           pip install -e . 2>&1 | tee -a logs/01_install.log
 
       - name: Build daily OHLCV data
@@ -116,6 +116,7 @@ jobs:
           import json
           from pathlib import Path
           import pandas as pd
+
           tickers = pd.read_csv('data/stock_ticker.csv')
           prices = pd.read_csv('data/stock_data.csv')
           summary = {
@@ -135,7 +136,6 @@ jobs:
         run: |
           set -o pipefail
           python scripts/run_backtest.py \
-            --matrix \
             --position-pct "${{ github.event.inputs.position_pct }}" \
             --recent-days "${{ github.event.inputs.recent_days }}" \
             --atr-period "${{ github.event.inputs.atr_period }}" \
@@ -153,6 +153,7 @@ jobs:
           import json
           from pathlib import Path
           import pandas as pd
+
           out = Path('outputs/backtest')
           report_md = out / 'REPORT.md'
           lines = ['# RS90 Backtest Report', '']
