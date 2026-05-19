@@ -14,7 +14,7 @@ class BacktestConfig:
     position_pct: float = 0.01
     rs_threshold: float = 90
     recent_days: int = 7
-    exit_mode: str = "ma10"  # ma10, atr_trail, n_day_low, prev_day_low
+    exit_mode: str = "atr_trail"  # atr_trail, n_day_low, hold_days, rsi2_threshold
     max_open_positions: int = 100
     max_new_positions_per_day: int = 100
     allow_same_ticker_overlap: bool = False
@@ -30,6 +30,8 @@ class BacktestConfig:
     atr_period: int = 14
     atr_multiple: float = 1.0
     n_day_low_period: int = 5
+    hold_days: int | None = None
+    rsi2_exit_threshold: float | None = None
     same_day_stop_rule: str = "red_candle_only"
 
     # Shared RS90 universe filters.
@@ -102,7 +104,7 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
     for d in dates:
         day = by_date[d]
 
-        # Existing positions: check exits using stop-order semantics.
+        # Existing positions: check exits using levels/signals available for this daily bar.
         exits_today: list[Position] = []
         for pos in list(positions):
             if pos.ticker not in day.index:
@@ -111,14 +113,14 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
             high = float(row["high"])
             low = float(row["low"])
 
-            # Exit uses stop levels known before this session. ATR trail is updated after close.
-            exit_price, exit_reason = _exit_for_position(pos, row, cfg)
+            exit_price, exit_reason = _exit_for_position(pos, row, pd.Timestamp(d), cfg)
 
+            # MAE/MFE include today's full bar even if daily-bar ordering is unknown.
             pos.max_high = max(pos.max_high, high)
             pos.min_low = min(pos.min_low, low)
 
             if exit_price is not None:
-                trade = _close_trade(pos, d, float(exit_price), exit_reason, cfg)
+                trade = _close_trade(pos, pd.Timestamp(d), float(exit_price), exit_reason, cfg)
                 trades.append(trade)
                 cash_realized += trade.pnl - cfg.commission_per_trade
                 exits_today.append(pos)
@@ -128,7 +130,7 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
         if exits_today:
             positions = [p for p in positions if p not in exits_today]
 
-        # New entries. User assumption: if same-day entry and stop both trigger, trade is entered then stopped.
+        # New entries.
         new_entries = 0
         held_tickers = {p.ticker for p in positions}
         candidates = _generate_entries(day, cfg)
@@ -141,7 +143,6 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
                 continue
             if cand["initial_stop"] >= cand["entry_price"]:
                 continue
-
             stop_pct = (cand["entry_price"] - cand["initial_stop"]) / cand["entry_price"]
             if cfg.max_stop_pct is not None and stop_pct > cfg.max_stop_pct:
                 continue
@@ -155,7 +156,7 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
             pos = Position(
                 strategy=cand["strategy"],
                 ticker=cand["ticker"],
-                entry_date=d,
+                entry_date=pd.Timestamp(d),
                 entry_price=float(cand["entry_price"]),
                 initial_stop=float(cand["initial_stop"]),
                 shares=shares,
@@ -170,19 +171,17 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
 
             # Same-day ambiguity rule for daily bars:
             # if entry and stop are both touched on the entry day, only treat it as stopped
-            # on a red candle (close < open). A green/doji candle is assumed to have moved up
-            # after entry, so the stop is not counted as hit on the same day.
+            # on a red candle (close < open). Green/doji candle does not trigger same-day stop.
             if _same_day_initial_stop_hit(pos, row, cfg):
                 exit_px = _sell_stop_fill_price(row, pos.initial_stop, cfg)
-                trade = _close_trade(pos, d, exit_px, "same_day_stop_loss_red_candle", cfg)
+                trade = _close_trade(pos, pd.Timestamp(d), exit_px, "same_day_stop_loss_red_candle", cfg)
                 trades.append(trade)
                 cash_realized += trade.pnl - cfg.commission_per_trade
             else:
                 _update_atr_trailing_stop_after_close(pos, row, cfg)
                 positions.append(pos)
                 held_tickers.add(pos.ticker)
-
-            new_entries += 1
+                new_entries += 1
 
         equity = _mark_to_market_equity(cash_realized, positions, day)
         equity_rows.append({
@@ -195,8 +194,8 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
         })
 
     if dates:
-        last_d = dates[-1]
-        last_day = by_date[last_d]
+        last_d = pd.Timestamp(dates[-1])
+        last_day = by_date[dates[-1]]
         for pos in positions:
             if pos.ticker in last_day.index:
                 px = float(last_day.loc[pos.ticker, "close"])
@@ -211,11 +210,10 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
 def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
     out: list[dict] = []
     day = day.sort_values(["rs_rank", "rs_score"], ascending=[False, False])
-
     for _, row in day.iterrows():
         ticker = str(row["ticker"])
 
-        # Exact date+ticker RS90 membership check. If this pair is not in the allowed RS90 table, no entry.
+        # Exact date+ticker RS90 membership check.
         if not bool(row.get("in_rs90", False)) or float(row.get("rs_rank", -1)) < cfg.rs_threshold:
             continue
         if not _passes_common_universe_filters(row, cfg):
@@ -239,8 +237,9 @@ def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
                     "initial_stop": float(prev_low),
                     "rs_rank_at_entry": float(row["rs_rank"]),
                     "signal_details": (
-                        f"buy_stop=pivot_high_{cfg.pivot_left}_{cfg.pivot_right}:{float(pivot):.4f}; entry=max(open,pivot); "
-                        f"prev_close={_fmt(prev_close)}; require_prev_close_lte_pivot={cfg.breakout_require_prev_close_lte_pivot}; "
+                        f"buy_stop=pivot_high_{cfg.pivot_left}_{cfg.pivot_right}:{float(pivot):.4f}; "
+                        f"entry=max(open,pivot); prev_close={_fmt(prev_close)}; "
+                        f"require_prev_close_lte_pivot={cfg.breakout_require_prev_close_lte_pivot}; "
                         f"avg_value_10={_fmt(row.get('avg_value_10'))}M; adr20={_fmt(row.get('adr20'))}; "
                         f"dr={_fmt(row.get('dr'))}; adr5={_fmt(row.get('adr5'))}; "
                         f"distance_to_ma5={_fmt(row.get('distance_to_ma5'))}; adr10_price={_fmt(row.get('adr10_price'))}"
@@ -303,39 +302,57 @@ def _same_day_initial_stop_hit(pos: Position, row: pd.Series, cfg: BacktestConfi
 def _initial_trailing_stop(entry_price: float, initial_stop: float, row: pd.Series, cfg: BacktestConfig) -> float | None:
     if cfg.exit_mode != "atr_trail":
         return None
-    # ATR trail starts from the original strategy stop. It is only raised after
-    # a later close updates max_high_since_entry - ATR * multiple. This keeps
-    # the entry stop definition unchanged: stop = previous day's low / setup low.
     return float(initial_stop)
 
 
-def _exit_for_position(pos: Position, row: pd.Series, cfg: BacktestConfig) -> tuple[float | None, str | None]:
+def _exit_for_position(pos: Position, row: pd.Series, current_date: pd.Timestamp, cfg: BacktestConfig) -> tuple[float | None, str | None]:
     # Conservative priority: initial stop first when several levels are touched on the same daily bar.
     if float(row["low"]) <= pos.initial_stop:
         return _sell_stop_fill_price(row, pos.initial_stop, cfg), "stop_loss"
 
-    levels: list[tuple[str, float]] = []
-    if cfg.exit_mode == "ma10" and pd.notna(row.get("ma10")):
-        levels.append(("ma10_break", float(row["ma10"])))
-    elif cfg.exit_mode == "atr_trail" and pos.trailing_stop is not None:
-        levels.append((f"atr_trail_{cfg.atr_multiple:g}x", float(pos.trailing_stop)))
-    elif cfg.exit_mode == "n_day_low" and pd.notna(row.get("n_day_low")):
-        levels.append((f"{cfg.n_day_low_period}_day_low_break", float(row["n_day_low"])))
-    elif cfg.exit_mode == "prev_day_low" and pd.notna(row.get("prev_low")):
-        levels.append(("prev_day_low_break", float(row["prev_low"])))
-
-    touched = [(reason, level) for reason, level in levels if float(row["low"]) <= level]
-    if not touched:
+    if cfg.exit_mode == "atr_trail" and pos.trailing_stop is not None:
+        level = float(pos.trailing_stop)
+        if float(row["low"]) <= level:
+            return _sell_stop_fill_price(row, level, cfg), f"atr_trail_{cfg.atr_multiple:g}x"
         return None, None
 
-    reason, level = max(touched, key=lambda x: x[1])
-    return _sell_stop_fill_price(row, level, cfg), reason
+    if cfg.exit_mode == "n_day_low":
+        col = f"n_day_low_{int(cfg.n_day_low_period)}"
+        level_value = row.get(col, row.get("n_day_low"))
+        if pd.notna(level_value):
+            level = float(level_value)
+            if float(row["low"]) <= level:
+                return _sell_stop_fill_price(row, level, cfg), f"{int(cfg.n_day_low_period)}_day_low_break"
+        return None, None
+
+    if cfg.exit_mode == "hold_days":
+        if cfg.hold_days is None:
+            return None, None
+        holding_days = int(np.busday_count(pd.Timestamp(pos.entry_date).date(), pd.Timestamp(current_date).date()))
+        if holding_days >= int(cfg.hold_days):
+            return _close_fill_price(row, cfg), f"hold_{int(cfg.hold_days)}d_exit"
+        return None, None
+
+    if cfg.exit_mode == "rsi2_threshold":
+        if cfg.rsi2_exit_threshold is None:
+            return None, None
+        rsi2 = row.get("rsi2")
+        if pd.notna(rsi2) and float(rsi2) > float(cfg.rsi2_exit_threshold):
+            return _close_fill_price(row, cfg), f"rsi2_gt_{int(cfg.rsi2_exit_threshold)}_exit"
+        return None, None
+
+    raise ValueError(f"unsupported exit_mode: {cfg.exit_mode}")
 
 
 def _sell_stop_fill_price(row: pd.Series, stop_price: float, cfg: BacktestConfig) -> float:
     # If open gaps through a sell stop, fill at open; otherwise fill at stop.
     raw = float(row["open"]) if float(row["open"]) <= float(stop_price) else float(stop_price)
     return raw * (1 - cfg.slippage_bps / 10000)
+
+
+def _close_fill_price(row: pd.Series, cfg: BacktestConfig) -> float:
+    # Close-based exits assume a market-on-close fill on the signal day.
+    return float(row["close"]) * (1 - cfg.slippage_bps / 10000)
 
 
 def _update_atr_trailing_stop_after_close(pos: Position, row: pd.Series, cfg: BacktestConfig) -> None:
@@ -404,6 +421,8 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
         "atr_period": cfg.atr_period,
         "atr_multiple": cfg.atr_multiple,
         "n_day_low_period": cfg.n_day_low_period,
+        "hold_days": cfg.hold_days,
+        "rsi2_exit_threshold": cfg.rsi2_exit_threshold,
         "same_day_stop_rule": cfg.same_day_stop_rule,
         "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
         "trade_count": int(len(trades)),
@@ -428,8 +447,13 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
                 "period": cfg.n_day_low_period,
                 "stop_formula": "previous N trading days' lowest low; shifted 1 day so the stop is known before the session",
             },
-            "prev_day_low": {
-                "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low",
+            "hold_days": {
+                "period": cfg.hold_days,
+                "fill": "close of the Nth trading day after entry",
+            },
+            "rsi2_threshold": {
+                "threshold": cfg.rsi2_exit_threshold,
+                "fill": "close of the signal day when daily RSI2 is above threshold",
             },
             "same_day_stop": {
                 "rule": cfg.same_day_stop_rule,
@@ -486,7 +510,6 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
             "total_return": round(float(eq.iloc[-1] / cfg.initial_capital - 1), 6),
             "max_drawdown": round(float(dd.min()), 6),
         })
-
     return report
 
 
@@ -509,11 +532,12 @@ def save_outputs(output_dir: str | Path, trades: pd.DataFrame, equity: pd.DataFr
     rs90_recent.to_csv(output_dir / "rs90_daily_recent.csv", index=False)
     with (output_dir / "performance_report.json").open("w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=2)
-
     try:
         import matplotlib.pyplot as plt
         if not equity.empty:
-            ax = equity.assign(date=pd.to_datetime(equity["date"])).plot(x="date", y="equity", legend=False, title="Equity Curve")
+            ax = equity.assign(date=pd.to_datetime(equity["date"])).plot(
+                x="date", y="equity", legend=False, title="Equity Curve"
+            )
             ax.set_xlabel("Date")
             ax.set_ylabel("Equity")
             fig = ax.get_figure()

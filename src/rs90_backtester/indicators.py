@@ -17,8 +17,8 @@ def add_indicators(
     Important anti-lookahead rules:
     - Confirmed pivot high/low is shifted by pivot_right + 1 bars so it can only
       be traded after the right-side confirmation bar has closed.
-    - n_day_low is shifted by 1 bar, so today's stop only uses lows known before
-      today's session.
+    - n_day_low_* fields are shifted by 1 bar, so today's stop only uses lows
+      known before today's session.
     """
     if pivot_left < 1 or pivot_right < 1:
         raise ValueError("pivot_left and pivot_right must be >= 1")
@@ -36,10 +36,9 @@ def add_indicators(
     df["date"] = pd.to_datetime(df["date"])
     df["ticker"] = df["ticker"].astype(str).str.upper()
     df = df.sort_values(["ticker", "date"]).reset_index(drop=True)
-
     g = df.groupby("ticker", group_keys=False)
 
-    # Moving averages
+    # Moving averages.
     df["ma5"] = g["close"].transform(lambda s: s.rolling(5, min_periods=5).mean())
     df["ma10"] = g["close"].transform(lambda s: s.rolling(10, min_periods=10).mean())
     df["ma20"] = g["close"].transform(lambda s: s.rolling(20, min_periods=20).mean())
@@ -58,18 +57,16 @@ def add_indicators(
     df["distance_to_ma5"] = (df["avg_bar"] - df["ma5"]).abs()
     df["adr10_price"] = df["adr10"] / 100.0 * df["close"].astype(float)
 
-    # RSI(2)
+    # RSI(2).
     df["rsi2"] = g["close"].transform(lambda s: rsi_wilder(s, 2))
 
-    # ATR
+    # ATR.
     df["prev_close"] = g["close"].shift(1)
     tr1 = df["high"].astype(float) - df["low"].astype(float)
     tr2 = (df["high"].astype(float) - df["prev_close"].astype(float)).abs()
     tr3 = (df["low"].astype(float) - df["prev_close"].astype(float)).abs()
     df["true_range"] = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
     df["atr"] = g["true_range"].transform(lambda s: s.rolling(atr_period, min_periods=atr_period).mean())
-    # ATR known before today's session. Used for entry-time ATR trailing stop initialization.
-    df["prev_atr"] = g["atr"].shift(1)
 
     # Pivot L,R raw points and confirmed tradable levels.
     df["pivot_high_raw"] = g["high"].transform(lambda s: pivot_high_lr(s, pivot_left, pivot_right))
@@ -86,7 +83,13 @@ def add_indicators(
     df["setup_rsi2"] = g["rsi2"].shift(1)
     df["setup_ma50"] = g["ma50"].shift(1)
     df["setup_close"] = g["close"].shift(1)
-    df["n_day_low"] = g["low"].transform(lambda s: s.rolling(n_day_low_period, min_periods=n_day_low_period).min().shift(1))
+
+    # Exit stops: previous N trading days' lowest low, shifted by 1 day.
+    for n in range(1, 6):
+        df[f"n_day_low_{n}"] = g["low"].transform(lambda s, n=n: s.rolling(n, min_periods=n).min().shift(1))
+    # Legacy column used by single-run mode.
+    n = int(n_day_low_period)
+    df["n_day_low"] = g["low"].transform(lambda s: s.rolling(n, min_periods=n).min().shift(1))
 
     df.attrs["pivot_left"] = pivot_left
     df.attrs["pivot_right"] = pivot_right
