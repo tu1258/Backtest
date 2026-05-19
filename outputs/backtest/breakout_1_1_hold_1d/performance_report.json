@@ -1,0 +1,78 @@
+{
+  "initial_capital": 1000000.0,
+  "position_pct": 0.01,
+  "rs_threshold": 90.0,
+  "strategies": [
+    "breakout"
+  ],
+  "entry_name": "breakout_1_1",
+  "exit_mode": "hold_days",
+  "pivot_left": 1,
+  "pivot_right": 1,
+  "atr_period": 14,
+  "atr_multiple": 1.0,
+  "n_day_low_period": 5,
+  "hold_days": 1,
+  "rsi2_exit_threshold": null,
+  "same_day_stop_rule": "red_candle_only",
+  "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
+  "trade_count": 2868,
+  "filters": {
+    "common": {
+      "avg_value_10_min_musd": 25.0,
+      "adr20_min": 2.5,
+      "adr20_max": 25.0,
+      "close_gt_ma50": true
+    },
+    "breakout_only": {
+      "dr_lt_adr5": true,
+      "distance_to_ma5_lt_adr10_price": true,
+      "prev_close_lte_pivot": true
+    },
+    "atr_trail": {
+      "atr_period": 14,
+      "atr_multiple": 1.0,
+      "stop_formula": "highest_high_since_entry - atr_multiple * current_ATR; updated after each close and active next session"
+    },
+    "n_day_low": {
+      "period": 5,
+      "stop_formula": "previous N trading days' lowest low; shifted 1 day so the stop is known before the session"
+    },
+    "hold_days": {
+      "period": 1,
+      "fill": "close of the Nth trading day after entry"
+    },
+    "rsi2_threshold": {
+      "threshold": null,
+      "fill": "close of the signal day when daily RSI2 is above threshold"
+    },
+    "same_day_stop": {
+      "rule": "red_candle_only",
+      "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop."
+    }
+  },
+  "win_rate": 0.42329149232914925,
+  "gross_profit": 415977.7,
+  "gross_loss": -555620.14,
+  "profit_factor": 0.7487,
+  "avg_r": -0.071,
+  "median_r": -0.125,
+  "avg_win": 342.65,
+  "avg_loss": -337.35,
+  "avg_win_loss_ratio": 1.0157,
+  "largest_winner_r": 11.3671,
+  "largest_loser_r": -4.6791,
+  "max_consecutive_losses": 31,
+  "avg_holding_days": 0.99,
+  "by_strategy": {
+    "breakout_1_1": {
+      "trades": 2868,
+      "win_rate": 0.42329149232914925,
+      "avg_r": -0.071,
+      "profit_factor": 0.7487
+    }
+  },
+  "final_equity": 860357.56,
+  "total_return": -0.139642,
+  "max_drawdown": -0.156828
+}

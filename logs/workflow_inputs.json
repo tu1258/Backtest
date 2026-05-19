@@ -2,14 +2,10 @@
   "years": "2",
   "max_tickers": "",
   "recent_days": "200",
-  "position_pct": "0.1",
+  "position_pct": "0.01",
   "atr_period": "14",
-  "entries": "rsi2",
-  "exits": "ma10,5_day_low,prev_day_low",
-  "matrix": "selectable entries x exits",
+  "entries": "breakout_1_1,breakout_2_2,rsi2",
+  "exits": "trail_0_5atr,trail_1atr,hold_1d,hold_2d,hold_3d,hold_4d,hold_5d,1_day_low,2_day_low,3_day_low,4_day_low,5_day_low,rsi2_gt_50,rsi2_gt_60,rsi2_gt_70,rsi2_gt_80",
   "commit_outputs": "true",
-  "commit_stock_data": "false",
-  "run_id": "26085468400",
-  "run_number": "24",
-  "sha": "12aa70987ffedc65aada9b606c8dbd87344ec6ac"
+  "commit_stock_data": "false"
 }
