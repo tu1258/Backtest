@@ -68,6 +68,8 @@ def add_indicators(
     tr3 = (df["low"].astype(float) - df["prev_close"].astype(float)).abs()
     df["true_range"] = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
     df["atr"] = g["true_range"].transform(lambda s: s.rolling(atr_period, min_periods=atr_period).mean())
+    # ATR known before today's session. Used for entry-time ATR trailing stop initialization.
+    df["prev_atr"] = g["atr"].shift(1)
 
     # Pivot L,R raw points and confirmed tradable levels.
     df["pivot_high_raw"] = g["high"].transform(lambda s: pivot_high_lr(s, pivot_left, pivot_right))

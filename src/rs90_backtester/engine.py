@@ -30,6 +30,7 @@ class BacktestConfig:
     atr_period: int = 14
     atr_multiple: float = 1.0
     n_day_low_period: int = 5
+    same_day_stop_rule: str = "red_candle_only"
 
     # Shared RS90 universe filters.
     min_avg_value_10: float = 25.0
@@ -164,12 +165,16 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
                 signal_details=cand.get("signal_details", ""),
                 max_high=float(row["high"]),
                 min_low=float(row["low"]),
-                trailing_stop=float(cand["initial_stop"]),
+                trailing_stop=_initial_trailing_stop(cand["entry_price"], cand["initial_stop"], row, cfg),
             )
 
-            if float(row["low"]) <= pos.initial_stop:
+            # Same-day ambiguity rule for daily bars:
+            # if entry and stop are both touched on the entry day, only treat it as stopped
+            # on a red candle (close < open). A green/doji candle is assumed to have moved up
+            # after entry, so the stop is not counted as hit on the same day.
+            if _same_day_initial_stop_hit(pos, row, cfg):
                 exit_px = _sell_stop_fill_price(row, pos.initial_stop, cfg)
-                trade = _close_trade(pos, d, exit_px, "same_day_stop_loss", cfg)
+                trade = _close_trade(pos, d, exit_px, "same_day_stop_loss_red_candle", cfg)
                 trades.append(trade)
                 cash_realized += trade.pnl - cfg.commission_per_trade
             else:
@@ -186,6 +191,7 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
             "cash_realized": cash_realized,
             "open_positions": len(positions),
             "exposure": sum(p.position_size for p in positions),
+            "exposure_pct": (sum(p.position_size for p in positions) / equity) if equity else 0.0,
         })
 
     if dates:
@@ -280,6 +286,27 @@ def _passes_breakout_filters(row: pd.Series, cfg: BacktestConfig) -> bool:
         if not (float(row.get("distance_to_ma5")) < float(row.get("adr10_price"))):
             return False
     return True
+
+
+def _same_day_initial_stop_hit(pos: Position, row: pd.Series, cfg: BacktestConfig) -> bool:
+    if float(row["low"]) > pos.initial_stop:
+        return False
+    if cfg.same_day_stop_rule == "always":
+        return True
+    if cfg.same_day_stop_rule == "never":
+        return False
+    if cfg.same_day_stop_rule == "red_candle_only":
+        return float(row["close"]) < float(row["open"])
+    raise ValueError(f"unsupported same_day_stop_rule: {cfg.same_day_stop_rule}")
+
+
+def _initial_trailing_stop(entry_price: float, initial_stop: float, row: pd.Series, cfg: BacktestConfig) -> float | None:
+    if cfg.exit_mode != "atr_trail":
+        return None
+    # ATR trail starts from the original strategy stop. It is only raised after
+    # a later close updates max_high_since_entry - ATR * multiple. This keeps
+    # the entry stop definition unchanged: stop = previous day's low / setup low.
+    return float(initial_stop)
 
 
 def _exit_for_position(pos: Position, row: pd.Series, cfg: BacktestConfig) -> tuple[float | None, str | None]:
@@ -377,6 +404,8 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
         "atr_period": cfg.atr_period,
         "atr_multiple": cfg.atr_multiple,
         "n_day_low_period": cfg.n_day_low_period,
+        "same_day_stop_rule": cfg.same_day_stop_rule,
+        "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
         "trade_count": int(len(trades)),
         "filters": {
             "common": {
@@ -401,6 +430,10 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
             },
             "prev_day_low": {
                 "stop_formula": "previous trading day's low; if open gaps below the stop, fill at open; otherwise fill at previous low",
+            },
+            "same_day_stop": {
+                "rule": cfg.same_day_stop_rule,
+                "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop.",
             },
         },
     }
