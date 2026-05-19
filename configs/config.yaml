@@ -1,13 +1,108 @@
-initial_capital: 1000000
-position_pct: 0.01
-recent_days: 4000
-entries: rsi2_next_open
-exits: hold_1d_open,hold_2d_open,hold_3d_open,hold_4d_open,hold_5d_open,rsi2_gt_50,rsi2_gt_60,rsi2_gt_70,rsi2_gt_80
-rs_buckets: 90_100
-slippage_bps: 1.0
-atr_period: 14
-filters:
-  min_avg_value_10: 25.0
-  min_adr20: 2.5
-  max_adr20: 25.0
-  require_close_above_ma50: true
+# RS90 / RSI2 rigorous backtest default config
+# Focus: RSI2 only. Breakout is intentionally excluded.
+
+data:
+  ticker_csv: data/stock_ticker.csv
+  price_csv: data/stock_data.csv
+  benchmark: ^GSPC
+  years: 20
+  auto_adjust: true
+  batch_size: 80
+  sleep_seconds: 1
+  max_tickers: null
+
+backtest:
+  initial_capital: 1000000
+  position_pct: 0.01
+
+  # This is only the default bucket threshold used by older code paths.
+  # The actual multi-bucket runs should use matrix.rs_buckets below.
+  rs_threshold: 90
+
+  # Number of trading days whose RS bucket membership can generate entries.
+  # Set this in GitHub Actions when you want 2500 / 4000 days.
+  recent_days: 4000
+
+  # Single-run fallback defaults. Matrix mode overrides these.
+  exit_mode: hold_days_open
+  hold_days: 1
+  rsi2_exit_threshold: 70
+  atr_period: 14
+  atr_multiple: 1.0
+  n_day_low_period: 5
+
+  max_open_positions: 1000
+  max_new_positions_per_day: 1000
+  allow_same_ticker_overlap: false
+  start_date: null
+  end_date: null
+
+  # RSI2-only focus.
+  strategies:
+    - rsi2
+
+costs:
+  # 1 bp = 0.01%; applied on entry and exit.
+  slippage_bps: 1.0
+  commission_per_trade: 0
+
+risk:
+  max_stop_pct: null
+
+# Selectable matrix defaults.
+# GitHub Actions inputs can override these.
+matrix:
+  # RSI2 next-open entry and intraday limit-style entry.
+  # If your current run_backtest.py only supports rsi2, keep only "rsi2" here.
+  entries:
+    - rsi2_next_open
+    - rsi2_intraday_limit
+
+  # RS bucket tests. Use all deciles by default.
+  rs_buckets:
+    - 0_10
+    - 10_20
+    - 20_30
+    - 30_40
+    - 40_50
+    - 50_60
+    - 60_70
+    - 70_80
+    - 80_90
+    - 90_100
+
+  exits:
+    # ATR trailing stops
+    - trail_0_5atr
+    - trail_1atr
+
+    # N-day low exits
+    - 1_day_low
+    - 2_day_low
+    - 3_day_low
+    - 4_day_low
+    - 5_day_low
+
+    # Fixed hold exits: sell at open
+    # hold_1d_open = buy today, sell next trading day's open.
+    - hold_0d_open
+    - hold_1d_open
+    - hold_2d_open
+    - hold_3d_open
+    - hold_4d_open
+    - hold_5d_open
+
+    # Fixed hold exits: sell at close
+    # hold_0d_close = buy today, sell today's close.
+    - hold_0d_close
+    - hold_1d_close
+    - hold_2d_close
+    - hold_3d_close
+    - hold_4d_close
+    - hold_5d_close
+
+    # RSI2 threshold exits
+    - rsi2_gt_50
+    - rsi2_gt_60
+    - rsi2_gt_70
+    - rsi2_gt_80
