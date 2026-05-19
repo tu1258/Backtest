@@ -197,7 +197,7 @@ def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
                     "entry_price": entry,
                     "initial_stop": float(setup_low),
                     "rs_rank_at_entry": float(row.get("entry_rs_rank", row["rs_rank"])),
-                    "signal_details": f"entry=rsi2_next_open; setup_rsi2={float(setup_rsi2):.2f}; raw_entry=open:{raw_entry:.4f}; slippage_bps={cfg.slippage_bps}; decision_date={row.get("decision_date", "")}; filter_close={row.get("entry_filter_close", np.nan):.4f}; filter_ma50={row.get("entry_filter_ma50", np.nan):.4f}; filter_avg_value_10={row.get("entry_filter_avg_value_10", np.nan):.2f}; filter_adr20={row.get("entry_filter_adr20", np.nan):.2f}; rs_bucket={cfg.rs_bucket}",
+                    "signal_details": f"entry=rsi2_next_open; setup_rsi2={float(setup_rsi2):.2f}; raw_entry=open:{raw_entry:.4f}; slippage_bps={cfg.slippage_bps}; decision_date={row.get('decision_date', '')}; filter_close={row.get('entry_filter_close', np.nan):.4f}; filter_ma50={row.get('entry_filter_ma50', np.nan):.4f}; filter_avg_value_10={row.get('entry_filter_avg_value_10', np.nan):.2f}; filter_adr20={row.get('entry_filter_adr20', np.nan):.2f}; rs_bucket={cfg.rs_bucket}",
                 })
         elif cfg.entry_name == "rsi2_intraday_limit":
             trigger = row.get("rsi2_5_trigger_price")
@@ -211,7 +211,7 @@ def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
                     "entry_price": entry,
                     "initial_stop": float(setup_low),
                     "rs_rank_at_entry": float(row.get("entry_rs_rank", row["rs_rank"])),
-                    "signal_details": f"entry=rsi2_intraday_limit; rsi2<5_trigger={float(trigger):.4f}; raw_entry={raw_entry:.4f}; slippage_bps={cfg.slippage_bps}; prev_low_stop={float(setup_low):.4f}; decision_date={row.get("decision_date", "")}; filter_close={row.get("entry_filter_close", np.nan):.4f}; filter_ma50={row.get("entry_filter_ma50", np.nan):.4f}; filter_avg_value_10={row.get("entry_filter_avg_value_10", np.nan):.2f}; filter_adr20={row.get("entry_filter_adr20", np.nan):.2f}; rs_bucket={cfg.rs_bucket}",
+                    "signal_details": f"entry=rsi2_intraday_limit; rsi2<5_trigger={float(trigger):.4f}; raw_entry={raw_entry:.4f}; slippage_bps={cfg.slippage_bps}; prev_low_stop={float(setup_low):.4f}; decision_date={row.get('decision_date', '')}; filter_close={row.get('entry_filter_close', np.nan):.4f}; filter_ma50={row.get('entry_filter_ma50', np.nan):.4f}; filter_avg_value_10={row.get('entry_filter_avg_value_10', np.nan):.2f}; filter_adr20={row.get('entry_filter_adr20', np.nan):.2f}; rs_bucket={cfg.rs_bucket}",
                 })
         else:
             raise ValueError(f"unsupported entry_name: {cfg.entry_name}")
