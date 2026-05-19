@@ -96,6 +96,27 @@ def _apply_entry_membership(df: pd.DataFrame, rs90: pd.DataFrame) -> pd.DataFram
     return df
 
 
+def _slice_to_entry_window(df: pd.DataFrame, rs90: pd.DataFrame) -> pd.DataFrame:
+    """Keep only dates that can matter for the current run.
+
+    The full price history is still used to compute RS, indicators, pivots, ATR,
+    and shifted setup columns before this function is called. But once those
+    columns exist, entries can only occur on exact RS90 membership dates.
+    Therefore the engine does not need to scan 20 years of rows; it only needs
+    rows from the first eligible RS90 date onward. Exits remain unrestricted
+    after entry, because all later rows are kept.
+    """
+    if rs90.empty:
+        return df.iloc[0:0].copy()
+    first_entry_date = pd.to_datetime(rs90["date"]).min()
+    out = df[df["date"] >= first_entry_date].copy()
+    print(
+        f"Simulation window sliced to dates >= {first_entry_date.date()}: "
+        f"rows={len(out):,}, tickers={out['ticker'].nunique():,}, dates={out['date'].nunique():,}"
+    )
+    return out
+
+
 def _prepare_df(
     prices: pd.DataFrame,
     *,
@@ -181,30 +202,35 @@ def main() -> None:
     print("Entries are restricted to exact date+ticker pairs in rs90 membership. Exits remain unrestricted within available price data.")
 
     if args.matrix:
+        import gc
+
         summary_rows = []
         reports = {}
-        prepared_cache: dict[tuple[int, int, int, int], pd.DataFrame] = {}
 
+        # Memory-efficient matrix execution:
+        # Do NOT keep prepared full-history DataFrames for multiple combo families.
+        # For 20-year / all-stock / recent_days=4000 runs, caching several 20M+ row
+        # DataFrames can get the GitHub runner killed with exit code 143.
+        # Instead, prepare one entry family, run all exits for it, write outputs,
+        # then release it before moving to the next family.
         for entry in ENTRY_VARIANTS:
+            print(
+                f"\nPreparing entry family: {entry['name']} "
+                f"pivot=({entry['pivot_left']},{entry['pivot_right']})"
+            )
+            df = _prepare_df(
+                prices,
+                pivot_left=entry["pivot_left"],
+                pivot_right=entry["pivot_right"],
+                atr_period=base_cfg.atr_period,
+                n_day_low_period=5,
+            )
+            df = _apply_entry_membership(df, rs90)
+            df = _slice_to_entry_window(df, rs90)
+
             for exit_variant in EXIT_VARIANTS:
                 combo_name = _combo_name(entry, exit_variant)
                 n_day = int(exit_variant["n_day_low_period"] or 5)
-                key = (entry["pivot_left"], entry["pivot_right"], base_cfg.atr_period, n_day)
-                if key not in prepared_cache:
-                    print(
-                        f"Computing indicators for combo family: pivot=({key[0]},{key[1]}), "
-                        f"atr_period={key[2]}, n_day_low_period={key[3]}"
-                    )
-                    df = _prepare_df(
-                        prices,
-                        pivot_left=key[0],
-                        pivot_right=key[1],
-                        atr_period=key[2],
-                        n_day_low_period=key[3],
-                    )
-                    prepared_cache[key] = _apply_entry_membership(df, rs90)
-
-                combo_df = prepared_cache[key]
                 combo_cfg = replace(
                     base_cfg,
                     strategies=(entry["strategy"],),
@@ -215,7 +241,7 @@ def main() -> None:
                     atr_multiple=float(exit_variant["atr_multiple"] if exit_variant["atr_multiple"] is not None else base_cfg.atr_multiple),
                     n_day_low_period=n_day,
                 )
-                report = _run_one(combo_df, out_root / combo_name, rs90, combo_cfg)
+                report = _run_one(df, out_root / combo_name, rs90, combo_cfg)
                 reports[combo_name] = report
                 summary_rows.append({
                     "strategy_combo": combo_name,
@@ -238,6 +264,10 @@ def main() -> None:
                     "max_drawdown": report.get("max_drawdown"),
                     "avg_holding_days": report.get("avg_holding_days"),
                 })
+                gc.collect()
+
+            del df
+            gc.collect()
 
         summary = pd.DataFrame(summary_rows)
         summary.to_csv(out_root / "strategy_summary.csv", index=False)
@@ -261,6 +291,7 @@ def main() -> None:
         n_day_low_period=n_day_low_period,
     )
     df = _apply_entry_membership(df, rs90)
+    df = _slice_to_entry_window(df, rs90)
     single_cfg = replace(
         base_cfg,
         pivot_left=pivot_left,
