@@ -20,7 +20,7 @@ on:
         required: true
         default: "0.01"
       atr_period:
-        description: "ATR period for trail exits. Matrix runs 0.5 ATR and 1.0 ATR."
+        description: "ATR period for trail exits. Matrix supports 0.5 ATR and 1.0 ATR."
         required: true
         default: "14"
       entries:
@@ -28,9 +28,9 @@ on:
         required: true
         default: "breakout_1_1,breakout_2_2,rsi2"
       exits:
-        description: "Comma list: trail_0_5atr,trail_1atr,ma10,5_day_low,prev_day_low"
+        description: "Comma list. Examples: trail_1atr,hold_3d,5_day_low,rsi2_gt_70"
         required: true
-        default: "trail_0_5atr,trail_1atr,ma10,5_day_low,prev_day_low"
+        default: "trail_0_5atr,trail_1atr,hold_1d,hold_2d,hold_3d,hold_4d,hold_5d,1_day_low,2_day_low,3_day_low,4_day_low,5_day_low,rsi2_gt_50,rsi2_gt_60,rsi2_gt_70,rsi2_gt_80"
       commit_outputs:
         description: "Commit outputs/backtest and logs back to repo"
         required: true
@@ -55,6 +55,7 @@ jobs:
   backtest:
     runs-on: ubuntu-latest
     timeout-minutes: 360
+
     steps:
       - uses: actions/checkout@v4
 
@@ -74,15 +75,10 @@ jobs:
             "atr_period": "${{ github.event.inputs.atr_period }}",
             "entries": "${{ github.event.inputs.entries }}",
             "exits": "${{ github.event.inputs.exits }}",
-            "matrix": "selectable entries x exits",
             "commit_outputs": "${{ github.event.inputs.commit_outputs }}",
-            "commit_stock_data": "${{ github.event.inputs.commit_stock_data }}",
-            "run_id": "${{ github.run_id }}",
-            "run_number": "${{ github.run_number }}",
-            "sha": "${{ github.sha }}"
+            "commit_stock_data": "${{ github.event.inputs.commit_stock_data }}"
           }
           EOF
-          cat logs/workflow_inputs.json
 
       - name: Install dependencies
         shell: bash
@@ -110,8 +106,8 @@ jobs:
           set -o pipefail
           python - <<'PY' 2>&1 | tee logs/03_data_summary.log
           import json
-          import pandas as pd
           from pathlib import Path
+          import pandas as pd
           tickers = pd.read_csv('data/stock_ticker.csv')
           prices = pd.read_csv('data/stock_data.csv')
           summary = {
