@@ -39,3 +39,16 @@ costs:
 
 risk:
   max_stop_pct: null
+
+# Matrix selection. GitHub Actions inputs can override these.
+matrix:
+  entries:
+    - breakout_1_1
+    - breakout_2_2
+    - rsi2
+  exits:
+    - trail_0_5atr
+    - trail_1atr
+    - ma10
+    - 5_day_low
+    - prev_day_low
