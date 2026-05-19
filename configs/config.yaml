@@ -85,7 +85,6 @@ matrix:
 
     # Fixed hold exits: sell at open
     # hold_1d_open = buy today, sell next trading day's open.
-    - hold_0d_open
     - hold_1d_open
     - hold_2d_open
     - hold_3d_open
