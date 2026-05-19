@@ -1,69 +1,98 @@
-name: RS90 Backtest
+name: RS Bucket RSI2 Backtest
 
 on:
   workflow_dispatch:
     inputs:
       years:
-        description: "Years of daily data to download from yfinance"
+        description: "Years of daily data to download"
         required: true
-        default: "2"
+        default: "20"
       max_tickers:
-        description: "Optional ticker limit for quick tests. Empty = all tickers"
+        description: "Limit tickers for testing. Leave blank for all."
         required: false
         default: ""
       recent_days:
-        description: "Recent trading days to export as RS90 membership and allow for entries"
+        description: "Number of recent trading days allowed for entries"
         required: true
-        default: "5"
+        default: "4000"
+      entries:
+        description: "Comma-separated: rsi2_next_open,rsi2_intraday_limit"
+        required: true
+        default: "rsi2_next_open"
+      exits:
+        description: "Comma-separated exits"
+        required: true
+        default: "hold_1d_open,hold_2d_open,hold_3d_open,hold_4d_open,hold_5d_open,rsi2_gt_50,rsi2_gt_60,rsi2_gt_70,rsi2_gt_80"
+      rs_buckets:
+        description: "Comma-separated RS buckets, e.g. 90_100 or 0_10,10_20,...,90_100"
+        required: true
+        default: "90_100"
       position_pct:
-        description: "Fixed notional position size as fraction of equity"
+        description: "Position notional per trade as equity fraction"
         required: true
         default: "0.01"
-      atr_period:
-        description: "ATR period for trail exits. Matrix supports 0.5 ATR and 1.0 ATR."
+      slippage_bps:
+        description: "Slippage per side in bps. 1 bp = 0.01%."
         required: true
-        default: "14"
-      entries:
-        description: "Comma list: breakout_1_1,breakout_2_2,rsi2"
-        required: true
-        default: "breakout_1_1,breakout_2_2,rsi2"
-      exits:
-        description: "Comma list. Examples: trail_1atr,hold_3d,5_day_low,rsi2_gt_70"
-        required: true
-        default: "trail_0_5atr,trail_1atr,hold_1d,hold_2d,hold_3d,hold_4d,hold_5d,1_day_low,2_day_low,3_day_low,4_day_low,5_day_low,rsi2_gt_50,rsi2_gt_60,rsi2_gt_70,rsi2_gt_80"
+        default: "1.0"
       commit_outputs:
-        description: "Commit outputs/backtest and logs back to repo"
+        description: "Commit outputs/logs back to repo"
         required: true
         default: "true"
-        type: choice
-        options:
-          - "true"
-          - "false"
       commit_stock_data:
-        description: "Commit data/stock_data.csv too. Not recommended for full universe because GitHub has a 100MB file limit."
+        description: "Commit data/stock_data.csv. Usually false because file may exceed GitHub limits."
         required: true
         default: "false"
-        type: choice
-        options:
-          - "false"
-          - "true"
 
 permissions:
   contents: write
 
+env:
+  PYTHONUNBUFFERED: "1"
+
 jobs:
   backtest:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Prepare log folders
+      - name: Install dependencies
+        run: |
+          mkdir -p logs
+          python -m pip install --upgrade pip 2>&1 | tee logs/01_install.log
+          pip install -r requirements.txt 2>&1 | tee -a logs/01_install.log
+
+      - name: Build daily OHLCV data
+        run: |
+          set -o pipefail
+          if [ -z "${{ github.event.inputs.max_tickers }}" ]; then
+            python scripts/build_data.py --years "${{ github.event.inputs.years }}" 2>&1 | tee logs/02_build_data.log
+          else
+            python scripts/build_data.py --years "${{ github.event.inputs.years }}" --max-tickers "${{ github.event.inputs.max_tickers }}" 2>&1 | tee logs/02_build_data.log
+          fi
+
+      - name: Run RSI2 strategy matrix
+        run: |
+          set -o pipefail
+          python scripts/run_backtest.py \
+            --price-csv data/stock_data.csv \
+            --output-dir outputs/backtest \
+            --recent-days "${{ github.event.inputs.recent_days }}" \
+            --entries "${{ github.event.inputs.entries }}" \
+            --exits "${{ github.event.inputs.exits }}" \
+            --rs-buckets "${{ github.event.inputs.rs_buckets }}" \
+            --position-pct "${{ github.event.inputs.position_pct }}" \
+            --slippage-bps "${{ github.event.inputs.slippage_bps }}" \
+            2>&1 | tee logs/04_run_backtest.log
+
+      - name: Save workflow inputs and report
+        if: always()
         run: |
           mkdir -p logs outputs/backtest
           cat > logs/workflow_inputs.json <<EOF
@@ -71,151 +100,53 @@ jobs:
             "years": "${{ github.event.inputs.years }}",
             "max_tickers": "${{ github.event.inputs.max_tickers }}",
             "recent_days": "${{ github.event.inputs.recent_days }}",
-            "position_pct": "${{ github.event.inputs.position_pct }}",
-            "atr_period": "${{ github.event.inputs.atr_period }}",
             "entries": "${{ github.event.inputs.entries }}",
             "exits": "${{ github.event.inputs.exits }}",
-            "commit_outputs": "${{ github.event.inputs.commit_outputs }}",
-            "commit_stock_data": "${{ github.event.inputs.commit_stock_data }}"
+            "rs_buckets": "${{ github.event.inputs.rs_buckets }}",
+            "position_pct": "${{ github.event.inputs.position_pct }}",
+            "slippage_bps": "${{ github.event.inputs.slippage_bps }}"
           }
           EOF
-
-      - name: Install dependencies
-        shell: bash
-        run: |
-          set -o pipefail
-          python -m pip install --upgrade pip 2>&1 | tee logs/01_install.log
-          pip install -r requirements.txt 2>&1 | tee -a logs/01_install.log
-          pip install -e . 2>&1 | tee -a logs/01_install.log
-
-      - name: Build daily OHLCV data
-        shell: bash
-        run: |
-          set -o pipefail
-          if [ -z "${{ github.event.inputs.max_tickers }}" ]; then
-            echo "max_tickers is empty: downloading full ticker list" | tee logs/02_build_data.log
-            python scripts/build_data.py --years "${{ github.event.inputs.years }}" 2>&1 | tee -a logs/02_build_data.log
-          else
-            echo "max_tickers=${{ github.event.inputs.max_tickers }}: downloading limited ticker list" | tee logs/02_build_data.log
-            python scripts/build_data.py --years "${{ github.event.inputs.years }}" --max-tickers "${{ github.event.inputs.max_tickers }}" 2>&1 | tee -a logs/02_build_data.log
-          fi
-
-      - name: Save downloaded data summary
-        shell: bash
-        run: |
-          set -o pipefail
-          python - <<'PY' 2>&1 | tee logs/03_data_summary.log
-          import json
+          python - <<'PY'
           from pathlib import Path
           import pandas as pd
-          tickers = pd.read_csv('data/stock_ticker.csv')
-          prices = pd.read_csv('data/stock_data.csv')
-          summary = {
-              'ticker_list_rows': int(len(tickers)),
-              'downloaded_price_rows': int(len(prices)),
-              'downloaded_unique_tickers': int(prices['ticker'].nunique()),
-              'date_min': str(prices['date'].min()),
-              'date_max': str(prices['date'].max()),
-          }
-          print(json.dumps(summary, indent=2))
-          Path('outputs/backtest').mkdir(parents=True, exist_ok=True)
-          Path('outputs/backtest/data_summary.json').write_text(json.dumps(summary, indent=2), encoding='utf-8')
-          PY
-
-      - name: Run selected strategy matrix
-        shell: bash
-        run: |
-          set -o pipefail
-          python scripts/run_backtest.py \
-            --matrix \
-            --position-pct "${{ github.event.inputs.position_pct }}" \
-            --recent-days "${{ github.event.inputs.recent_days }}" \
-            --atr-period "${{ github.event.inputs.atr_period }}" \
-            --entries "${{ github.event.inputs.entries }}" \
-            --exits "${{ github.event.inputs.exits }}" \
-            --output-dir outputs/backtest 2>&1 | tee logs/04_run_backtest.log
-
-      - name: Save RS90 and report summary
-        shell: bash
-        run: |
-          set -o pipefail
-          python - <<'PY' 2>&1 | tee logs/05_output_summary.log
-          import json
-          from pathlib import Path
-          import pandas as pd
-
           out = Path('outputs/backtest')
-          rs = pd.read_csv(out / 'rs90_daily_recent.csv')
-          rs_counts = rs.groupby('date')['ticker'].nunique().to_dict() if not rs.empty else {}
-          print('rs90_rows=', len(rs))
-          print('rs90_dates=', sorted(rs['date'].unique().tolist()) if not rs.empty else [])
-          print('rs90_count_by_date=')
-          print(rs.groupby('date')['ticker'].nunique().to_string() if not rs.empty else '(empty)')
-
-          summary_path = out / 'strategy_summary.csv'
-          if summary_path.exists():
-              summary = pd.read_csv(summary_path)
-              print('\nstrategy_summary=')
-              print(summary.to_string(index=False))
-          else:
-              summary = pd.DataFrame()
-
-          report_md = out / 'REPORT.md'
-          lines = []
-          lines.append('# RS90 Backtest Report')
-          lines.append('')
-          lines.append('## Matrix')
-          lines.append('')
-          lines.append('Entries: ${{ github.event.inputs.entries }}')
-          lines.append('')
-          lines.append('Exits: ${{ github.event.inputs.exits }}')
-          lines.append('')
-          lines.append('## Data summary')
-          data_summary = json.loads((out / 'data_summary.json').read_text(encoding='utf-8')) if (out / 'data_summary.json').exists() else {}
-          for k, v in data_summary.items():
-              lines.append(f'- {k}: {v}')
-          lines.append('')
-          lines.append('## Recent RS90 counts')
-          for d, n in rs_counts.items():
-              lines.append(f'- {d}: {n}')
-          lines.append('')
-          lines.append('## Strategy summary')
-          if not summary.empty:
-              lines.append(summary.to_markdown(index=False))
-          else:
-              lines.append('(No strategy_summary.csv found)')
-          lines.append('')
-          lines.append('## Output files')
-          for p in sorted(out.rglob('*')):
-              if p.is_file():
-                  lines.append(f'- `{p.as_posix()}`')
-          report_md.write_text('\n'.join(lines) + '\n', encoding='utf-8')
-          print(f'Wrote {report_md}')
+          report = out / 'REPORT.md'
+          lines = ['# Backtest Report', '']
+          lines.append('## Workflow inputs')
+          lines.append(Path('logs/workflow_inputs.json').read_text())
+          summary = out / 'strategy_summary.csv'
+          if summary.exists():
+              df = pd.read_csv(summary)
+              lines.append('\n## Strategy Summary')
+              lines.append(df.to_markdown(index=False))
+          membership = out / 'rs_membership_recent.csv'
+          if membership.exists():
+              m = pd.read_csv(membership)
+              lines.append('\n## RS Membership Counts')
+              if not m.empty:
+                  lines.append(m.groupby('rs_bucket').size().to_frame('rows').to_markdown())
+          report.write_text('\n'.join(lines), encoding='utf-8')
           PY
 
-      - name: Upload outputs and logs
+      - name: Upload outputs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: rs90-backtest-outputs
+          name: rs-backtest-outputs
           path: |
-            outputs/backtest/
-            logs/
+            outputs/backtest
+            logs
             data/stock_data.csv
 
-      - name: Commit reports and logs
-        if: ${{ github.event.inputs.commit_outputs == 'true' }}
-        shell: bash
+      - name: Commit outputs and logs
+        if: always() && github.event.inputs.commit_outputs == 'true'
         run: |
-          set -o pipefail
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add outputs/backtest logs
           if [ "${{ github.event.inputs.commit_stock_data }}" = "true" ]; then
             git add data/stock_data.csv
           fi
-          if git diff --cached --quiet; then
-            echo "No report/log changes to commit."
-          else
-            git commit -m "Update selected-matrix backtest reports and logs"
-            git push
-          fi
+          git diff --cached --quiet || git commit -m "Update RSI2 backtest outputs"
+          git push || true
