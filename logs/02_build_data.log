@@ -1,155 +1,155 @@
 max_tickers is empty: downloading full ticker list
-Downloading 5287 tickers from 2024-04-29 to 2026-05-20 in 67 batches
+Downloading 5287 tickers from 2020-04-29 to 2026-05-20 in 67 batches
 [1/67] A ... ADEA
-  rows=40118
+  rows=108127
 [2/67] ADGM ... AIFF
-  rows=36543
+  rows=98550
 [3/67] AIFU ... ALX
-  rows=38958
+  rows=104668
 [4/67] ALXO ... APAM
-  rows=39187
+  rows=104330
 [5/67] APC ... ASIC
-  rows=39038
+  rows=105135
 [6/67] ASIX ... AVGO
-  rows=39425
+  rows=104037
 [7/67] AVIR ... BBVA
-  rows=40112
+  rows=108097
 [8/67] BBW ... BIAF
-  rows=39683
+  rows=107960
 [9/67] BIDU ... BODI
-  rows=38166
+  rows=101127
 [10/67] BOF ... BUR
-  rows=37454
+  rows=96899
 [11/67] BURL ... CATX
-  rows=38632
+  rows=106983
 [12/67] CATY ... CETY
-  rows=38946
+  rows=104165
 [13/67] CEVA ... CLIR
-  rows=39156
+  rows=106058
 [14/67] CLLS ... CODA
 HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CLRS"}}}
 $CLRS: possibly delisted; no timezone found
 
 1 Failed download:
 ['CLRS']: possibly delisted; no timezone found
-  rows=39930
+  rows=112016
 [15/67] CODI ... CRNC
-  rows=40299
+  rows=108884
 [16/67] CRNT ... CVLG
-  rows=38907
+  rows=104634
 [17/67] CVLT ... DECK
-  rows=40233
+  rows=110952
 [18/67] DEFT ... DRH
-  rows=39694
+  rows=108191
 [19/67] DRI ... EEIQ
-  rows=40463
+  rows=108615
 [20/67] EEX ... EOG
-  rows=37499
+  rows=100846
 [21/67] EOLS ... EWCZ
-  rows=39047
+  rows=108440
 [22/67] EWTX ... FFIN
-  rows=39593
+  rows=107100
 [23/67] FFIV ... FORTY
-  rows=38737
+  rows=103212
 [24/67] FOSL ... GALT
-  rows=39407
+  rows=109637
 [25/67] GAMB ... GIS
-  rows=39767
+  rows=103927
 [26/67] GITS ... GREE
-  rows=37423
+  rows=97770
 [27/67] GRFS ... HCKT
-  rows=39790
+  rows=105554
 [28/67] HCM ... HPE
-  rows=39727
+  rows=103267
 [29/67] HPK ... IBM
-  rows=38962
+  rows=106179
 [30/67] IBN ... INDB
-  rows=40918
+  rows=110422
 [31/67] INDI ... IRWD
-  rows=39758
+  rows=105958
 [32/67] ISBA ... JRSH
-  rows=38743
+  rows=104233
 [33/67] JRVR ... KOF
-  rows=38528
+  rows=102057
 [34/67] KOP ... LCTX
-  rows=39579
+  rows=104892
 [35/67] LCUT ... LNG
 
 1 Failed download:
 ['LFTO']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=37920
+  rows=100064
 [36/67] LNKS ... LYFT
-  rows=40574
+  rows=105851
 [37/67] LYG ... MDU
-  rows=38127
+  rows=101770
 [38/67] MDV ... MLYS
-$MHM: possibly delisted; no price data found  (1d 2024-04-29 -> 2026-05-20)
+$MHM: possibly delisted; no price data found  (1d 2020-04-29 -> 2026-05-20)
 
 1 Failed download:
-['MHM']: possibly delisted; no price data found  (1d 2024-04-29 -> 2026-05-20)
-  rows=37664
+['MHM']: possibly delisted; no price data found  (1d 2020-04-29 -> 2026-05-20)
+  rows=98477
 [39/67] MMA ... MSGM
-  rows=39241
+  rows=102902
 [40/67] MSGS ... NBBK
-  rows=38559
+  rows=102032
 [41/67] NBHC ... NJR
-  rows=38804
+  rows=104599
 [42/67] NKE ... NTNX
-  rows=38382
+  rows=102175
 [43/67] NTR ... OCGN
-  rows=39893
+  rows=106300
 [44/67] OCS ... OPTT
-  rows=39274
+  rows=106435
 [45/67] OPTU ... PATK
-  rows=39204
+  rows=105474
 [46/67] PAVM ... PH
-  rows=39953
+  rows=110371
 [47/67] PHAR ... POLA
-  rows=37976
+  rows=101785
 [48/67] POM ... PTHS
-  rows=39695
+  rows=108893
 [49/67] PTLE ... RCAT
-  rows=38246
+  rows=102230
 [50/67] RCEL ... RIVN
-  rows=39746
+  rows=108098
 [51/67] RJET ... RVMD
-  rows=38534
+  rows=105760
 [52/67] RVP ... SCOR
-  rows=38772
+  rows=103743
 [53/67] SCSC ... SIBN
-  rows=39127
+  rows=99668
 [54/67] SID ... SMP
-  rows=39258
+  rows=106270
 [55/67] SMPL ... SPRO
 
 1 Failed download:
 ['SPACEX']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=39271
+  rows=99245
 [56/67] SPRU ... STUB
-  rows=39390
+  rows=106069
 [57/67] STVN ... TCBK
-  rows=39069
+  rows=101863
 [58/67] TCBS ... TKNO
-  rows=39440
+  rows=106872
 [59/67] TKO ... TRNS
 
 1 Failed download:
 ['TKVA']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=38849
+  rows=104610
 [60/67] TRON ... UBCP
-  rows=40430
+  rows=110567
 [61/67] UBER ... UTI
-  rows=40901
+  rows=110612
 [62/67] UTL ... VMET
-  rows=38629
+  rows=105676
 [63/67] VMI ... WBD
-  rows=39261
+  rows=105041
 [64/67] WBI ... WRBY
-  rows=39219
+  rows=105631
 [65/67] WRD ... XTLB
-  rows=37441
+  rows=100787
 [66/67] XTNT ... ZTS
-  rows=36265
+  rows=86849
 [67/67] ZUMZ ... ZYME
-  rows=3431
-Saved data/stock_data.csv rows=2582967 tickers=5282
+  rows=8429
+Saved data/stock_data.csv rows=6918070 tickers=5282

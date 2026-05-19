@@ -1,13 +1,13 @@
 {
-  "years": "2",
+  "years": "6",
   "max_tickers": "",
-  "recent_days": "5",
+  "recent_days": "1000",
   "position_pct": "0.01",
   "atr_period": "14",
   "matrix": "15 combos: breakout_1_1, breakout_2_2, rsi2 x trail_0_5atr, trail_1atr, ma10, 5_day_low, prev_day_low",
   "commit_outputs": "true",
   "commit_stock_data": "false",
-  "run_id": "26077051312",
-  "run_number": "21",
-  "sha": "48f0d7f057e0874903328e73b38b50ba02adc3ae"
+  "run_id": "26077470336",
+  "run_number": "22",
+  "sha": "6df16b173cbcbd17b2490406ce8f2fddaae30a6c"
 }
