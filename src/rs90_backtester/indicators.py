@@ -12,21 +12,13 @@ def add_indicators(
     atr_period: int = 14,
     n_day_low_period: int = 5,
 ) -> pd.DataFrame:
-    """Add daily indicators used by the RS90 backtester.
+    """Add daily indicators for RSI2-focused backtests.
 
-    Important anti-lookahead rules:
-    - Confirmed pivot high/low is shifted by pivot_right + 1 bars so it can only
-      be traded after the right-side confirmation bar has closed.
-    - n_day_low_* fields are shifted by 1 bar, so today's stop only uses lows
-      known before today's session.
+    Anti-lookahead rules:
+    - RSI2 next-open entry uses setup_rsi2 = yesterday's RSI2.
+    - n_day_low_1..5 are shifted by one bar, so today's stop uses only known lows.
+    - intraday RSI2 trigger price is computed from yesterday's Wilder/RMA state.
     """
-    if pivot_left < 1 or pivot_right < 1:
-        raise ValueError("pivot_left and pivot_right must be >= 1")
-    if atr_period < 1:
-        raise ValueError("atr_period must be >= 1")
-    if n_day_low_period < 1:
-        raise ValueError("n_day_low_period must be >= 1")
-
     required = {"ticker", "date", "open", "high", "low", "close", "volume"}
     missing = required - set(prices.columns)
     if missing:
@@ -38,67 +30,67 @@ def add_indicators(
     df = df.sort_values(["ticker", "date"]).reset_index(drop=True)
     g = df.groupby("ticker", group_keys=False)
 
-    # Moving averages.
+    # Moving averages and liquidity/range filters.
     df["ma5"] = g["close"].transform(lambda s: s.rolling(5, min_periods=5).mean())
-    df["ma10"] = g["close"].transform(lambda s: s.rolling(10, min_periods=10).mean())
     df["ma20"] = g["close"].transform(lambda s: s.rolling(20, min_periods=20).mean())
     df["ma50"] = g["close"].transform(lambda s: s.rolling(50, min_periods=50).mean())
-
-    # Dollar volume filter: average of daily volume * close, USD millions.
     df["dollar_volume"] = df["volume"].astype(float) * df["close"].astype(float)
     df["avg_value_10"] = g["dollar_volume"].transform(lambda s: s.rolling(10, min_periods=10).mean()) / 1_000_000
-
-    # Daily range / ADR filters.
     df["dr"] = (df["high"].astype(float) / df["low"].astype(float) - 1.0) * 100.0
     df["adr5"] = g["dr"].transform(lambda s: s.rolling(5, min_periods=5).mean())
     df["adr10"] = g["dr"].transform(lambda s: s.rolling(10, min_periods=10).mean())
     df["adr20"] = g["dr"].transform(lambda s: s.rolling(20, min_periods=20).mean())
-    df["avg_bar"] = (df["close"].astype(float) + df["high"].astype(float) + df["low"].astype(float)) / 3.0
-    df["distance_to_ma5"] = (df["avg_bar"] - df["ma5"]).abs()
-    df["adr10_price"] = df["adr10"] / 100.0 * df["close"].astype(float)
 
-    # RSI(2).
-    df["rsi2"] = g["close"].transform(lambda s: rsi_wilder(s, 2))
+    # RSI2 with Wilder/RMA components. Components are needed to compute the exact live-daily
+    # price that would make RSI2 fall below 5 during the session.
+    rsi_parts = g["close"].apply(lambda s: rsi_wilder_with_components(s, 2)).reset_index(level=0, drop=True)
+    df["rsi2"] = rsi_parts["rsi"].to_numpy()
+    df["rsi2_avg_gain"] = rsi_parts["avg_gain"].to_numpy()
+    df["rsi2_avg_loss"] = rsi_parts["avg_loss"].to_numpy()
+    df["prev_rsi2_avg_gain"] = g["rsi2_avg_gain"].shift(1)
+    df["prev_rsi2_avg_loss"] = g["rsi2_avg_loss"].shift(1)
 
-    # ATR.
     df["prev_close"] = g["close"].shift(1)
+    df["prev_low"] = g["low"].shift(1)
+    df["setup_low"] = df["prev_low"]
+    df["setup_rsi2"] = g["rsi2"].shift(1)
+
+    # Entry-day filters must use only information available before the entry day.
+    # Example: if trading on 12/31, these columns are based on 12/30 close/indicators.
+    df["entry_filter_avg_value_10"] = g["avg_value_10"].shift(1)
+    df["entry_filter_adr20"] = g["adr20"].shift(1)
+    df["entry_filter_close"] = g["close"].shift(1)
+    df["entry_filter_ma50"] = g["ma50"].shift(1)
+
+    # Theoretical limit-buy trigger where today's still-forming daily RSI2 becomes <= 5.
+    # For RSI2, alpha=1/2. If price is below prev_close, gain_today=0 and loss_today=prev_close-price.
+    # RSI <= 5 => RS <= 5/95 = 1/19.
+    # prev_avg_gain / (prev_close - price + prev_avg_loss) <= 1/19
+    # price <= prev_close + prev_avg_loss - 19 * prev_avg_gain
+    df["rsi2_5_trigger_price"] = (
+        df["prev_close"].astype(float)
+        + df["prev_rsi2_avg_loss"].astype(float)
+        - 19.0 * df["prev_rsi2_avg_gain"].astype(float)
+    )
+    # Only meaningful when trigger is below previous close and positive.
+    df.loc[df["rsi2_5_trigger_price"] <= 0, "rsi2_5_trigger_price"] = np.nan
+    df.loc[df["rsi2_5_trigger_price"] >= df["prev_close"], "rsi2_5_trigger_price"] = np.nan
+
+    # ATR, shifted stop levels.
     tr1 = df["high"].astype(float) - df["low"].astype(float)
     tr2 = (df["high"].astype(float) - df["prev_close"].astype(float)).abs()
     tr3 = (df["low"].astype(float) - df["prev_close"].astype(float)).abs()
     df["true_range"] = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
     df["atr"] = g["true_range"].transform(lambda s: s.rolling(atr_period, min_periods=atr_period).mean())
 
-    # Pivot L,R raw points and confirmed tradable levels.
-    df["pivot_high_raw"] = g["high"].transform(lambda s: pivot_high_lr(s, pivot_left, pivot_right))
-    df["pivot_low_raw"] = g["low"].transform(lambda s: pivot_low_lr(s, pivot_left, pivot_right))
-
-    # A pivot at t is only known after t + R closes; use it from t + R + 1.
-    pivot_shift = pivot_right + 1
-    df["confirmed_pivot_high"] = g["pivot_high_raw"].transform(lambda s: s.shift(pivot_shift).ffill())
-    df["confirmed_pivot_low"] = g["pivot_low_raw"].transform(lambda s: s.shift(pivot_shift).ffill())
-
-    # Setup / stop fields.
-    df["prev_low"] = g["low"].shift(1)
-    df["setup_low"] = g["low"].shift(1)
-    df["setup_rsi2"] = g["rsi2"].shift(1)
-    df["setup_ma50"] = g["ma50"].shift(1)
-    df["setup_close"] = g["close"].shift(1)
-
-    # Exit stops: previous N trading days' lowest low, shifted by 1 day.
     for n in range(1, 6):
         df[f"n_day_low_{n}"] = g["low"].transform(lambda s, n=n: s.rolling(n, min_periods=n).min().shift(1))
-    # Legacy column used by single-run mode.
-    n = int(n_day_low_period)
-    df["n_day_low"] = g["low"].transform(lambda s: s.rolling(n, min_periods=n).min().shift(1))
 
-    df.attrs["pivot_left"] = pivot_left
-    df.attrs["pivot_right"] = pivot_right
     df.attrs["atr_period"] = atr_period
-    df.attrs["n_day_low_period"] = n_day_low_period
     return df
 
 
-def rsi_wilder(close: pd.Series, period: int = 2) -> pd.Series:
+def rsi_wilder_with_components(close: pd.Series, period: int = 2) -> pd.DataFrame:
     close = close.astype(float)
     delta = close.diff()
     gain = delta.clip(lower=0)
@@ -109,28 +101,8 @@ def rsi_wilder(close: pd.Series, period: int = 2) -> pd.Series:
     rsi = 100 - (100 / (1 + rs))
     rsi = rsi.where(avg_loss != 0, 100)
     rsi = rsi.where(avg_gain != 0, 0)
-    return rsi
+    return pd.DataFrame({"rsi": rsi, "avg_gain": avg_gain, "avg_loss": avg_loss}, index=close.index)
 
 
-def pivot_high_lr(high: pd.Series, left: int = 1, right: int = 1) -> pd.Series:
-    h = high.astype(float)
-    out = pd.Series(np.nan, index=h.index, dtype=float)
-    mask = pd.Series(True, index=h.index)
-    for i in range(1, left + 1):
-        mask &= h > h.shift(i)
-    for i in range(1, right + 1):
-        mask &= h > h.shift(-i)
-    out.loc[mask] = h.loc[mask]
-    return out
-
-
-def pivot_low_lr(low: pd.Series, left: int = 1, right: int = 1) -> pd.Series:
-    l = low.astype(float)
-    out = pd.Series(np.nan, index=l.index, dtype=float)
-    mask = pd.Series(True, index=l.index)
-    for i in range(1, left + 1):
-        mask &= l < l.shift(i)
-    for i in range(1, right + 1):
-        mask &= l < l.shift(-i)
-    out.loc[mask] = l.loc[mask]
-    return out
+def rsi_wilder(close: pd.Series, period: int = 2) -> pd.Series:
+    return rsi_wilder_with_components(close, period)["rsi"]

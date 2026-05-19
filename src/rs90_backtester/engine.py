@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass, asdict
 from pathlib import Path
 import json
-
 import numpy as np
 import pandas as pd
 
@@ -13,37 +12,22 @@ class BacktestConfig:
     initial_capital: float = 1_000_000
     position_pct: float = 0.01
     rs_threshold: float = 90
+    rs_bucket: str | None = None
     recent_days: int = 7
-    exit_mode: str = "atr_trail"  # atr_trail, n_day_low, hold_days, rsi2_threshold
-    max_open_positions: int = 100
-    max_new_positions_per_day: int = 100
+    entry_name: str = "rsi2_next_open"  # rsi2_next_open, rsi2_intraday_limit
+    exit_name: str = "hold_1d_open"
+    max_open_positions: int = 100_000
+    max_new_positions_per_day: int = 100_000
     allow_same_ticker_overlap: bool = False
-    slippage_bps: float = 0
+    slippage_bps: float = 1.0
     commission_per_trade: float = 0
     max_stop_pct: float | None = None
-    start_date: str | None = None
-    end_date: str | None = None
-    strategies: tuple[str, ...] = ("breakout", "rsi2")
-    entry_name: str | None = None
-    pivot_left: int = 1
-    pivot_right: int = 1
-    atr_period: int = 14
-    atr_multiple: float = 1.0
-    n_day_low_period: int = 5
-    hold_days: int | None = None
-    rsi2_exit_threshold: float | None = None
     same_day_stop_rule: str = "red_candle_only"
-
-    # Shared RS90 universe filters.
+    atr_period: int = 14
     min_avg_value_10: float = 25.0
     min_adr20: float = 2.5
     max_adr20: float = 25.0
     require_close_above_ma50: bool = True
-
-    # Breakout-only filters.
-    breakout_require_dr_lt_adr5: bool = True
-    breakout_require_near_ma5_within_adr10: bool = True
-    breakout_require_prev_close_lte_pivot: bool = True
 
 
 @dataclass
@@ -88,11 +72,7 @@ class Trade:
 
 def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
     work = df.copy().sort_values(["date", "ticker"]).reset_index(drop=True)
-    if cfg.start_date:
-        work = work[work["date"] >= pd.to_datetime(cfg.start_date)]
-    if cfg.end_date:
-        work = work[work["date"] <= pd.to_datetime(cfg.end_date)]
-
+    work["date"] = pd.to_datetime(work["date"])
     dates = sorted(work["date"].unique())
     by_date = {d: g.set_index("ticker", drop=False) for d, g in work.groupby("date")}
 
@@ -104,37 +84,27 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
     for d in dates:
         day = by_date[d]
 
-        # Existing positions: check exits using levels/signals available for this daily bar.
         exits_today: list[Position] = []
         for pos in list(positions):
             if pos.ticker not in day.index:
                 continue
             row = day.loc[pos.ticker]
-            high = float(row["high"])
-            low = float(row["low"])
-
-            exit_price, exit_reason = _exit_for_position(pos, row, pd.Timestamp(d), cfg)
-
-            # MAE/MFE include today's full bar even if daily-bar ordering is unknown.
-            pos.max_high = max(pos.max_high, high)
-            pos.min_low = min(pos.min_low, low)
-
+            exit_price, exit_reason = _exit_for_position(pos, row, d, cfg)
+            pos.max_high = max(pos.max_high, float(row["high"]))
+            pos.min_low = min(pos.min_low, float(row["low"]))
             if exit_price is not None:
-                trade = _close_trade(pos, pd.Timestamp(d), float(exit_price), exit_reason, cfg)
+                trade = _close_trade(pos, d, float(exit_price), str(exit_reason), cfg)
                 trades.append(trade)
                 cash_realized += trade.pnl - cfg.commission_per_trade
                 exits_today.append(pos)
             else:
                 _update_atr_trailing_stop_after_close(pos, row, cfg)
-
         if exits_today:
             positions = [p for p in positions if p not in exits_today]
 
-        # New entries.
         new_entries = 0
         held_tickers = {p.ticker for p in positions}
-        candidates = _generate_entries(day, cfg)
-        for cand in candidates:
+        for cand in _generate_entries(day, cfg):
             if new_entries >= cfg.max_new_positions_per_day:
                 break
             if len(positions) >= cfg.max_open_positions:
@@ -151,12 +121,11 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
             shares = int(notional // cand["entry_price"])
             if shares <= 0:
                 continue
-
             row = day.loc[cand["ticker"]]
             pos = Position(
                 strategy=cand["strategy"],
                 ticker=cand["ticker"],
-                entry_date=pd.Timestamp(d),
+                entry_date=d,
                 entry_price=float(cand["entry_price"]),
                 initial_stop=float(cand["initial_stop"]),
                 shares=shares,
@@ -166,15 +135,11 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
                 signal_details=cand.get("signal_details", ""),
                 max_high=float(row["high"]),
                 min_low=float(row["low"]),
-                trailing_stop=_initial_trailing_stop(cand["entry_price"], cand["initial_stop"], row, cfg),
+                trailing_stop=_initial_trailing_stop(cand["initial_stop"], cfg),
             )
-
-            # Same-day ambiguity rule for daily bars:
-            # if entry and stop are both touched on the entry day, only treat it as stopped
-            # on a red candle (close < open). Green/doji candle does not trigger same-day stop.
             if _same_day_initial_stop_hit(pos, row, cfg):
                 exit_px = _sell_stop_fill_price(row, pos.initial_stop, cfg)
-                trade = _close_trade(pos, pd.Timestamp(d), exit_px, "same_day_stop_loss_red_candle", cfg)
+                trade = _close_trade(pos, d, exit_px, "same_day_stop_loss_red_candle", cfg)
                 trades.append(trade)
                 cash_realized += trade.pnl - cfg.commission_per_trade
             else:
@@ -184,21 +149,22 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
                 new_entries += 1
 
         equity = _mark_to_market_equity(cash_realized, positions, day)
+        exposure = sum(p.position_size for p in positions)
         equity_rows.append({
             "date": pd.Timestamp(d).strftime("%Y-%m-%d"),
             "equity": equity,
             "cash_realized": cash_realized,
             "open_positions": len(positions),
-            "exposure": sum(p.position_size for p in positions),
-            "exposure_pct": (sum(p.position_size for p in positions) / equity) if equity else 0.0,
+            "gross_exposure": exposure,
+            "exposure_pct": (exposure / equity) if equity else 0.0,
         })
 
     if dates:
-        last_d = pd.Timestamp(dates[-1])
-        last_day = by_date[dates[-1]]
+        last_d = dates[-1]
+        last_day = by_date[last_d]
         for pos in positions:
             if pos.ticker in last_day.index:
-                px = float(last_day.loc[pos.ticker, "close"])
+                px = float(last_day.loc[pos.ticker, "close"]) * (1 - cfg.slippage_bps / 10000)
                 trades.append(_close_trade(pos, last_d, px, "end_of_backtest", cfg))
 
     trades_df = pd.DataFrame([asdict(t) for t in trades])
@@ -209,82 +175,63 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
 
 def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
     out: list[dict] = []
-    day = day.sort_values(["rs_rank", "rs_score"], ascending=[False, False])
+    sort_rank = "entry_rs_rank" if "entry_rs_rank" in day.columns else "rs_rank"
+    sort_score = "entry_rs_score" if "entry_rs_score" in day.columns else "rs_score"
+    day = day.sort_values([sort_rank, sort_score], ascending=[False, False])
     for _, row in day.iterrows():
         ticker = str(row["ticker"])
-
-        # Exact date+ticker RS90 membership check.
-        if not bool(row.get("in_rs90", False)) or float(row.get("rs_rank", -1)) < cfg.rs_threshold:
+        if not bool(row.get("in_rs_universe", row.get("in_rs90", False))):
             continue
         if not _passes_common_universe_filters(row, cfg):
             continue
 
-        if "breakout" in cfg.strategies and _passes_breakout_filters(row, cfg):
-            pivot = row.get("confirmed_pivot_high")
-            prev_low = row.get("prev_low")
-            prev_close = row.get("prev_close")
-            if pd.notna(pivot) and pd.notna(prev_low) and float(row["high"]) >= float(pivot):
-                if cfg.breakout_require_prev_close_lte_pivot:
-                    if pd.isna(prev_close) or float(prev_close) > float(pivot):
-                        continue
-                raw_entry = max(float(row["open"]), float(pivot))
-                entry = raw_entry * (1 + cfg.slippage_bps / 10000)
-                label = cfg.entry_name or f"breakout_{cfg.pivot_left}_{cfg.pivot_right}"
-                out.append({
-                    "strategy": label,
-                    "ticker": ticker,
-                    "entry_price": entry,
-                    "initial_stop": float(prev_low),
-                    "rs_rank_at_entry": float(row["rs_rank"]),
-                    "signal_details": (
-                        f"buy_stop=pivot_high_{cfg.pivot_left}_{cfg.pivot_right}:{float(pivot):.4f}; "
-                        f"entry=max(open,pivot); prev_close={_fmt(prev_close)}; "
-                        f"require_prev_close_lte_pivot={cfg.breakout_require_prev_close_lte_pivot}; "
-                        f"avg_value_10={_fmt(row.get('avg_value_10'))}M; adr20={_fmt(row.get('adr20'))}; "
-                        f"dr={_fmt(row.get('dr'))}; adr5={_fmt(row.get('adr5'))}; "
-                        f"distance_to_ma5={_fmt(row.get('distance_to_ma5'))}; adr10_price={_fmt(row.get('adr10_price'))}"
-                    ),
-                })
-
-        if "rsi2" in cfg.strategies:
+        if cfg.entry_name == "rsi2_next_open":
             setup_rsi2 = row.get("setup_rsi2")
             setup_low = row.get("setup_low")
             if pd.notna(setup_rsi2) and pd.notna(setup_low) and float(setup_rsi2) < 5:
-                entry = float(row["open"]) * (1 + cfg.slippage_bps / 10000)
+                raw_entry = float(row["open"])
+                entry = raw_entry * (1 + cfg.slippage_bps / 10000)
                 out.append({
-                    "strategy": cfg.entry_name or "rsi2",
+                    "strategy": f"{cfg.rs_bucket or 'rs'}_{cfg.entry_name}_{cfg.exit_name}",
                     "ticker": ticker,
                     "entry_price": entry,
                     "initial_stop": float(setup_low),
-                    "rs_rank_at_entry": float(row["rs_rank"]),
-                    "signal_details": (
-                        f"setup_rsi2={float(setup_rsi2):.2f}; next_open_entry; "
-                        f"avg_value_10={_fmt(row.get('avg_value_10'))}M; adr20={_fmt(row.get('adr20'))}; close_gt_ma50=True"
-                    ),
+                    "rs_rank_at_entry": float(row.get("entry_rs_rank", row["rs_rank"])),
+                    "signal_details": f"entry=rsi2_next_open; setup_rsi2={float(setup_rsi2):.2f}; raw_entry=open:{raw_entry:.4f}; slippage_bps={cfg.slippage_bps}; decision_date={row.get("decision_date", "")}; filter_close={row.get("entry_filter_close", np.nan):.4f}; filter_ma50={row.get("entry_filter_ma50", np.nan):.4f}; filter_avg_value_10={row.get("entry_filter_avg_value_10", np.nan):.2f}; filter_adr20={row.get("entry_filter_adr20", np.nan):.2f}; rs_bucket={cfg.rs_bucket}",
                 })
+        elif cfg.entry_name == "rsi2_intraday_limit":
+            trigger = row.get("rsi2_5_trigger_price")
+            setup_low = row.get("prev_low")
+            if pd.notna(trigger) and pd.notna(setup_low) and float(row["low"]) <= float(trigger):
+                raw_entry = float(row["open"]) if float(row["open"]) <= float(trigger) else float(trigger)
+                entry = raw_entry * (1 + cfg.slippage_bps / 10000)
+                out.append({
+                    "strategy": f"{cfg.rs_bucket or 'rs'}_{cfg.entry_name}_{cfg.exit_name}",
+                    "ticker": ticker,
+                    "entry_price": entry,
+                    "initial_stop": float(setup_low),
+                    "rs_rank_at_entry": float(row.get("entry_rs_rank", row["rs_rank"])),
+                    "signal_details": f"entry=rsi2_intraday_limit; rsi2<5_trigger={float(trigger):.4f}; raw_entry={raw_entry:.4f}; slippage_bps={cfg.slippage_bps}; prev_low_stop={float(setup_low):.4f}; decision_date={row.get("decision_date", "")}; filter_close={row.get("entry_filter_close", np.nan):.4f}; filter_ma50={row.get("entry_filter_ma50", np.nan):.4f}; filter_avg_value_10={row.get("entry_filter_avg_value_10", np.nan):.2f}; filter_adr20={row.get("entry_filter_adr20", np.nan):.2f}; rs_bucket={cfg.rs_bucket}",
+                })
+        else:
+            raise ValueError(f"unsupported entry_name: {cfg.entry_name}")
     return out
 
 
 def _passes_common_universe_filters(row: pd.Series, cfg: BacktestConfig) -> bool:
+    # These filters are entry-decision filters. They must be based on the previous
+    # completed daily bar, not the entry day's still-forming/final daily bar.
+    avg_value = row.get("entry_filter_avg_value_10")
+    adr20 = row.get("entry_filter_adr20")
+    prev_close = row.get("entry_filter_close")
+    prev_ma50 = row.get("entry_filter_ma50")
     checks = [
-        pd.notna(row.get("avg_value_10")) and float(row.get("avg_value_10")) > cfg.min_avg_value_10,
-        pd.notna(row.get("adr20")) and cfg.min_adr20 <= float(row.get("adr20")) <= cfg.max_adr20,
+        pd.notna(avg_value) and float(avg_value) > cfg.min_avg_value_10,
+        pd.notna(adr20) and cfg.min_adr20 <= float(adr20) <= cfg.max_adr20,
     ]
     if cfg.require_close_above_ma50:
-        checks.append(pd.notna(row.get("ma50")) and float(row.get("close")) > float(row.get("ma50")))
+        checks.append(pd.notna(prev_close) and pd.notna(prev_ma50) and float(prev_close) > float(prev_ma50))
     return all(checks)
-
-
-def _passes_breakout_filters(row: pd.Series, cfg: BacktestConfig) -> bool:
-    if cfg.breakout_require_dr_lt_adr5:
-        if pd.isna(row.get("dr")) or pd.isna(row.get("adr5")) or not (float(row.get("dr")) < float(row.get("adr5"))):
-            return False
-    if cfg.breakout_require_near_ma5_within_adr10:
-        if pd.isna(row.get("distance_to_ma5")) or pd.isna(row.get("adr10_price")):
-            return False
-        if not (float(row.get("distance_to_ma5")) < float(row.get("adr10_price"))):
-            return False
-    return True
 
 
 def _same_day_initial_stop_hit(pos: Position, row: pd.Series, cfg: BacktestConfig) -> bool:
@@ -299,74 +246,65 @@ def _same_day_initial_stop_hit(pos: Position, row: pd.Series, cfg: BacktestConfi
     raise ValueError(f"unsupported same_day_stop_rule: {cfg.same_day_stop_rule}")
 
 
-def _initial_trailing_stop(entry_price: float, initial_stop: float, row: pd.Series, cfg: BacktestConfig) -> float | None:
-    if cfg.exit_mode != "atr_trail":
-        return None
-    return float(initial_stop)
+def _initial_trailing_stop(initial_stop: float, cfg: BacktestConfig) -> float | None:
+    return float(initial_stop) if cfg.exit_name.startswith("trail_") else None
 
 
 def _exit_for_position(pos: Position, row: pd.Series, current_date: pd.Timestamp, cfg: BacktestConfig) -> tuple[float | None, str | None]:
-    # Conservative priority: initial stop first when several levels are touched on the same daily bar.
     if float(row["low"]) <= pos.initial_stop:
         return _sell_stop_fill_price(row, pos.initial_stop, cfg), "stop_loss"
 
-    if cfg.exit_mode == "atr_trail" and pos.trailing_stop is not None:
+    name = cfg.exit_name
+    if name.startswith("trail_") and pos.trailing_stop is not None:
         level = float(pos.trailing_stop)
         if float(row["low"]) <= level:
-            return _sell_stop_fill_price(row, level, cfg), f"atr_trail_{cfg.atr_multiple:g}x"
-        return None, None
+            return _sell_stop_fill_price(row, level, cfg), name
 
-    if cfg.exit_mode == "n_day_low":
-        col = f"n_day_low_{int(cfg.n_day_low_period)}"
-        level_value = row.get(col, row.get("n_day_low"))
-        if pd.notna(level_value):
-            level = float(level_value)
+    if name.endswith("_day_low"):
+        n = int(name.split("_")[0])
+        col = f"n_day_low_{n}"
+        if col in row and pd.notna(row[col]):
+            level = float(row[col])
             if float(row["low"]) <= level:
-                return _sell_stop_fill_price(row, level, cfg), f"{int(cfg.n_day_low_period)}_day_low_break"
-        return None, None
+                return _sell_stop_fill_price(row, level, cfg), name
 
-    if cfg.exit_mode == "hold_days":
-        if cfg.hold_days is None:
-            return None, None
-        holding_days = int(np.busday_count(pd.Timestamp(pos.entry_date).date(), pd.Timestamp(current_date).date()))
-        if holding_days >= int(cfg.hold_days):
-            return _close_fill_price(row, cfg), f"hold_{int(cfg.hold_days)}d_exit"
-        return None, None
+    if name.startswith("rsi2_gt_"):
+        threshold = float(name.replace("rsi2_gt_", ""))
+        if pd.notna(row.get("rsi2")) and float(row["rsi2"]) > threshold:
+            return float(row["close"]) * (1 - cfg.slippage_bps / 10000), name
 
-    if cfg.exit_mode == "rsi2_threshold":
-        if cfg.rsi2_exit_threshold is None:
-            return None, None
-        rsi2 = row.get("rsi2")
-        if pd.notna(rsi2) and float(rsi2) > float(cfg.rsi2_exit_threshold):
-            return _close_fill_price(row, cfg), f"rsi2_gt_{int(cfg.rsi2_exit_threshold)}_exit"
-        return None, None
+    if name.startswith("hold_"):
+        n, price_type = _parse_hold_exit(name)
+        days_held = int(np.busday_count(pd.Timestamp(pos.entry_date).date(), pd.Timestamp(current_date).date()))
+        if price_type == "open" and days_held >= n + 1:
+            return float(row["open"]) * (1 - cfg.slippage_bps / 10000), name
+        if price_type == "close" and days_held >= n:
+            return float(row["close"]) * (1 - cfg.slippage_bps / 10000), name
 
-    raise ValueError(f"unsupported exit_mode: {cfg.exit_mode}")
+    return None, None
+
+
+def _parse_hold_exit(name: str) -> tuple[int, str]:
+    parts = name.split("_")
+    if len(parts) != 3 or parts[0] != "hold" or not parts[1].endswith("d"):
+        raise ValueError(f"invalid hold exit name: {name}")
+    return int(parts[1][:-1]), parts[2]
 
 
 def _sell_stop_fill_price(row: pd.Series, stop_price: float, cfg: BacktestConfig) -> float:
-    # If open gaps through a sell stop, fill at open; otherwise fill at stop.
     raw = float(row["open"]) if float(row["open"]) <= float(stop_price) else float(stop_price)
     return raw * (1 - cfg.slippage_bps / 10000)
 
 
-def _close_fill_price(row: pd.Series, cfg: BacktestConfig) -> float:
-    # Close-based exits assume a market-on-close fill on the signal day.
-    return float(row["close"]) * (1 - cfg.slippage_bps / 10000)
-
-
 def _update_atr_trailing_stop_after_close(pos: Position, row: pd.Series, cfg: BacktestConfig) -> None:
-    if cfg.exit_mode != "atr_trail":
+    if not cfg.exit_name.startswith("trail_"):
         return
     atr = row.get("atr")
     if pd.isna(atr):
         return
-    new_stop = pos.max_high - cfg.atr_multiple * float(atr)
-    floor = pos.initial_stop
-    if pos.trailing_stop is None:
-        pos.trailing_stop = max(floor, new_stop)
-    else:
-        pos.trailing_stop = max(pos.trailing_stop, floor, new_stop)
+    multiple = 0.5 if cfg.exit_name == "trail_0_5atr" else 1.0
+    new_stop = pos.max_high - multiple * float(atr)
+    pos.trailing_stop = max(pos.trailing_stop if pos.trailing_stop is not None else pos.initial_stop, pos.initial_stop, new_stop)
 
 
 def _close_trade(pos: Position, exit_date: pd.Timestamp, exit_price: float, exit_reason: str, cfg: BacktestConfig) -> Trade:
@@ -412,56 +350,14 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
     report = {
         "initial_capital": cfg.initial_capital,
         "position_pct": cfg.position_pct,
-        "rs_threshold": cfg.rs_threshold,
-        "strategies": list(cfg.strategies),
+        "rs_bucket": cfg.rs_bucket,
         "entry_name": cfg.entry_name,
-        "exit_mode": cfg.exit_mode,
-        "pivot_left": cfg.pivot_left,
-        "pivot_right": cfg.pivot_right,
-        "atr_period": cfg.atr_period,
-        "atr_multiple": cfg.atr_multiple,
-        "n_day_low_period": cfg.n_day_low_period,
-        "hold_days": cfg.hold_days,
-        "rsi2_exit_threshold": cfg.rsi2_exit_threshold,
+        "exit_name": cfg.exit_name,
+        "slippage_bps_each_side": cfg.slippage_bps,
         "same_day_stop_rule": cfg.same_day_stop_rule,
-        "leverage_model": "allowed: position sizing uses equity * position_pct for every accepted entry and does not reserve/deduct cash; exposure can exceed 100% subject to max_open_positions and max_new_positions_per_day",
         "trade_count": int(len(trades)),
-        "filters": {
-            "common": {
-                "avg_value_10_min_musd": cfg.min_avg_value_10,
-                "adr20_min": cfg.min_adr20,
-                "adr20_max": cfg.max_adr20,
-                "close_gt_ma50": cfg.require_close_above_ma50,
-            },
-            "breakout_only": {
-                "dr_lt_adr5": cfg.breakout_require_dr_lt_adr5,
-                "distance_to_ma5_lt_adr10_price": cfg.breakout_require_near_ma5_within_adr10,
-                "prev_close_lte_pivot": cfg.breakout_require_prev_close_lte_pivot,
-            },
-            "atr_trail": {
-                "atr_period": cfg.atr_period,
-                "atr_multiple": cfg.atr_multiple,
-                "stop_formula": "highest_high_since_entry - atr_multiple * current_ATR; updated after each close and active next session",
-            },
-            "n_day_low": {
-                "period": cfg.n_day_low_period,
-                "stop_formula": "previous N trading days' lowest low; shifted 1 day so the stop is known before the session",
-            },
-            "hold_days": {
-                "period": cfg.hold_days,
-                "fill": "close of the Nth trading day after entry",
-            },
-            "rsi2_threshold": {
-                "threshold": cfg.rsi2_exit_threshold,
-                "fill": "close of the signal day when daily RSI2 is above threshold",
-            },
-            "same_day_stop": {
-                "rule": cfg.same_day_stop_rule,
-                "description": "If entry day low touches initial stop, stop out only when the entry day candle is red (close < open). Green/doji candle does not trigger same-day stop.",
-            },
-        },
+        "leverage_model": "allowed: every accepted entry uses equity * position_pct; cash is not reserved/deducted, so gross exposure can exceed 100%",
     }
-
     if not trades.empty:
         wins = trades[trades["pnl"] > 0]
         losses = trades[trades["pnl"] < 0]
@@ -474,41 +370,23 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
             "profit_factor": round(gross_profit / abs(gross_loss), 4) if gross_loss < 0 else None,
             "avg_r": round(float(trades["r_multiple"].mean()), 4),
             "median_r": round(float(trades["r_multiple"].median()), 4),
-            "avg_win": round(float(wins["pnl"].mean()), 2) if len(wins) else None,
-            "avg_loss": round(float(losses["pnl"].mean()), 2) if len(losses) else None,
-            "avg_win_loss_ratio": round(float(wins["pnl"].mean() / abs(losses["pnl"].mean())), 4) if len(wins) and len(losses) else None,
             "largest_winner_r": round(float(trades["r_multiple"].max()), 4),
             "largest_loser_r": round(float(trades["r_multiple"].min()), 4),
             "max_consecutive_losses": int(max_consecutive_losses(trades["pnl"].tolist())),
             "avg_holding_days": round(float(trades["holding_days"].mean()), 2),
         })
-        by_strategy = {}
-        for strategy, g in trades.groupby("strategy"):
-            w = g[g["pnl"] > 0]
-            l = g[g["pnl"] < 0]
-            by_strategy[strategy] = {
-                "trades": int(len(g)),
-                "win_rate": float(len(w) / len(g)) if len(g) else None,
-                "avg_r": round(float(g["r_multiple"].mean()), 4),
-                "profit_factor": round(float(w["pnl"].sum() / abs(l["pnl"].sum())), 4) if len(l) and l["pnl"].sum() < 0 else None,
-            }
-        report["by_strategy"] = by_strategy
     else:
-        report.update({
-            "win_rate": None,
-            "profit_factor": None,
-            "avg_r": None,
-            "median_r": None,
-            "max_consecutive_losses": 0,
-        })
-
+        report.update({"win_rate": None, "profit_factor": None, "avg_r": None, "median_r": None, "max_consecutive_losses": 0})
     if not equity.empty:
         eq = equity["equity"].astype(float)
         dd = eq / eq.cummax() - 1
+        exposure = equity["exposure_pct"].astype(float) if "exposure_pct" in equity else pd.Series(dtype=float)
         report.update({
             "final_equity": round(float(eq.iloc[-1]), 2),
             "total_return": round(float(eq.iloc[-1] / cfg.initial_capital - 1), 6),
             "max_drawdown": round(float(dd.min()), 6),
+            "avg_exposure_pct": round(float(exposure.mean()), 6) if len(exposure) else None,
+            "max_exposure_pct": round(float(exposure.max()), 6) if len(exposure) else None,
         })
     return report
 
@@ -524,34 +402,22 @@ def max_consecutive_losses(pnls: list[float]) -> int:
     return best
 
 
-def save_outputs(output_dir: str | Path, trades: pd.DataFrame, equity: pd.DataFrame, report: dict, rs90_recent: pd.DataFrame) -> None:
+def save_outputs(output_dir: str | Path, trades: pd.DataFrame, equity: pd.DataFrame, report: dict, rs_recent: pd.DataFrame) -> None:
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     trades.to_csv(output_dir / "trades.csv", index=False)
     equity.to_csv(output_dir / "equity_curve.csv", index=False)
-    rs90_recent.to_csv(output_dir / "rs90_daily_recent.csv", index=False)
+    if not equity.empty and "exposure_pct" in equity:
+        equity[["date", "open_positions", "gross_exposure", "exposure_pct"]].to_csv(output_dir / "exposure_curve.csv", index=False)
+    rs_recent.to_csv(output_dir / "rs_membership_recent.csv", index=False)
     with (output_dir / "performance_report.json").open("w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=2)
     try:
         import matplotlib.pyplot as plt
         if not equity.empty:
-            ax = equity.assign(date=pd.to_datetime(equity["date"])).plot(
-                x="date", y="equity", legend=False, title="Equity Curve"
-            )
-            ax.set_xlabel("Date")
-            ax.set_ylabel("Equity")
-            fig = ax.get_figure()
-            fig.tight_layout()
-            fig.savefig(output_dir / "equity_curve.png", dpi=150)
-            plt.close(fig)
+            ax = equity.assign(date=pd.to_datetime(equity["date"])).plot(x="date", y="equity", legend=False, title="Equity Curve")
+            fig = ax.get_figure(); fig.tight_layout(); fig.savefig(output_dir / "equity_curve.png", dpi=150); plt.close(fig)
+            ax = equity.assign(date=pd.to_datetime(equity["date"])).plot(x="date", y="exposure_pct", legend=False, title="Exposure Curve")
+            fig = ax.get_figure(); fig.tight_layout(); fig.savefig(output_dir / "exposure_curve.png", dpi=150); plt.close(fig)
     except Exception as e:
-        print(f"Warning: failed to save equity curve plot: {e}")
-
-
-def _fmt(value) -> str:
-    try:
-        if pd.isna(value):
-            return "nan"
-        return f"{float(value):.4f}"
-    except Exception:
-        return str(value)
+        print(f"Warning: failed to save plots: {e}")
