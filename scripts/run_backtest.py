@@ -11,370 +11,227 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from rs90_backtester.config import load_config, deep_get
 from rs90_backtester.data import load_prices
 from rs90_backtester.indicators import add_indicators
-from rs90_backtester.universe import add_point_in_time_rs, recent_rs90
+from rs90_backtester.universe import add_point_in_time_rs
 from rs90_backtester.engine import BacktestConfig, run_backtest, save_outputs
 
+ENTRY_VARIANTS = {
+    "rsi2_next_open": {"entry_name": "rsi2_next_open"},
+    "rsi2_intraday_limit": {"entry_name": "rsi2_intraday_limit"},
+}
 
-# Selectable strategy matrix.
-# Available entries: breakout_1_1 / breakout_2_2 / rsi2
-# Available exits:
-#   trail_0_5atr / trail_1atr
-#   hold_1d / hold_2d / hold_3d / hold_4d / hold_5d
-#   1_day_low / 2_day_low / 3_day_low / 4_day_low / 5_day_low
-#   rsi2_gt_50 / rsi2_gt_60 / rsi2_gt_70 / rsi2_gt_80
-ENTRY_VARIANTS = (
-    {"name": "breakout_1_1", "strategy": "breakout", "pivot_left": 1, "pivot_right": 1},
-    {"name": "breakout_2_2", "strategy": "breakout", "pivot_left": 2, "pivot_right": 2},
-    {"name": "rsi2", "strategy": "rsi2", "pivot_left": 1, "pivot_right": 1},
-)
+EXIT_VARIANTS = {
+    "trail_0_5atr": {"exit_name": "trail_0_5atr"},
+    "trail_1atr": {"exit_name": "trail_1atr"},
+    "hold_0d_open": {"exit_name": "hold_0d_open"},
+    "hold_1d_open": {"exit_name": "hold_1d_open"},
+    "hold_2d_open": {"exit_name": "hold_2d_open"},
+    "hold_3d_open": {"exit_name": "hold_3d_open"},
+    "hold_4d_open": {"exit_name": "hold_4d_open"},
+    "hold_5d_open": {"exit_name": "hold_5d_open"},
+    "hold_0d_close": {"exit_name": "hold_0d_close"},
+    "hold_1d_close": {"exit_name": "hold_1d_close"},
+    "hold_2d_close": {"exit_name": "hold_2d_close"},
+    "hold_3d_close": {"exit_name": "hold_3d_close"},
+    "hold_4d_close": {"exit_name": "hold_4d_close"},
+    "hold_5d_close": {"exit_name": "hold_5d_close"},
+    "1_day_low": {"exit_name": "1_day_low"},
+    "2_day_low": {"exit_name": "2_day_low"},
+    "3_day_low": {"exit_name": "3_day_low"},
+    "4_day_low": {"exit_name": "4_day_low"},
+    "5_day_low": {"exit_name": "5_day_low"},
+    "rsi2_gt_50": {"exit_name": "rsi2_gt_50"},
+    "rsi2_gt_60": {"exit_name": "rsi2_gt_60"},
+    "rsi2_gt_70": {"exit_name": "rsi2_gt_70"},
+    "rsi2_gt_80": {"exit_name": "rsi2_gt_80"},
+}
 
-EXIT_VARIANTS = (
-    {"name": "trail_0_5atr", "exit_mode": "atr_trail", "atr_multiple": 0.5, "n_day_low_period": 5, "hold_days": None, "rsi2_exit_threshold": None},
-    {"name": "trail_1atr", "exit_mode": "atr_trail", "atr_multiple": 1.0, "n_day_low_period": 5, "hold_days": None, "rsi2_exit_threshold": None},
-    {"name": "hold_1d", "exit_mode": "hold_days", "atr_multiple": None, "n_day_low_period": 5, "hold_days": 1, "rsi2_exit_threshold": None},
-    {"name": "hold_2d", "exit_mode": "hold_days", "atr_multiple": None, "n_day_low_period": 5, "hold_days": 2, "rsi2_exit_threshold": None},
-    {"name": "hold_3d", "exit_mode": "hold_days", "atr_multiple": None, "n_day_low_period": 5, "hold_days": 3, "rsi2_exit_threshold": None},
-    {"name": "hold_4d", "exit_mode": "hold_days", "atr_multiple": None, "n_day_low_period": 5, "hold_days": 4, "rsi2_exit_threshold": None},
-    {"name": "hold_5d", "exit_mode": "hold_days", "atr_multiple": None, "n_day_low_period": 5, "hold_days": 5, "rsi2_exit_threshold": None},
-    {"name": "1_day_low", "exit_mode": "n_day_low", "atr_multiple": None, "n_day_low_period": 1, "hold_days": None, "rsi2_exit_threshold": None},
-    {"name": "2_day_low", "exit_mode": "n_day_low", "atr_multiple": None, "n_day_low_period": 2, "hold_days": None, "rsi2_exit_threshold": None},
-    {"name": "3_day_low", "exit_mode": "n_day_low", "atr_multiple": None, "n_day_low_period": 3, "hold_days": None, "rsi2_exit_threshold": None},
-    {"name": "4_day_low", "exit_mode": "n_day_low", "atr_multiple": None, "n_day_low_period": 4, "hold_days": None, "rsi2_exit_threshold": None},
-    {"name": "5_day_low", "exit_mode": "n_day_low", "atr_multiple": None, "n_day_low_period": 5, "hold_days": None, "rsi2_exit_threshold": None},
-    {"name": "rsi2_gt_50", "exit_mode": "rsi2_threshold", "atr_multiple": None, "n_day_low_period": 5, "hold_days": None, "rsi2_exit_threshold": 50},
-    {"name": "rsi2_gt_60", "exit_mode": "rsi2_threshold", "atr_multiple": None, "n_day_low_period": 5, "hold_days": None, "rsi2_exit_threshold": 60},
-    {"name": "rsi2_gt_70", "exit_mode": "rsi2_threshold", "atr_multiple": None, "n_day_low_period": 5, "hold_days": None, "rsi2_exit_threshold": 70},
-    {"name": "rsi2_gt_80", "exit_mode": "rsi2_threshold", "atr_multiple": None, "n_day_low_period": 5, "hold_days": None, "rsi2_exit_threshold": 80},
-)
-
-EXIT_MODES = ("atr_trail", "n_day_low", "hold_days", "rsi2_threshold")
-ENTRY_MAP = {item["name"]: item for item in ENTRY_VARIANTS}
-EXIT_MAP = {item["name"]: item for item in EXIT_VARIANTS}
+DEFAULT_ENTRIES = "rsi2_next_open"
+DEFAULT_EXITS = "hold_1d_open,hold_2d_open,hold_3d_open,hold_4d_open,hold_5d_open,rsi2_gt_50,rsi2_gt_60,rsi2_gt_70,rsi2_gt_80"
+DEFAULT_RS_BUCKETS = "90_100"
 
 
-def _parse_list(value, default=None):
-    if value is None:
-        return tuple(default or ())
-    if isinstance(value, str):
-        return tuple(x.strip() for x in value.split(",") if x.strip())
-    return tuple(str(x).strip() for x in value if str(x).strip())
-
-
-def _select_variants(requested, mapping, kind):
-    names = _parse_list(requested, mapping.keys())
-    invalid = [name for name in names if name not in mapping]
-    if invalid:
-        raise ValueError(f"Invalid {kind}: {invalid}. Available {kind}: {sorted(mapping)}")
-
-    # Keep user order, but deduplicate.
+def _parse_list(value: str | None, default: str) -> list[str]:
+    raw = value if value is not None and value.strip() else default
+    out: list[str] = []
     seen = set()
-    out = []
-    for name in names:
-        if name not in seen:
-            out.append(mapping[name])
-            seen.add(name)
-    if not out:
-        raise ValueError(f"No {kind} selected. Available {kind}: {sorted(mapping)}")
-    return tuple(out)
-
-
-def _strategies(value):
-    if value is None:
-        return None
-    if isinstance(value, str):
-        return tuple(x.strip() for x in value.split(",") if x.strip())
-    return tuple(value)
-
-
-def _base_config(args: argparse.Namespace, cfg: dict) -> BacktestConfig:
-    max_stop_pct = deep_get(cfg, "risk.max_stop_pct", None)
-    if max_stop_pct is not None:
-        max_stop_pct = float(max_stop_pct)
-    return BacktestConfig(
-        initial_capital=args.initial_capital if args.initial_capital is not None else float(deep_get(cfg, "backtest.initial_capital", 1_000_000)),
-        position_pct=args.position_pct if args.position_pct is not None else float(deep_get(cfg, "backtest.position_pct", 0.01)),
-        rs_threshold=args.rs_threshold if args.rs_threshold is not None else float(deep_get(cfg, "backtest.rs_threshold", 90)),
-        recent_days=args.recent_days if args.recent_days is not None else int(deep_get(cfg, "backtest.recent_days", 7)),
-        exit_mode=args.exit_mode or deep_get(cfg, "backtest.exit_mode", "atr_trail"),
-        max_open_positions=int(deep_get(cfg, "backtest.max_open_positions", 100)),
-        max_new_positions_per_day=int(deep_get(cfg, "backtest.max_new_positions_per_day", 100)),
-        allow_same_ticker_overlap=bool(deep_get(cfg, "backtest.allow_same_ticker_overlap", False)),
-        slippage_bps=float(deep_get(cfg, "costs.slippage_bps", 0)),
-        commission_per_trade=float(deep_get(cfg, "costs.commission_per_trade", 0)),
-        max_stop_pct=max_stop_pct,
-        start_date=args.start_date or deep_get(cfg, "backtest.start_date", None),
-        end_date=args.end_date or deep_get(cfg, "backtest.end_date", None),
-        strategies=_strategies(args.strategies) or _strategies(deep_get(cfg, "backtest.strategies", ["breakout", "rsi2"])),
-        pivot_left=int(deep_get(cfg, "backtest.pivot_left", 1)),
-        pivot_right=int(deep_get(cfg, "backtest.pivot_right", 1)),
-        atr_period=args.atr_period if args.atr_period is not None else int(deep_get(cfg, "backtest.atr_period", 14)),
-        atr_multiple=args.atr_multiple if args.atr_multiple is not None else float(deep_get(cfg, "backtest.atr_multiple", 1.0)),
-        n_day_low_period=args.n_day_low_period if args.n_day_low_period is not None else int(deep_get(cfg, "backtest.n_day_low_period", 5)),
-        hold_days=args.hold_days if args.hold_days is not None else deep_get(cfg, "backtest.hold_days", None),
-        rsi2_exit_threshold=args.rsi2_exit_threshold if args.rsi2_exit_threshold is not None else deep_get(cfg, "backtest.rsi2_exit_threshold", None),
-    )
-
-
-def _apply_entry_membership(df: pd.DataFrame, rs90: pd.DataFrame) -> pd.DataFrame:
-    """Restrict entries to exact date+ticker pairs in the exported RS90 table.
-
-    This is the critical semantics: if RS90 membership only exists for recent N
-    trading days, older dates cannot generate entries even if full-history RS
-    ranks were computed for indicator purposes. Exits remain unrestricted.
-    """
-    df = df.copy()
-    df["in_rs90_full_history"] = df.get("in_rs90", False)
-    if rs90.empty:
-        print("WARNING: no RS90 membership rows found. No entries will be generated.")
-        df["entry_universe_member"] = False
-    else:
-        membership = rs90[["date", "ticker"]].drop_duplicates().copy()
-        membership["date"] = pd.to_datetime(membership["date"])
-        membership["ticker"] = membership["ticker"].astype(str).str.upper()
-        membership["entry_universe_member"] = True
-        df = df.merge(membership, on=["date", "ticker"], how="left")
-        df["entry_universe_member"] = df["entry_universe_member"].fillna(False).astype(bool)
-    df["in_rs90"] = df["entry_universe_member"]
-    return df
-
-
-def _slice_to_entry_window(df: pd.DataFrame, rs90: pd.DataFrame) -> pd.DataFrame:
-    """Keep only dates that can matter for the current run.
-
-    The full price history is still used to compute RS, indicators, pivots, ATR,
-    and shifted setup columns before this function is called. But once those
-    columns exist, entries can only occur on exact RS90 membership dates. The
-    engine only needs rows from the first eligible RS90 date onward. Exits remain
-    unrestricted after entry, because all later rows are kept.
-    """
-    if rs90.empty:
-        return df.iloc[0:0].copy()
-    first_entry_date = pd.to_datetime(rs90["date"]).min()
-    out = df[df["date"] >= first_entry_date].copy()
-    print(
-        f"Simulation window sliced to dates >= {first_entry_date.date()}: "
-        f"rows={len(out):,}, tickers={out['ticker'].nunique():,}, dates={out['date'].nunique():,}"
-    )
+    for item in raw.split(","):
+        item = item.strip()
+        if item and item not in seen:
+            out.append(item)
+            seen.add(item)
     return out
 
 
-def _prepare_df(
-    prices: pd.DataFrame,
-    *,
-    pivot_left: int,
-    pivot_right: int,
-    atr_period: int,
-    n_day_low_period: int,
-) -> pd.DataFrame:
-    df = add_indicators(
-        prices,
-        pivot_left=pivot_left,
-        pivot_right=pivot_right,
-        atr_period=atr_period,
-        n_day_low_period=n_day_low_period,
-    )
-    df = add_point_in_time_rs(df)
-    return df
+def _parse_rs_bucket(label: str) -> tuple[float, float]:
+    try:
+        lo, hi = label.split("_")
+        return float(lo), float(hi)
+    except Exception as exc:
+        raise ValueError(f"Invalid RS bucket '{label}'. Use labels like 0_10,70_80,90_100") from exc
 
 
-def _run_one(df: pd.DataFrame, output_dir: Path, rs90: pd.DataFrame, cfg: BacktestConfig) -> dict:
-    print(
-        f"Running: entry={cfg.entry_name or cfg.strategies}, exit={cfg.exit_mode}, "
-        f"pivot=({cfg.pivot_left},{cfg.pivot_right}), atr_multiple={cfg.atr_multiple}, "
-        f"n_day_low_period={cfg.n_day_low_period}, hold_days={cfg.hold_days}, "
-        f"rsi2_exit_threshold={cfg.rsi2_exit_threshold}, output={output_dir}"
-    )
-    trades, equity, report = run_backtest(df, cfg)
-    save_outputs(output_dir, trades, equity, report, rs90)
-    print(f"  trades={len(trades):,}, final_equity={report.get('final_equity')}, max_dd={report.get('max_drawdown')}")
-    return report
+def _make_rs_membership(df: pd.DataFrame, recent_days: int, bucket: str) -> pd.DataFrame:
+    """Build an entry-date membership table from the previous completed daily bar.
+
+    If a trade can enter on date D, RS bucket membership is computed from D-1.
+    This avoids using D's final close/RS rank before the trade exists.
+    """
+    lo, hi = _parse_rs_bucket(bucket)
+    dates = sorted(pd.to_datetime(df["date"].dropna().unique()))
+    if len(dates) < 2:
+        return pd.DataFrame(columns=["date", "decision_date", "ticker", "rs_rank", "rs_score", "rs_bucket"])
+
+    selected_trade_dates = dates[-recent_days:] if recent_days and recent_days > 0 else dates[1:]
+    date_map = pd.DataFrame({"date": dates})
+    date_map["trade_date"] = date_map["date"].shift(-1)
+    date_map = date_map.rename(columns={"date": "decision_date"}).dropna(subset=["trade_date"])
+    date_map = date_map[date_map["trade_date"].isin(selected_trade_dates)]
+
+    part = df.merge(date_map, left_on="date", right_on="decision_date", how="inner")
+    if hi >= 100:
+        mask = (part["rs_rank"] >= lo) & (part["rs_rank"] <= hi)
+    else:
+        mask = (part["rs_rank"] >= lo) & (part["rs_rank"] < hi)
+
+    membership = part.loc[mask, ["trade_date", "decision_date", "ticker", "rs_rank", "rs_score"]].copy()
+    membership = membership.rename(columns={"trade_date": "date"})
+    membership = membership.drop_duplicates(["date", "ticker"])
+    membership["rs_bucket"] = bucket
+    return membership
 
 
-def _combo_name(entry: dict, exit_variant: dict) -> str:
-    return f"{entry['name']}_{exit_variant['name']}"
+def _apply_membership(df: pd.DataFrame, membership: pd.DataFrame) -> pd.DataFrame:
+    keys = membership[["date", "decision_date", "ticker", "rs_rank", "rs_score", "rs_bucket"]].drop_duplicates(["date", "ticker"]).copy()
+    keys = keys.rename(columns={"rs_rank": "entry_rs_rank", "rs_score": "entry_rs_score"})
+    keys["in_rs_universe"] = True
+    out = df.merge(keys, on=["date", "ticker"], how="left")
+    out["in_rs_universe"] = out["in_rs_universe"].fillna(False)
+    # Keep compatibility with older engine/report names.
+    out["in_rs90"] = out["in_rs_universe"]
+    return out
+
+
+def _summarize_membership(membership: pd.DataFrame) -> None:
+    print(f"membership_rows={len(membership)}")
+    if not membership.empty:
+        print("membership_dates=", [pd.Timestamp(x).strftime("%Y-%m-%d") for x in sorted(membership["date"].unique())[:3]], "...", [pd.Timestamp(x).strftime("%Y-%m-%d") for x in sorted(membership["date"].unique())[-3:]])
+        print("membership_count_by_bucket=")
+        print(membership.groupby("rs_bucket").size().to_string())
+        print("membership_recent_count_by_date=")
+        print(membership.groupby("date").size().tail(10).to_string())
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run RS90 daily backtest.")
-    parser.add_argument("--config", default="configs/config.yaml")
-    parser.add_argument("--price-csv", default=None)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--price-csv", default="data/stock_data.csv")
     parser.add_argument("--output-dir", default="outputs/backtest")
-    parser.add_argument("--initial-capital", type=float, default=None)
-    parser.add_argument("--position-pct", type=float, default=None)
-    parser.add_argument("--rs-threshold", type=float, default=None)
-    parser.add_argument("--recent-days", type=int, default=None)
-    parser.add_argument("--exit-mode", choices=list(EXIT_MODES), default=None)
-    parser.add_argument("--start-date", default=None)
-    parser.add_argument("--end-date", default=None)
-    parser.add_argument("--strategies", default=None, help="Comma list: breakout,rsi2")
-    parser.add_argument("--atr-period", type=int, default=None, help="ATR period for atr_trail exits.")
-    parser.add_argument("--atr-multiple", type=float, default=None, help="Single-run ATR multiple.")
-    parser.add_argument("--n-day-low-period", type=int, default=None, help="Single-run N-day low period.")
-    parser.add_argument("--hold-days", type=int, default=None, help="Single-run fixed holding period in trading days.")
-    parser.add_argument("--rsi2-exit-threshold", type=float, default=None, help="Single-run RSI2 close-exit threshold.")
-    parser.add_argument("--pivot-left", type=int, default=None, help="Single-run pivot L.")
-    parser.add_argument("--pivot-right", type=int, default=None, help="Single-run pivot R.")
-    parser.add_argument("--entry-name", default=None, help="Optional label for single-run trade logs.")
-    parser.add_argument("--matrix", action="store_true", help="Run selectable matrix from --entries x --exits.")
-    parser.add_argument(
-        "--entries",
-        default=None,
-        help="Comma list of entry variants: breakout_1_1,breakout_2_2,rsi2. Default from config or all.",
-    )
-    parser.add_argument(
-        "--exits",
-        default=None,
-        help="Comma list of exit variants. Examples: trail_1atr,hold_3d,5_day_low,rsi2_gt_70. Default from config or all.",
-    )
+    parser.add_argument("--initial-capital", type=float, default=1_000_000)
+    parser.add_argument("--position-pct", type=float, default=0.01)
+    parser.add_argument("--recent-days", type=int, default=7)
+    parser.add_argument("--entries", default=DEFAULT_ENTRIES)
+    parser.add_argument("--exits", default=DEFAULT_EXITS)
+    parser.add_argument("--rs-buckets", default=DEFAULT_RS_BUCKETS)
+    parser.add_argument("--slippage-bps", type=float, default=1.0)
+    parser.add_argument("--atr-period", type=int, default=14)
+    parser.add_argument("--max-open-positions", type=int, default=100000)
+    parser.add_argument("--max-new-positions-per-day", type=int, default=100000)
     args = parser.parse_args()
-
-    cfg_dict = load_config(args.config)
-    price_csv = args.price_csv or deep_get(cfg_dict, "data.price_csv", "data/stock_data.csv")
-    base_cfg = _base_config(args, cfg_dict)
-
-    print(f"Loading prices: {price_csv}")
-    prices = load_prices(price_csv)
-    print(f"Rows={len(prices):,}, tickers={prices['ticker'].nunique():,}, dates={prices['date'].nunique():,}")
 
     out_root = Path(args.output_dir)
     out_root.mkdir(parents=True, exist_ok=True)
 
-    selected_entry_source = args.entries if args.entries is not None else deep_get(cfg_dict, "matrix.entries", None)
-    selected_exit_source = args.exits if args.exits is not None else deep_get(cfg_dict, "matrix.exits", None)
-    selected_entries = _select_variants(selected_entry_source, ENTRY_MAP, "entries")
-    selected_exits = _select_variants(selected_exit_source, EXIT_MAP, "exits")
+    print(f"Loading prices: {args.price_csv}")
+    prices = load_prices(args.price_csv)
+    print(f"Rows={len(prices):,}, tickers={prices['ticker'].nunique():,}, dates={prices['date'].nunique():,}")
 
-    print("Selected entries:", ",".join(e["name"] for e in selected_entries))
-    print("Selected exits:", ",".join(e["name"] for e in selected_exits))
-    print(f"Selected strategy combos: {len(selected_entries)} x {len(selected_exits)} = {len(selected_entries) * len(selected_exits)}")
+    print("Computing indicators...")
+    df = add_indicators(prices, atr_period=args.atr_period)
 
-    print("Computing base indicators and point-in-time RS ranks for RS90 membership...")
-    # Compute all 1..5 day-low columns once; n_day_low_period=5 also maintains the legacy n_day_low column.
-    base_df = _prepare_df(
-        prices,
-        pivot_left=1,
-        pivot_right=1,
-        atr_period=base_cfg.atr_period,
-        n_day_low_period=5,
+    print("Computing point-in-time RS ranks...")
+    df = add_point_in_time_rs(df)
+
+    entries = _parse_list(args.entries, DEFAULT_ENTRIES)
+    exits = _parse_list(args.exits, DEFAULT_EXITS)
+    buckets = _parse_list(args.rs_buckets, DEFAULT_RS_BUCKETS)
+
+    invalid_entries = [x for x in entries if x not in ENTRY_VARIANTS]
+    invalid_exits = [x for x in exits if x not in EXIT_VARIANTS]
+    if invalid_entries:
+        raise ValueError(f"Invalid entries: {invalid_entries}. Available: {sorted(ENTRY_VARIANTS)}")
+    if invalid_exits:
+        raise ValueError(f"Invalid exits: {invalid_exits}. Available: {sorted(EXIT_VARIANTS)}")
+
+    print(f"Selected entries={entries}")
+    print(f"Selected exits={exits}")
+    print(f"Selected rs_buckets={buckets}")
+
+    all_reports: dict[str, dict] = {}
+    summary_rows: list[dict] = []
+    all_memberships: list[pd.DataFrame] = []
+
+    base_cfg = BacktestConfig(
+        initial_capital=args.initial_capital,
+        position_pct=args.position_pct,
+        recent_days=args.recent_days,
+        slippage_bps=args.slippage_bps,
+        atr_period=args.atr_period,
+        max_open_positions=args.max_open_positions,
+        max_new_positions_per_day=args.max_new_positions_per_day,
     )
-    rs90 = recent_rs90(base_df, recent_days=base_cfg.recent_days, threshold=base_cfg.rs_threshold)
-    rs90.to_csv(out_root / "rs90_daily_recent.csv", index=False)
 
-    eligible_entry_dates = sorted(pd.to_datetime(rs90["date"]).unique()) if not rs90.empty else []
-    print("Eligible entry dates from RS90 membership:", [str(pd.Timestamp(d).date()) for d in eligible_entry_dates])
-    print(f"Allowed RS90 membership pairs: {len(rs90):,}")
-    print("Entries are restricted to exact date+ticker pairs in rs90 membership. Exits remain unrestricted within available price data.")
+    for bucket in buckets:
+        membership = _make_rs_membership(df, args.recent_days, bucket)
+        all_memberships.append(membership)
+        _summarize_membership(membership)
+        sim_df = _apply_membership(df, membership)
+        if not membership.empty:
+            first_entry_date = membership["date"].min()
+            sim_df = sim_df[sim_df["date"] >= first_entry_date].copy()
+            print(f"Simulation window for {bucket}: >= {pd.Timestamp(first_entry_date).strftime('%Y-%m-%d')}; rows={len(sim_df):,}")
 
-    if args.matrix:
-        import gc
-
-        summary_rows = []
-        reports = {}
-
-        # Memory-efficient matrix execution.
-        for entry in selected_entries:
-            print(
-                f"\nPreparing entry family: {entry['name']} "
-                f"pivot=({entry['pivot_left']},{entry['pivot_right']})"
-            )
-            df = _prepare_df(
-                prices,
-                pivot_left=entry["pivot_left"],
-                pivot_right=entry["pivot_right"],
-                atr_period=base_cfg.atr_period,
-                n_day_low_period=5,
-            )
-            df = _apply_entry_membership(df, rs90)
-            df = _slice_to_entry_window(df, rs90)
-
-            for exit_variant in selected_exits:
-                combo_name = _combo_name(entry, exit_variant)
-                n_day = int(exit_variant["n_day_low_period"] or 5)
-                combo_cfg = replace(
+        for entry in entries:
+            for exit_name in exits:
+                combo_name = f"rs{bucket}_{entry}_{exit_name}"
+                print(f"\n=== Running {combo_name} ===")
+                cfg = replace(
                     base_cfg,
-                    strategies=(entry["strategy"],),
-                    entry_name=entry["name"],
-                    pivot_left=entry["pivot_left"],
-                    pivot_right=entry["pivot_right"],
-                    exit_mode=exit_variant["exit_mode"],
-                    atr_multiple=float(exit_variant["atr_multiple"] if exit_variant["atr_multiple"] is not None else base_cfg.atr_multiple),
-                    n_day_low_period=n_day,
-                    hold_days=exit_variant["hold_days"],
-                    rsi2_exit_threshold=exit_variant["rsi2_exit_threshold"],
+                    rs_bucket=f"rs{bucket}",
+                    entry_name=ENTRY_VARIANTS[entry]["entry_name"],
+                    exit_name=EXIT_VARIANTS[exit_name]["exit_name"],
                 )
-                report = _run_one(df, out_root / combo_name, rs90, combo_cfg)
-                reports[combo_name] = report
+                trades, equity, report = run_backtest(sim_df, cfg)
+                save_outputs(out_root / combo_name, trades, equity, report, membership)
+                all_reports[combo_name] = report
                 summary_rows.append({
                     "strategy_combo": combo_name,
-                    "entry_strategy": entry["name"],
-                    "exit_mode": exit_variant["name"],
-                    "pivot_left": report.get("pivot_left"),
-                    "pivot_right": report.get("pivot_right"),
-                    "atr_period": report.get("atr_period"),
-                    "atr_multiple": report.get("atr_multiple"),
-                    "n_day_low_period": report.get("n_day_low_period"),
-                    "hold_days": report.get("hold_days"),
-                    "rsi2_exit_threshold": report.get("rsi2_exit_threshold"),
+                    "rs_bucket": bucket,
+                    "entry": entry,
+                    "exit": exit_name,
                     "trade_count": report.get("trade_count"),
                     "win_rate": report.get("win_rate"),
                     "profit_factor": report.get("profit_factor"),
                     "avg_r": report.get("avg_r"),
                     "median_r": report.get("median_r"),
-                    "avg_win_loss_ratio": report.get("avg_win_loss_ratio"),
-                    "max_consecutive_losses": report.get("max_consecutive_losses"),
                     "final_equity": report.get("final_equity"),
                     "total_return": report.get("total_return"),
                     "max_drawdown": report.get("max_drawdown"),
+                    "avg_exposure_pct": report.get("avg_exposure_pct"),
+                    "max_exposure_pct": report.get("max_exposure_pct"),
                     "avg_holding_days": report.get("avg_holding_days"),
                 })
+                print(pd.DataFrame([summary_rows[-1]]).to_string(index=False))
 
-            gc.collect()
-            del df
-            gc.collect()
+    if all_memberships:
+        pd.concat(all_memberships, ignore_index=True).to_csv(out_root / "rs_membership_recent.csv", index=False)
+    summary = pd.DataFrame(summary_rows)
+    summary.to_csv(out_root / "strategy_summary.csv", index=False)
+    with (out_root / "all_reports.json").open("w", encoding="utf-8") as f:
+        json.dump(all_reports, f, ensure_ascii=False, indent=2)
 
-        summary = pd.DataFrame(summary_rows)
-        summary.to_csv(out_root / "strategy_summary.csv", index=False)
-        with (out_root / "all_reports.json").open("w", encoding="utf-8") as f:
-            json.dump(reports, f, ensure_ascii=False, indent=2)
-        print("\nStrategy matrix summary")
-        print(summary.to_string(index=False))
-        print(f"\nSaved selectable matrix outputs to {out_root}")
-        return
-
-    # Single-run mode remains available for debugging.
-    pivot_left = args.pivot_left if args.pivot_left is not None else base_cfg.pivot_left
-    pivot_right = args.pivot_right if args.pivot_right is not None else base_cfg.pivot_right
-    n_day_low_period = args.n_day_low_period if args.n_day_low_period is not None else base_cfg.n_day_low_period
-    df = _prepare_df(
-        prices,
-        pivot_left=pivot_left,
-        pivot_right=pivot_right,
-        atr_period=base_cfg.atr_period,
-        n_day_low_period=n_day_low_period,
-    )
-    df = _apply_entry_membership(df, rs90)
-    df = _slice_to_entry_window(df, rs90)
-    single_cfg = replace(
-        base_cfg,
-        pivot_left=pivot_left,
-        pivot_right=pivot_right,
-        n_day_low_period=n_day_low_period,
-        entry_name=args.entry_name,
-    )
-    print("Running single backtest...")
-    report = _run_one(df, out_root, rs90, single_cfg)
-    print("\nPerformance report")
-    for k, v in report.items():
-        if k != "by_strategy":
-            print(f"  {k}: {v}")
-    if "by_strategy" in report:
-        print("  by_strategy:")
-        for k, v in report["by_strategy"].items():
-            print(f"    {k}: {v}")
-    print(f"\nSaved outputs to {out_root}")
+    print("\nstrategy_summary=")
+    print(summary.to_string(index=False))
 
 
 if __name__ == "__main__":
