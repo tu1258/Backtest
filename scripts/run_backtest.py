@@ -17,9 +17,14 @@ from rs90_backtester.indicators import add_indicators
 from rs90_backtester.universe import add_point_in_time_rs, recent_rs90
 from rs90_backtester.engine import BacktestConfig, run_backtest, save_outputs
 
+
 # Selectable strategy matrix.
 # Available entries: breakout_1_1 / breakout_2_2 / rsi2
-# Available exits: trail_0_5atr / trail_1atr / ma10 / 5_day_low / prev_day_low
+# Available exits:
+#   trail_0_5atr / trail_1atr
+#   hold_1d / hold_2d / hold_3d / hold_4d / hold_5d
+#   1_day_low / 2_day_low / 3_day_low / 4_day_low / 5_day_low
+#   rsi2_gt_50 / rsi2_gt_60 / rsi2_gt_70 / rsi2_gt_80
 ENTRY_VARIANTS = (
     {"name": "breakout_1_1", "strategy": "breakout", "pivot_left": 1, "pivot_right": 1},
     {"name": "breakout_2_2", "strategy": "breakout", "pivot_left": 2, "pivot_right": 2},
@@ -27,15 +32,25 @@ ENTRY_VARIANTS = (
 )
 
 EXIT_VARIANTS = (
-    {"name": "trail_0_5atr", "exit_mode": "atr_trail", "atr_multiple": 0.5, "n_day_low_period": None},
-    {"name": "trail_1atr", "exit_mode": "atr_trail", "atr_multiple": 1.0, "n_day_low_period": None},
-    {"name": "ma10", "exit_mode": "ma10", "atr_multiple": None, "n_day_low_period": None},
-    {"name": "5_day_low", "exit_mode": "n_day_low", "atr_multiple": None, "n_day_low_period": 5},
-    {"name": "prev_day_low", "exit_mode": "prev_day_low", "atr_multiple": None, "n_day_low_period": None},
+    {"name": "trail_0_5atr", "exit_mode": "atr_trail", "atr_multiple": 0.5, "n_day_low_period": 5, "hold_days": None, "rsi2_exit_threshold": None},
+    {"name": "trail_1atr", "exit_mode": "atr_trail", "atr_multiple": 1.0, "n_day_low_period": 5, "hold_days": None, "rsi2_exit_threshold": None},
+    {"name": "hold_1d", "exit_mode": "hold_days", "atr_multiple": None, "n_day_low_period": 5, "hold_days": 1, "rsi2_exit_threshold": None},
+    {"name": "hold_2d", "exit_mode": "hold_days", "atr_multiple": None, "n_day_low_period": 5, "hold_days": 2, "rsi2_exit_threshold": None},
+    {"name": "hold_3d", "exit_mode": "hold_days", "atr_multiple": None, "n_day_low_period": 5, "hold_days": 3, "rsi2_exit_threshold": None},
+    {"name": "hold_4d", "exit_mode": "hold_days", "atr_multiple": None, "n_day_low_period": 5, "hold_days": 4, "rsi2_exit_threshold": None},
+    {"name": "hold_5d", "exit_mode": "hold_days", "atr_multiple": None, "n_day_low_period": 5, "hold_days": 5, "rsi2_exit_threshold": None},
+    {"name": "1_day_low", "exit_mode": "n_day_low", "atr_multiple": None, "n_day_low_period": 1, "hold_days": None, "rsi2_exit_threshold": None},
+    {"name": "2_day_low", "exit_mode": "n_day_low", "atr_multiple": None, "n_day_low_period": 2, "hold_days": None, "rsi2_exit_threshold": None},
+    {"name": "3_day_low", "exit_mode": "n_day_low", "atr_multiple": None, "n_day_low_period": 3, "hold_days": None, "rsi2_exit_threshold": None},
+    {"name": "4_day_low", "exit_mode": "n_day_low", "atr_multiple": None, "n_day_low_period": 4, "hold_days": None, "rsi2_exit_threshold": None},
+    {"name": "5_day_low", "exit_mode": "n_day_low", "atr_multiple": None, "n_day_low_period": 5, "hold_days": None, "rsi2_exit_threshold": None},
+    {"name": "rsi2_gt_50", "exit_mode": "rsi2_threshold", "atr_multiple": None, "n_day_low_period": 5, "hold_days": None, "rsi2_exit_threshold": 50},
+    {"name": "rsi2_gt_60", "exit_mode": "rsi2_threshold", "atr_multiple": None, "n_day_low_period": 5, "hold_days": None, "rsi2_exit_threshold": 60},
+    {"name": "rsi2_gt_70", "exit_mode": "rsi2_threshold", "atr_multiple": None, "n_day_low_period": 5, "hold_days": None, "rsi2_exit_threshold": 70},
+    {"name": "rsi2_gt_80", "exit_mode": "rsi2_threshold", "atr_multiple": None, "n_day_low_period": 5, "hold_days": None, "rsi2_exit_threshold": 80},
 )
 
-EXIT_MODES = ("ma10", "atr_trail", "n_day_low", "prev_day_low")
-
+EXIT_MODES = ("atr_trail", "n_day_low", "hold_days", "rsi2_threshold")
 ENTRY_MAP = {item["name"]: item for item in ENTRY_VARIANTS}
 EXIT_MAP = {item["name"]: item for item in EXIT_VARIANTS}
 
@@ -53,6 +68,7 @@ def _select_variants(requested, mapping, kind):
     invalid = [name for name in names if name not in mapping]
     if invalid:
         raise ValueError(f"Invalid {kind}: {invalid}. Available {kind}: {sorted(mapping)}")
+
     # Keep user order, but deduplicate.
     seen = set()
     out = []
@@ -77,13 +93,12 @@ def _base_config(args: argparse.Namespace, cfg: dict) -> BacktestConfig:
     max_stop_pct = deep_get(cfg, "risk.max_stop_pct", None)
     if max_stop_pct is not None:
         max_stop_pct = float(max_stop_pct)
-
     return BacktestConfig(
         initial_capital=args.initial_capital if args.initial_capital is not None else float(deep_get(cfg, "backtest.initial_capital", 1_000_000)),
         position_pct=args.position_pct if args.position_pct is not None else float(deep_get(cfg, "backtest.position_pct", 0.01)),
         rs_threshold=args.rs_threshold if args.rs_threshold is not None else float(deep_get(cfg, "backtest.rs_threshold", 90)),
         recent_days=args.recent_days if args.recent_days is not None else int(deep_get(cfg, "backtest.recent_days", 7)),
-        exit_mode=args.exit_mode or deep_get(cfg, "backtest.exit_mode", "ma10"),
+        exit_mode=args.exit_mode or deep_get(cfg, "backtest.exit_mode", "atr_trail"),
         max_open_positions=int(deep_get(cfg, "backtest.max_open_positions", 100)),
         max_new_positions_per_day=int(deep_get(cfg, "backtest.max_new_positions_per_day", 100)),
         allow_same_ticker_overlap=bool(deep_get(cfg, "backtest.allow_same_ticker_overlap", False)),
@@ -98,6 +113,8 @@ def _base_config(args: argparse.Namespace, cfg: dict) -> BacktestConfig:
         atr_period=args.atr_period if args.atr_period is not None else int(deep_get(cfg, "backtest.atr_period", 14)),
         atr_multiple=args.atr_multiple if args.atr_multiple is not None else float(deep_get(cfg, "backtest.atr_multiple", 1.0)),
         n_day_low_period=args.n_day_low_period if args.n_day_low_period is not None else int(deep_get(cfg, "backtest.n_day_low_period", 5)),
+        hold_days=args.hold_days if args.hold_days is not None else deep_get(cfg, "backtest.hold_days", None),
+        rsi2_exit_threshold=args.rsi2_exit_threshold if args.rsi2_exit_threshold is not None else deep_get(cfg, "backtest.rsi2_exit_threshold", None),
     )
 
 
@@ -129,10 +146,9 @@ def _slice_to_entry_window(df: pd.DataFrame, rs90: pd.DataFrame) -> pd.DataFrame
 
     The full price history is still used to compute RS, indicators, pivots, ATR,
     and shifted setup columns before this function is called. But once those
-    columns exist, entries can only occur on exact RS90 membership dates.
-    Therefore the engine does not need to scan 20 years of rows; it only needs
-    rows from the first eligible RS90 date onward. Exits remain unrestricted
-    after entry, because all later rows are kept.
+    columns exist, entries can only occur on exact RS90 membership dates. The
+    engine only needs rows from the first eligible RS90 date onward. Exits remain
+    unrestricted after entry, because all later rows are kept.
     """
     if rs90.empty:
         return df.iloc[0:0].copy()
@@ -168,7 +184,8 @@ def _run_one(df: pd.DataFrame, output_dir: Path, rs90: pd.DataFrame, cfg: Backte
     print(
         f"Running: entry={cfg.entry_name or cfg.strategies}, exit={cfg.exit_mode}, "
         f"pivot=({cfg.pivot_left},{cfg.pivot_right}), atr_multiple={cfg.atr_multiple}, "
-        f"n_day_low_period={cfg.n_day_low_period}, output={output_dir}"
+        f"n_day_low_period={cfg.n_day_low_period}, hold_days={cfg.hold_days}, "
+        f"rsi2_exit_threshold={cfg.rsi2_exit_threshold}, output={output_dir}"
     )
     trades, equity, report = run_backtest(df, cfg)
     save_outputs(output_dir, trades, equity, report, rs90)
@@ -193,15 +210,25 @@ def main() -> None:
     parser.add_argument("--start-date", default=None)
     parser.add_argument("--end-date", default=None)
     parser.add_argument("--strategies", default=None, help="Comma list: breakout,rsi2")
-    parser.add_argument("--atr-period", type=int, default=None, help="ATR period for atr_trail exits. Matrix uses multiples 0.5 and 1.0.")
-    parser.add_argument("--atr-multiple", type=float, default=None, help="Single-run ATR multiple. Matrix ignores this and runs 0.5 plus 1.0.")
-    parser.add_argument("--n-day-low-period", type=int, default=None, help="Single-run N-day low period. Matrix uses 5-day low.")
-    parser.add_argument("--pivot-left", type=int, default=None, help="Single-run pivot L. Matrix ignores this and runs breakout 1,1 plus 2,2.")
-    parser.add_argument("--pivot-right", type=int, default=None, help="Single-run pivot R. Matrix ignores this and runs breakout 1,1 plus 2,2.")
+    parser.add_argument("--atr-period", type=int, default=None, help="ATR period for atr_trail exits.")
+    parser.add_argument("--atr-multiple", type=float, default=None, help="Single-run ATR multiple.")
+    parser.add_argument("--n-day-low-period", type=int, default=None, help="Single-run N-day low period.")
+    parser.add_argument("--hold-days", type=int, default=None, help="Single-run fixed holding period in trading days.")
+    parser.add_argument("--rsi2-exit-threshold", type=float, default=None, help="Single-run RSI2 close-exit threshold.")
+    parser.add_argument("--pivot-left", type=int, default=None, help="Single-run pivot L.")
+    parser.add_argument("--pivot-right", type=int, default=None, help="Single-run pivot R.")
     parser.add_argument("--entry-name", default=None, help="Optional label for single-run trade logs.")
     parser.add_argument("--matrix", action="store_true", help="Run selectable matrix from --entries x --exits.")
-    parser.add_argument("--entries", default=None, help="Comma list of entry variants: breakout_1_1,breakout_2_2,rsi2. Default from config or all.")
-    parser.add_argument("--exits", default=None, help="Comma list of exit variants: trail_0_5atr,trail_1atr,ma10,5_day_low,prev_day_low. Default from config or all.")
+    parser.add_argument(
+        "--entries",
+        default=None,
+        help="Comma list of entry variants: breakout_1_1,breakout_2_2,rsi2. Default from config or all.",
+    )
+    parser.add_argument(
+        "--exits",
+        default=None,
+        help="Comma list of exit variants. Examples: trail_1atr,hold_3d,5_day_low,rsi2_gt_70. Default from config or all.",
+    )
     args = parser.parse_args()
 
     cfg_dict = load_config(args.config)
@@ -219,11 +246,13 @@ def main() -> None:
     selected_exit_source = args.exits if args.exits is not None else deep_get(cfg_dict, "matrix.exits", None)
     selected_entries = _select_variants(selected_entry_source, ENTRY_MAP, "entries")
     selected_exits = _select_variants(selected_exit_source, EXIT_MAP, "exits")
+
     print("Selected entries:", ",".join(e["name"] for e in selected_entries))
     print("Selected exits:", ",".join(e["name"] for e in selected_exits))
     print(f"Selected strategy combos: {len(selected_entries)} x {len(selected_exits)} = {len(selected_entries) * len(selected_exits)}")
 
     print("Computing base indicators and point-in-time RS ranks for RS90 membership...")
+    # Compute all 1..5 day-low columns once; n_day_low_period=5 also maintains the legacy n_day_low column.
     base_df = _prepare_df(
         prices,
         pivot_left=1,
@@ -245,12 +274,7 @@ def main() -> None:
         summary_rows = []
         reports = {}
 
-        # Memory-efficient matrix execution:
-        # Do NOT keep prepared full-history DataFrames for multiple combo families.
-        # For 20-year / all-stock / recent_days=4000 runs, caching several 20M+ row
-        # DataFrames can get the GitHub runner killed with exit code 143.
-        # Instead, prepare one entry family, run all exits for it, write outputs,
-        # then release it before moving to the next family.
+        # Memory-efficient matrix execution.
         for entry in selected_entries:
             print(
                 f"\nPreparing entry family: {entry['name']} "
@@ -278,6 +302,8 @@ def main() -> None:
                     exit_mode=exit_variant["exit_mode"],
                     atr_multiple=float(exit_variant["atr_multiple"] if exit_variant["atr_multiple"] is not None else base_cfg.atr_multiple),
                     n_day_low_period=n_day,
+                    hold_days=exit_variant["hold_days"],
+                    rsi2_exit_threshold=exit_variant["rsi2_exit_threshold"],
                 )
                 report = _run_one(df, out_root / combo_name, rs90, combo_cfg)
                 reports[combo_name] = report
@@ -290,6 +316,8 @@ def main() -> None:
                     "atr_period": report.get("atr_period"),
                     "atr_multiple": report.get("atr_multiple"),
                     "n_day_low_period": report.get("n_day_low_period"),
+                    "hold_days": report.get("hold_days"),
+                    "rsi2_exit_threshold": report.get("rsi2_exit_threshold"),
                     "trade_count": report.get("trade_count"),
                     "win_rate": report.get("win_rate"),
                     "profit_factor": report.get("profit_factor"),
@@ -302,8 +330,8 @@ def main() -> None:
                     "max_drawdown": report.get("max_drawdown"),
                     "avg_holding_days": report.get("avg_holding_days"),
                 })
-                gc.collect()
 
+            gc.collect()
             del df
             gc.collect()
 
@@ -311,7 +339,6 @@ def main() -> None:
         summary.to_csv(out_root / "strategy_summary.csv", index=False)
         with (out_root / "all_reports.json").open("w", encoding="utf-8") as f:
             json.dump(reports, f, ensure_ascii=False, indent=2)
-
         print("\nStrategy matrix summary")
         print(summary.to_string(index=False))
         print(f"\nSaved selectable matrix outputs to {out_root}")
@@ -339,7 +366,6 @@ def main() -> None:
     )
     print("Running single backtest...")
     report = _run_one(df, out_root, rs90, single_cfg)
-
     print("\nPerformance report")
     for k, v in report.items():
         if k != "by_strategy":
