@@ -1,63 +1,13 @@
-# RS90 backtester default config
-data:
-  ticker_csv: data/stock_ticker.csv
-  price_csv: data/stock_data.csv
-  benchmark: ^GSPC
-  years: 2
-  auto_adjust: true
-  batch_size: 80
-  sleep_seconds: 1
-  max_tickers: null
-
-backtest:
-  initial_capital: 1000000
-  position_pct: 0.01
-  rs_threshold: 90
-  recent_days: 5
-  exit_mode: atr_trail
-  pivot_left: 1
-  pivot_right: 1
-  atr_period: 14
-  atr_multiple: 1.0
-  n_day_low_period: 5
-  hold_days: null
-  rsi2_exit_threshold: null
-  max_open_positions: 100
-  max_new_positions_per_day: 100
-  allow_same_ticker_overlap: false
-  start_date: null
-  end_date: null
-  strategies:
-    - breakout
-    - rsi2
-
-costs:
-  slippage_bps: 0
-  commission_per_trade: 0
-
-risk:
-  max_stop_pct: null
-
-# Matrix selection. GitHub Actions inputs can override these.
-matrix:
-  entries:
-    - breakout_1_1
-    - breakout_2_2
-    - rsi2
-  exits:
-    - trail_0_5atr
-    - trail_1atr
-    - hold_1d
-    - hold_2d
-    - hold_3d
-    - hold_4d
-    - hold_5d
-    - 1_day_low
-    - 2_day_low
-    - 3_day_low
-    - 4_day_low
-    - 5_day_low
-    - rsi2_gt_50
-    - rsi2_gt_60
-    - rsi2_gt_70
-    - rsi2_gt_80
+initial_capital: 1000000
+position_pct: 0.01
+recent_days: 4000
+entries: rsi2_next_open
+exits: hold_1d_open,hold_2d_open,hold_3d_open,hold_4d_open,hold_5d_open,rsi2_gt_50,rsi2_gt_60,rsi2_gt_70,rsi2_gt_80
+rs_buckets: 90_100
+slippage_bps: 1.0
+atr_period: 14
+filters:
+  min_avg_value_10: 25.0
+  min_adr20: 2.5
+  max_adr20: 25.0
+  require_close_above_ma50: true
