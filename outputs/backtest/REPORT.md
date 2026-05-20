@@ -4,11 +4,13 @@
 
 Entries: rsi2_next_open
 
-Exits: trail_0_5atr,trail_1atr,1_day_low,2_day_low,3_day_low,4_day_low,5_day_low,hold_1d_open,hold_2d_open,hold_3d_open,hold_4d_open,hold_5d_open,hold_0d_close,hold_1d_close,hold_2d_close,hold_3d_close,hold_4d_close,hold_5d_close,rsi2_gt_50,rsi2_gt_60,rsi2_gt_70,rsi2_gt_80
+Exits: 1_day_low,2_day_low,3_day_low,4_day_low,5_day_low,hold_1d_open,hold_2d_open,hold_3d_open,hold_4d_open,hold_5d_open,hold_0d_close,hold_1d_close,hold_2d_close,hold_3d_close,hold_4d_close,hold_5d_close,rsi2_gt_50,rsi2_gt_60,rsi2_gt_70,rsi2_gt_80
 
 RS buckets: 90_100
 
-Slippage bps: 1.0
+Slippage bps: 0
+
+Initial stop loss: both
 
 ## Data summary
 - ticker_list_rows: 5288
@@ -18,30 +20,48 @@ Slippage bps: 1.0
 - date_max: 2026-05-19
 
 ## Strategy summary
-| strategy_combo                        |   rs_bucket | entry          | exit          |   trade_count |   win_rate |   profit_factor |   avg_r |   median_r |     final_equity |   total_return |   max_drawdown |   avg_exposure_pct |   max_exposure_pct |   avg_holding_days |
-|:--------------------------------------|------------:|:---------------|:--------------|--------------:|-----------:|----------------:|--------:|-----------:|-----------------:|---------------:|---------------:|-------------------:|-------------------:|-------------------:|
-| rs90_100_rsi2_next_open_trail_0_5atr  |      90_100 | rsi2_next_open | trail_0_5atr  |          1282 |   0.448518 |          1.1431 |     nan |        nan |      1.4391e+06  |       0.439104 |      -0.250634 |           0.388659 |            2.8988  |               1.57 |
-| rs90_100_rsi2_next_open_trail_1atr    |      90_100 | rsi2_next_open | trail_1atr    |          1099 |   0.421292 |          1.0941 |     nan |        nan |      1.34373e+06 |       0.343728 |      -0.441642 |           0.664709 |            3.44948 |               3.2  |
-| rs90_100_rsi2_next_open_1_day_low     |      90_100 | rsi2_next_open | 1_day_low     |          1178 |   0.389643 |          1.0509 |     nan |        nan |      1.15068e+06 |       0.150677 |      -0.344967 |           0.511354 |            3.40137 |               2.28 |
-| rs90_100_rsi2_next_open_2_day_low     |      90_100 | rsi2_next_open | 2_day_low     |          1159 |   0.338223 |          1.0065 |     nan |        nan |      1.02211e+06 |       0.022113 |      -0.443036 |           0.722844 |            3.50711 |               3.31 |
-| rs90_100_rsi2_next_open_3_day_low     |      90_100 | rsi2_next_open | 3_day_low     |          1157 |   0.308557 |          0.9916 |     nan |        nan | 972060           |      -0.02794  |      -0.494061 |           0.87803  |            3.5063  |               4.06 |
-| rs90_100_rsi2_next_open_4_day_low     |      90_100 | rsi2_next_open | 4_day_low     |          1157 |   0.287813 |          1.0275 |     nan |        nan |      1.10881e+06 |       0.108812 |      -0.558312 |           1.0275   |            3.51186 |               4.8  |
-| rs90_100_rsi2_next_open_5_day_low     |      90_100 | rsi2_next_open | 5_day_low     |          1155 |   0.273593 |          1.0062 |     nan |        nan |      1.02386e+06 |       0.023864 |      -0.598606 |           1.16356  |            3.51175 |               5.49 |
-| rs90_100_rsi2_next_open_hold_1d_open  |      90_100 | rsi2_next_open | hold_1d_open  |          1412 |   0.553116 |          1.3595 |     nan |        nan |      2.09117e+06 |       1.09117  |      -0.221914 |           0.281972 |            2.5652  |               1.02 |
-| rs90_100_rsi2_next_open_hold_2d_open  |      90_100 | rsi2_next_open | hold_2d_open  |          1061 |   0.544769 |          1.3815 |     nan |        nan |      2.31935e+06 |       1.31935  |      -0.229694 |           0.412627 |            2.99175 |               1.98 |
-| rs90_100_rsi2_next_open_hold_3d_open  |      90_100 | rsi2_next_open | hold_3d_open  |           961 |   0.567118 |          1.3752 |     nan |        nan |      2.5297e+06  |       1.5297   |      -0.250565 |           0.555229 |            3.64187 |               2.97 |
-| rs90_100_rsi2_next_open_hold_4d_open  |      90_100 | rsi2_next_open | hold_4d_open  |           918 |   0.557734 |          1.5012 |     nan |        nan |      3.2804e+06  |       2.2804   |      -0.360749 |           0.699497 |            3.92629 |               3.96 |
-| rs90_100_rsi2_next_open_hold_5d_open  |      90_100 | rsi2_next_open | hold_5d_open  |           900 |   0.55     |          1.542  |     nan |        nan |      3.75929e+06 |       2.75929  |      -0.372425 |           0.847933 |            4.37022 |               4.92 |
-| rs90_100_rsi2_next_open_hold_0d_close |      90_100 | rsi2_next_open | hold_0d_close |          1412 |   0.51983  |          1.1195 |     nan |        nan |      1.25163e+06 |       0.251632 |      -0.190984 |           0        |            0       |               0    |
-| rs90_100_rsi2_next_open_hold_1d_close |      90_100 | rsi2_next_open | hold_1d_close |          1412 |   0.515581 |          1.2322 |     nan |        nan |      1.82386e+06 |       0.823859 |      -0.306587 |           0.281965 |            2.5655  |               1.02 |
-| rs90_100_rsi2_next_open_hold_2d_close |      90_100 | rsi2_next_open | hold_2d_close |          1061 |   0.540999 |          1.2984 |     nan |        nan |      2.161e+06   |       1.161    |      -0.266875 |           0.412991 |            3.02862 |               1.98 |
-| rs90_100_rsi2_next_open_hold_3d_close |      90_100 | rsi2_next_open | hold_3d_close |           961 |   0.546306 |          1.4323 |     nan |        nan |      2.93128e+06 |       1.93128  |      -0.330912 |           0.554795 |            3.62142 |               2.97 |
-| rs90_100_rsi2_next_open_hold_4d_close |      90_100 | rsi2_next_open | hold_4d_close |           918 |   0.535948 |          1.5086 |     nan |        nan |      3.50456e+06 |       2.50456  |      -0.379357 |           0.699786 |            3.92285 |               3.96 |
-| rs90_100_rsi2_next_open_hold_5d_close |      90_100 | rsi2_next_open | hold_5d_close |           900 |   0.537778 |          1.3886 |     nan |        nan |      2.84439e+06 |       1.84439  |      -0.429392 |           0.848701 |            4.40689 |               4.92 |
-| rs90_100_rsi2_next_open_rsi2_gt_50    |      90_100 | rsi2_next_open | rsi2_gt_50    |          1021 |   0.668952 |          1.6598 |     nan |        nan |      4.09772e+06 |       3.09772  |      -0.389565 |           0.590182 |            3.62836 |               2.92 |
-| rs90_100_rsi2_next_open_rsi2_gt_60    |      90_100 | rsi2_next_open | rsi2_gt_60    |           971 |   0.680742 |          1.5072 |     nan |        nan |      3.31449e+06 |       2.31449  |      -0.488367 |           0.719549 |            4.14405 |               3.71 |
-| rs90_100_rsi2_next_open_rsi2_gt_70    |      90_100 | rsi2_next_open | rsi2_gt_70    |           929 |   0.680301 |          1.4668 |     nan |        nan |      3.15755e+06 |       2.15755  |      -0.565506 |           0.926977 |            5.27268 |               4.98 |
-| rs90_100_rsi2_next_open_rsi2_gt_80    |      90_100 | rsi2_next_open | rsi2_gt_80    |           890 |   0.660674 |          1.4005 |     nan |        nan |      3.05561e+06 |       2.05561  |      -0.653745 |           1.38378  |            9.25554 |               7.63 |
+| strategy_combo                                       |   rs_bucket | entry          | exit          | initial_stop_loss   |   trade_count |   win_rate |   profit_factor |    avg_r |   median_r |     final_equity |   total_return |   max_drawdown |   avg_exposure_pct |   max_exposure_pct |   avg_holding_days |
+|:-----------------------------------------------------|------------:|:---------------|:--------------|:--------------------|--------------:|-----------:|----------------:|---------:|-----------:|-----------------:|---------------:|---------------:|-------------------:|-------------------:|-------------------:|
+| rs90_100_rsi2_next_open_1_day_low_no_stop            |      90_100 | rsi2_next_open | 1_day_low     | no_stop             |          1179 |   0.390161 |          1.0727 | nan      |   nan      |      1.10568e+06 |       0.105676 |      -0.178319 |           0.257595 |            1.72312 |               2.28 |
+| rs90_100_rsi2_next_open_1_day_low_setup_low_stop     |      90_100 | rsi2_next_open | 1_day_low     | setup_low_stop      |          1085 |   0.203687 |          0.8411 |  -0.1873 |    -1      | 853724           |      -0.146276 |      -0.230958 |           0.119538 |            1.09263 |               1.16 |
+| rs90_100_rsi2_next_open_2_day_low_no_stop            |      90_100 | rsi2_next_open | 2_day_low     | no_stop             |          1160 |   0.337931 |          1.0285 | nan      |   nan      |      1.04776e+06 |       0.047761 |      -0.252252 |           0.36539  |            1.77462 |               3.3  |
+| rs90_100_rsi2_next_open_2_day_low_setup_low_stop     |      90_100 | rsi2_next_open | 2_day_low     | setup_low_stop      |          1064 |   0.190789 |          0.914  |  -0.1504 |    -1      | 906025           |      -0.093975 |      -0.258266 |           0.195828 |            1.09333 |               1.93 |
+| rs90_100_rsi2_next_open_3_day_low_no_stop            |      90_100 | rsi2_next_open | 3_day_low     | no_stop             |          1158 |   0.30829  |          1.0149 | nan      |   nan      |      1.02565e+06 |       0.025649 |      -0.277851 |           0.444696 |            1.77412 |               4.05 |
+| rs90_100_rsi2_next_open_3_day_low_setup_low_stop     |      90_100 | rsi2_next_open | 3_day_low     | setup_low_stop      |          1063 |   0.185325 |          0.9409 |  -0.158  |    -1      | 932303           |      -0.067697 |      -0.250064 |           0.25172  |            1.18927 |               2.49 |
+| rs90_100_rsi2_next_open_4_day_low_no_stop            |      90_100 | rsi2_next_open | 4_day_low     | no_stop             |          1158 |   0.288428 |          1.0592 | nan      |   nan      |      1.11464e+06 |       0.114639 |      -0.321645 |           0.522898 |            1.77511 |               4.8  |
+| rs90_100_rsi2_next_open_4_day_low_setup_low_stop     |      90_100 | rsi2_next_open | 4_day_low     | setup_low_stop      |          1063 |   0.174976 |          0.9653 |  -0.1239 |    -1      | 958388           |      -0.041612 |      -0.301899 |           0.299029 |            1.1893  |               2.98 |
+| rs90_100_rsi2_next_open_5_day_low_no_stop            |      90_100 | rsi2_next_open | 5_day_low     | no_stop             |          1156 |   0.273356 |          1.0413 | nan      |   nan      |      1.07997e+06 |       0.07997  |      -0.351022 |           0.593766 |            1.77519 |               5.49 |
+| rs90_100_rsi2_next_open_5_day_low_setup_low_stop     |      90_100 | rsi2_next_open | 5_day_low     | setup_low_stop      |          1063 |   0.170273 |          0.9567 |  -0.0551 |    -1      | 948045           |      -0.051955 |      -0.320186 |           0.341824 |            1.18907 |               3.41 |
+| rs90_100_rsi2_next_open_hold_1d_open_no_stop         |      90_100 | rsi2_next_open | hold_1d_open  | no_stop             |          1412 |   0.553824 |          1.367  | nan      |   nan      |      1.48065e+06 |       0.48065  |      -0.116951 |           0.141016 |            1.26558 |               1.02 |
+| rs90_100_rsi2_next_open_hold_1d_open_setup_low_stop  |      90_100 | rsi2_next_open | hold_1d_open  | setup_low_stop      |          1114 |   0.320467 |          0.9731 |  -0.1226 |    -1      | 977975           |      -0.022025 |      -0.100202 |           0.058065 |            1.09253 |               0.54 |
+| rs90_100_rsi2_next_open_hold_2d_open_no_stop         |      90_100 | rsi2_next_open | hold_2d_open  | no_stop             |          1061 |   0.544769 |          1.4038 | nan      |   nan      |      1.56678e+06 |       0.566779 |      -0.120662 |           0.206614 |            1.48965 |               1.98 |
+| rs90_100_rsi2_next_open_hold_2d_open_setup_low_stop  |      90_100 | rsi2_next_open | hold_2d_open  | setup_low_stop      |          1071 |   0.263305 |          0.8931 |  -0.1358 |    -1      | 899158           |      -0.100842 |      -0.156186 |           0.096267 |            1.09266 |               0.92 |
+| rs90_100_rsi2_next_open_hold_3d_open_no_stop         |      90_100 | rsi2_next_open | hold_3d_open  | no_stop             |           961 |   0.568158 |          1.4171 | nan      |   nan      |      1.64958e+06 |       0.64958  |      -0.132161 |           0.278245 |            1.83309 |               2.97 |
+| rs90_100_rsi2_next_open_hold_3d_open_setup_low_stop  |      90_100 | rsi2_next_open | hold_3d_open  | setup_low_stop      |          1064 |   0.246241 |          0.9952 |  -0.1137 |    -1      | 994973           |      -0.005027 |      -0.150298 |           0.127969 |            1.13927 |               1.25 |
+| rs90_100_rsi2_next_open_hold_4d_open_no_stop         |      90_100 | rsi2_next_open | hold_4d_open  | no_stop             |           918 |   0.557734 |          1.5283 | nan      |   nan      |      1.89069e+06 |       0.890688 |      -0.196766 |           0.351209 |            2.0278  |               3.96 |
+| rs90_100_rsi2_next_open_hold_4d_open_setup_low_stop  |      90_100 | rsi2_next_open | hold_4d_open  | setup_low_stop      |          1063 |   0.222013 |          1.0148 |  -0.072  |    -1      |      1.01676e+06 |       0.016761 |      -0.145769 |           0.156743 |            1.14263 |               1.54 |
+| rs90_100_rsi2_next_open_hold_5d_open_no_stop         |      90_100 | rsi2_next_open | hold_5d_open  | no_stop             |           900 |   0.55     |          1.5579 | nan      |   nan      |      2.02987e+06 |       1.02987  |      -0.203994 |           0.426228 |            2.11306 |               4.92 |
+| rs90_100_rsi2_next_open_hold_5d_open_setup_low_stop  |      90_100 | rsi2_next_open | hold_5d_open  | setup_low_stop      |          1063 |   0.221072 |          1.0381 |  -0.1213 |    -1      |      1.04455e+06 |       0.04455  |      -0.178851 |           0.182253 |            1.14253 |               1.79 |
+| rs90_100_rsi2_next_open_hold_0d_close_no_stop        |      90_100 | rsi2_next_open | hold_0d_close | no_stop             |          1412 |   0.51983  |          1.1336 | nan      |   nan      |      1.13742e+06 |       0.137424 |      -0.099853 |           0        |            0       |               0    |
+| rs90_100_rsi2_next_open_hold_0d_close_setup_low_stop |      90_100 | rsi2_next_open | hold_0d_close | setup_low_stop      |          1114 |   0.354578 |          0.9758 |  -0.0216 |    -0.6026 | 984764           |      -0.015236 |      -0.082598 |           0        |            0       |               0    |
+| rs90_100_rsi2_next_open_hold_1d_close_no_stop        |      90_100 | rsi2_next_open | hold_1d_close | no_stop             |          1412 |   0.515581 |          1.2428 | nan      |   nan      |      1.39343e+06 |       0.39343  |      -0.164744 |           0.141018 |            1.26535 |               1.02 |
+| rs90_100_rsi2_next_open_hold_1d_close_setup_low_stop |      90_100 | rsi2_next_open | hold_1d_close | setup_low_stop      |          1114 |   0.290844 |          1.1047 |  -0.0071 |    -1      |      1.09101e+06 |       0.091015 |      -0.075613 |           0.058067 |            1.09268 |               0.54 |
+| rs90_100_rsi2_next_open_hold_2d_close_no_stop        |      90_100 | rsi2_next_open | hold_2d_close | no_stop             |          1061 |   0.541942 |          1.3256 | nan      |   nan      |      1.52704e+06 |       0.527045 |      -0.140641 |           0.206699 |            1.49524 |               1.98 |
+| rs90_100_rsi2_next_open_hold_2d_close_setup_low_stop |      90_100 | rsi2_next_open | hold_2d_close | setup_low_stop      |          1071 |   0.264239 |          0.9602 |  -0.1068 |    -1      | 960680           |      -0.03932  |      -0.151932 |           0.096263 |            1.09258 |               0.92 |
+| rs90_100_rsi2_next_open_hold_3d_close_no_stop        |      90_100 | rsi2_next_open | hold_3d_close | no_stop             |           961 |   0.546306 |          1.461  | nan      |   nan      |      1.78026e+06 |       0.780263 |      -0.179041 |           0.278116 |            1.82898 |               2.97 |
+| rs90_100_rsi2_next_open_hold_3d_close_setup_low_stop |      90_100 | rsi2_next_open | hold_3d_close | setup_low_stop      |          1064 |   0.238722 |          1.0514 |  -0.0385 |    -1      |      1.0578e+06  |       0.057802 |      -0.142034 |           0.12797  |            1.13924 |               1.25 |
+| rs90_100_rsi2_next_open_hold_4d_close_no_stop        |      90_100 | rsi2_next_open | hold_4d_close | no_stop             |           918 |   0.535948 |          1.5288 | nan      |   nan      |      1.95752e+06 |       0.957519 |      -0.208636 |           0.351245 |            2.02657 |               3.96 |
+| rs90_100_rsi2_next_open_hold_4d_close_setup_low_stop |      90_100 | rsi2_next_open | hold_4d_close | setup_low_stop      |          1063 |   0.222954 |          1.0924 |  -0.0404 |    -1      |      1.10914e+06 |       0.10914  |      -0.136736 |           0.156696 |            1.14246 |               1.54 |
+| rs90_100_rsi2_next_open_hold_5d_close_no_stop        |      90_100 | rsi2_next_open | hold_5d_close | no_stop             |           900 |   0.537778 |          1.3983 | nan      |   nan      |      1.76951e+06 |       0.769512 |      -0.237796 |           0.426386 |            2.12032 |               4.92 |
+| rs90_100_rsi2_next_open_hold_5d_close_setup_low_stop |      90_100 | rsi2_next_open | hold_5d_close | setup_low_stop      |          1063 |   0.215428 |          1.0748 |  -0.0972 |    -1      |      1.09038e+06 |       0.090382 |      -0.15661  |           0.182144 |            1.14248 |               1.79 |
+| rs90_100_rsi2_next_open_rsi2_gt_50_no_stop           |      90_100 | rsi2_next_open | rsi2_gt_50    | no_stop             |          1021 |   0.668952 |          1.6693 | nan      |   nan      |      2.10393e+06 |       1.10393  |      -0.211059 |           0.29369  |            1.7389  |               2.92 |
+| rs90_100_rsi2_next_open_rsi2_gt_50_setup_low_stop    |      90_100 | rsi2_next_open | rsi2_gt_50    | setup_low_stop      |          1097 |   0.295351 |          1.033  |  -0.0448 |    -1      |      1.03261e+06 |       0.032606 |      -0.114481 |           0.0858   |            1.14258 |               0.8  |
+| rs90_100_rsi2_next_open_rsi2_gt_60_no_stop           |      90_100 | rsi2_next_open | rsi2_gt_60    | no_stop             |           971 |   0.680742 |          1.533  | nan      |   nan      |      1.92284e+06 |       0.922842 |      -0.270996 |           0.355681 |            1.93927 |               3.71 |
+| rs90_100_rsi2_next_open_rsi2_gt_60_setup_low_stop    |      90_100 | rsi2_next_open | rsi2_gt_60    | setup_low_stop      |          1089 |   0.289256 |          1.0353 |  -0.0471 |    -1      |      1.03571e+06 |       0.035709 |      -0.107168 |           0.093489 |            1.1425  |               0.88 |
+| rs90_100_rsi2_next_open_rsi2_gt_70_no_stop           |      90_100 | rsi2_next_open | rsi2_gt_70    | no_stop             |           929 |   0.680301 |          1.4903 | nan      |   nan      |      1.90037e+06 |       0.900372 |      -0.319526 |           0.455292 |            2.26023 |               4.98 |
+| rs90_100_rsi2_next_open_rsi2_gt_70_setup_low_stop    |      90_100 | rsi2_next_open | rsi2_gt_70    | setup_low_stop      |          1080 |   0.271296 |          1.0025 |  -0.0609 |    -1      |      1.00266e+06 |       0.002657 |      -0.13801  |           0.111883 |            1.14254 |               1.07 |
+| rs90_100_rsi2_next_open_rsi2_gt_80_no_stop           |      90_100 | rsi2_next_open | rsi2_gt_80    | no_stop             |           890 |   0.660674 |          1.442  | nan      |   nan      |      1.93231e+06 |       0.932307 |      -0.376727 |           0.66917  |            2.85363 |               7.63 |
+| rs90_100_rsi2_next_open_rsi2_gt_80_setup_low_stop    |      90_100 | rsi2_next_open | rsi2_gt_80    | setup_low_stop      |          1070 |   0.238318 |          0.9939 |  -0.0875 |    -1      | 992997           |      -0.007003 |      -0.197581 |           0.149601 |            1.14223 |               1.45 |
 
 ## Output files
 - `outputs/backtest/REPORT.md`
@@ -214,6 +234,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_1_day_low/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_1_day_low/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_1_day_low/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_1_day_low_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_1_day_low_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_1_day_low_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_1_day_low_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_1_day_low_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_1_day_low_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_1_day_low_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_1_day_low_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_1_day_low_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_1_day_low_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_1_day_low_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_1_day_low_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_1_day_low_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_1_day_low_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_2_day_low/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_2_day_low/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_2_day_low/exposure_curve.csv`
@@ -221,6 +255,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_2_day_low/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_2_day_low/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_2_day_low/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_2_day_low_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_2_day_low_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_2_day_low_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_2_day_low_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_2_day_low_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_2_day_low_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_2_day_low_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_2_day_low_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_2_day_low_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_2_day_low_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_2_day_low_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_2_day_low_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_2_day_low_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_2_day_low_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_3_day_low/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_3_day_low/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_3_day_low/exposure_curve.csv`
@@ -228,6 +276,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_3_day_low/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_3_day_low/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_3_day_low/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_3_day_low_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_3_day_low_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_3_day_low_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_3_day_low_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_3_day_low_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_3_day_low_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_3_day_low_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_3_day_low_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_3_day_low_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_3_day_low_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_3_day_low_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_3_day_low_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_3_day_low_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_3_day_low_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_4_day_low/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_4_day_low/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_4_day_low/exposure_curve.csv`
@@ -235,6 +297,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_4_day_low/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_4_day_low/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_4_day_low/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_4_day_low_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_4_day_low_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_4_day_low_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_4_day_low_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_4_day_low_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_4_day_low_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_4_day_low_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_4_day_low_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_4_day_low_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_4_day_low_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_4_day_low_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_4_day_low_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_4_day_low_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_4_day_low_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_5_day_low/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_5_day_low/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_5_day_low/exposure_curve.csv`
@@ -242,6 +318,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_5_day_low/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_5_day_low/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_5_day_low/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_5_day_low_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_5_day_low_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_5_day_low_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_5_day_low_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_5_day_low_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_5_day_low_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_5_day_low_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_5_day_low_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_5_day_low_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_5_day_low_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_5_day_low_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_5_day_low_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_5_day_low_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_5_day_low_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close/exposure_curve.csv`
@@ -249,6 +339,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_0d_close_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close/exposure_curve.csv`
@@ -256,6 +360,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_close_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open/exposure_curve.csv`
@@ -263,6 +381,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_1d_open_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close/exposure_curve.csv`
@@ -270,6 +402,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_close_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open/exposure_curve.csv`
@@ -277,6 +423,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_2d_open_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close/exposure_curve.csv`
@@ -284,6 +444,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_close_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open/exposure_curve.csv`
@@ -291,6 +465,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_3d_open_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close/exposure_curve.csv`
@@ -298,6 +486,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_close_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open/exposure_curve.csv`
@@ -305,6 +507,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_4d_open_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close/exposure_curve.csv`
@@ -312,6 +528,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_close_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open/exposure_curve.csv`
@@ -319,6 +549,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_hold_5d_open_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50/exposure_curve.csv`
@@ -326,6 +570,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_50_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60/exposure_curve.csv`
@@ -333,6 +591,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_60_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70/exposure_curve.csv`
@@ -340,6 +612,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_70_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80/exposure_curve.csv`
@@ -347,6 +633,20 @@ Slippage bps: 1.0
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80/performance_report.json`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80/rs_membership_recent.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80_no_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80_no_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80_no_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80_no_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80_no_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80_no_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80_no_stop/trades.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80_setup_low_stop/equity_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80_setup_low_stop/equity_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80_setup_low_stop/exposure_curve.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80_setup_low_stop/exposure_curve.png`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80_setup_low_stop/performance_report.json`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80_setup_low_stop/rs_membership_recent.csv`
+- `outputs/backtest/rs90_100_rsi2_next_open_rsi2_gt_80_setup_low_stop/trades.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_trail_0_5atr/equity_curve.csv`
 - `outputs/backtest/rs90_100_rsi2_next_open_trail_0_5atr/equity_curve.png`
 - `outputs/backtest/rs90_100_rsi2_next_open_trail_0_5atr/exposure_curve.csv`
