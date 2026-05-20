@@ -74,10 +74,9 @@ $CLRS: possibly delisted; no timezone found
 [34/67] KOP ... LCTX
   rows=90084
 [35/67] LCUT ... LNG
-$LFTO: possibly delisted; no timezone found
 
 1 Failed download:
-['LFTO']: possibly delisted; no timezone found
+['LFTO']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
   rows=85980
 [36/67] LNKS ... LYFT
   rows=92099
@@ -122,10 +121,9 @@ $MHM: possibly delisted; no price data found  (1d 2021-04-30 -> 2026-05-21)
 [54/67] SID ... SMP
   rows=91297
 [55/67] SMPL ... SPRO
-$SPACEX: possibly delisted; no timezone found
 
 1 Failed download:
-['SPACEX']: possibly delisted; no timezone found
+['SPACEX']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
   rows=87088
 [56/67] SPRU ... STUB
   rows=91188
@@ -134,10 +132,9 @@ $SPACEX: possibly delisted; no timezone found
 [58/67] TCBS ... TKNO
   rows=91860
 [59/67] TKO ... TRNS
-$TKVA: possibly delisted; no timezone found
 
 1 Failed download:
-['TKVA']: possibly delisted; no timezone found
+['TKVA']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
   rows=90399
 [60/67] TRON ... UBCP
   rows=94122

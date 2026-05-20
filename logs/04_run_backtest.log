@@ -26,113 +26,113 @@ Simulation window for 90_100: >= 2024-05-21; rows=2,511,959
 
 === Running rs90_100_rsi2_next_open_trail_0_5atr ===
                       strategy_combo rs_bucket          entry         exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_trail_0_5atr    90_100 rsi2_next_open trail_0_5atr         1098  0.330601         1.1514 1.5576   -1.0021    1026853.14      0.026853      -0.01753          0.022883          0.228684              1.08
+rs90_100_rsi2_next_open_trail_0_5atr    90_100 rsi2_next_open trail_0_5atr         1282  0.448518         1.1431    NaN       NaN    1439104.33      0.439104     -0.250634          0.388659          2.898799              1.57
 
 === Running rs90_100_rsi2_next_open_trail_1atr ===
                     strategy_combo rs_bucket          entry       exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_trail_1atr    90_100 rsi2_next_open trail_1atr         1077   0.26091         1.1514 1.2341    -1.003    1032355.48      0.032355     -0.025057          0.040421          0.228588              1.96
+rs90_100_rsi2_next_open_trail_1atr    90_100 rsi2_next_open trail_1atr         1099  0.421292         1.0941    NaN       NaN    1343728.02      0.343728     -0.441642          0.664709          3.449479               3.2
 
 === Running rs90_100_rsi2_next_open_1_day_low ===
                    strategy_combo rs_bucket          entry      exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_1_day_low    90_100 rsi2_next_open 1_day_low         1089  0.263545         1.1163 1.5816   -1.0026    1022530.27       0.02253     -0.024671           0.03161          0.228771              1.52
+rs90_100_rsi2_next_open_1_day_low    90_100 rsi2_next_open 1_day_low         1178  0.389643         1.0509    NaN       NaN    1150677.15      0.150677     -0.344967          0.511354          3.401372              2.28
 
 === Running rs90_100_rsi2_next_open_2_day_low ===
                    strategy_combo rs_bucket          entry      exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_2_day_low    90_100 rsi2_next_open 2_day_low         1068  0.242509         1.1395 1.2439   -1.0032    1030922.81      0.030923     -0.030578          0.048583           0.23851              2.37
+rs90_100_rsi2_next_open_2_day_low    90_100 rsi2_next_open 2_day_low         1159  0.338223         1.0065    NaN       NaN    1022112.81      0.022113     -0.443036          0.722844           3.50711              3.31
 
 === Running rs90_100_rsi2_next_open_3_day_low ===
                    strategy_combo rs_bucket          entry      exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_3_day_low    90_100 rsi2_next_open 3_day_low         1067  0.230553         1.1481 0.7743   -1.0035    1034568.55      0.034569     -0.031717          0.061487          0.248276              3.02
+rs90_100_rsi2_next_open_3_day_low    90_100 rsi2_next_open 3_day_low         1157  0.308557         0.9916    NaN       NaN      972059.9      -0.02794     -0.494061           0.87803          3.506296              4.06
 
 === Running rs90_100_rsi2_next_open_4_day_low ===
                    strategy_combo rs_bucket          entry      exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_4_day_low    90_100 rsi2_next_open 4_day_low         1067  0.217432         1.2388 0.6303   -1.0036     1058620.1       0.05862     -0.036732          0.073344          0.249118              3.61
+rs90_100_rsi2_next_open_4_day_low    90_100 rsi2_next_open 4_day_low         1157  0.287813         1.0275    NaN       NaN     1108812.1      0.108812     -0.558312          1.027502           3.51186               4.8
 
 === Running rs90_100_rsi2_next_open_5_day_low ===
                    strategy_combo rs_bucket          entry      exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_5_day_low    90_100 rsi2_next_open 5_day_low         1067  0.209934         1.2223 0.2145   -1.0037    1055307.44      0.055307     -0.047073          0.083983           0.24904              4.14
+rs90_100_rsi2_next_open_5_day_low    90_100 rsi2_next_open 5_day_low         1155  0.273593         1.0062    NaN       NaN    1023864.24      0.023864     -0.598606          1.163561          3.511749              5.49
 
 === Running rs90_100_rsi2_next_open_hold_1d_open ===
                       strategy_combo rs_bucket          entry         exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_hold_1d_open    90_100 rsi2_next_open hold_1d_open         1077  0.327762         1.1186 2.1966   -1.0027    1022927.34      0.022927     -0.016943          0.023935          0.228732              1.14
+rs90_100_rsi2_next_open_hold_1d_open    90_100 rsi2_next_open hold_1d_open         1412  0.553116         1.3595    NaN       NaN    2091165.64      1.091166     -0.221914          0.281972          2.565203              1.02
 
 === Running rs90_100_rsi2_next_open_hold_2d_open ===
                       strategy_combo rs_bucket          entry         exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_hold_2d_open    90_100 rsi2_next_open hold_2d_open         1068  0.303371         1.2401    2.0   -1.0031    1049090.64      0.049091      -0.01839          0.031532          0.238984              1.52
+rs90_100_rsi2_next_open_hold_2d_open    90_100 rsi2_next_open hold_2d_open         1061  0.544769         1.3815    NaN       NaN    2319349.31      1.319349     -0.229694          0.412627          2.991755              1.98
 
 === Running rs90_100_rsi2_next_open_hold_3d_open ===
                       strategy_combo rs_bucket          entry         exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_hold_3d_open    90_100 rsi2_next_open hold_3d_open         1067  0.274602          1.274 1.8457   -1.0033    1060645.25      0.060645     -0.021052          0.038416          0.249046              1.87
+rs90_100_rsi2_next_open_hold_3d_open    90_100 rsi2_next_open hold_3d_open          961  0.567118         1.3752    NaN       NaN    2529700.83      1.529701     -0.250565          0.555229          3.641867              2.97
 
 === Running rs90_100_rsi2_next_open_hold_4d_open ===
                       strategy_combo rs_bucket          entry         exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_hold_4d_open    90_100 rsi2_next_open hold_4d_open         1067   0.27179         1.3177 1.7017   -1.0035    1072551.96      0.072552     -0.021862          0.044427          0.249031              2.17
+rs90_100_rsi2_next_open_hold_4d_open    90_100 rsi2_next_open hold_4d_open          918  0.557734         1.5012    NaN       NaN    3280397.85      2.280398     -0.360749          0.699497          3.926286              3.96
 
 === Running rs90_100_rsi2_next_open_hold_5d_open ===
                       strategy_combo rs_bucket          entry         exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_hold_5d_open    90_100 rsi2_next_open hold_5d_open         1067   0.25492         1.3977 0.9603   -1.0036    1093217.03      0.093217      -0.02084          0.050251          0.249019              2.45
+rs90_100_rsi2_next_open_hold_5d_open    90_100 rsi2_next_open hold_5d_open          900      0.55          1.542    NaN       NaN     3759287.8      2.759288     -0.372425          0.847933          4.370219              4.92
 
 === Running rs90_100_rsi2_next_open_hold_0d_close ===
                        strategy_combo rs_bucket          entry          exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_hold_0d_close    90_100 rsi2_next_open hold_0d_close         1124  0.374555         1.4326  2.186   -1.0012    1071799.31      0.071799     -0.013533          0.014859          0.229082              0.68
+rs90_100_rsi2_next_open_hold_0d_close    90_100 rsi2_next_open hold_0d_close         1412   0.51983         1.1195    NaN       NaN    1251632.22      0.251632     -0.190984               0.0               0.0               0.0
 
 === Running rs90_100_rsi2_next_open_hold_1d_close ===
                        strategy_combo rs_bucket          entry          exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_hold_1d_close    90_100 rsi2_next_open hold_1d_close         1124  0.374555         1.4326  2.186   -1.0012    1071799.31      0.071799     -0.013533          0.014859          0.229082              0.68
+rs90_100_rsi2_next_open_hold_1d_close    90_100 rsi2_next_open hold_1d_close         1412  0.515581         1.2322    NaN       NaN    1823858.57      0.823859     -0.306587          0.281965          2.565499              1.02
 
 === Running rs90_100_rsi2_next_open_hold_2d_close ===
                        strategy_combo rs_bucket          entry          exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_hold_2d_close    90_100 rsi2_next_open hold_2d_close         1077  0.326834         1.2291 2.1831   -1.0027    1044816.65      0.044817     -0.018583          0.023935          0.228608              1.14
+rs90_100_rsi2_next_open_hold_2d_close    90_100 rsi2_next_open hold_2d_close         1061  0.540999         1.2984    NaN       NaN    2160998.44      1.160998     -0.266875          0.412991          3.028619              1.98
 
 === Running rs90_100_rsi2_next_open_hold_3d_close ===
                        strategy_combo rs_bucket          entry          exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_hold_3d_close    90_100 rsi2_next_open hold_3d_close         1068  0.294944         1.3205 2.3619   -1.0031    1068081.07      0.068081     -0.019199          0.031536          0.238848              1.52
+rs90_100_rsi2_next_open_hold_3d_close    90_100 rsi2_next_open hold_3d_close          961  0.546306         1.4323    NaN       NaN    2931279.24      1.931279     -0.330912          0.554795          3.621425              2.97
 
 === Running rs90_100_rsi2_next_open_hold_4d_close ===
                        strategy_combo rs_bucket          entry          exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_hold_4d_close    90_100 rsi2_next_open hold_4d_close         1067  0.275539         1.3705 2.4115   -1.0033    1082819.67       0.08282     -0.019714          0.038416          0.249185              1.87
+rs90_100_rsi2_next_open_hold_4d_close    90_100 rsi2_next_open hold_4d_close          918  0.535948         1.5086    NaN       NaN    3504557.61      2.504558     -0.379357          0.699786          3.922852              3.96
 
 === Running rs90_100_rsi2_next_open_hold_5d_close ===
                        strategy_combo rs_bucket          entry          exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_hold_5d_close    90_100 rsi2_next_open hold_5d_close         1067  0.264292          1.349 2.5287   -1.0035    1080569.16      0.080569     -0.020402          0.044426           0.24894              2.17
+rs90_100_rsi2_next_open_hold_5d_close    90_100 rsi2_next_open hold_5d_close          900  0.537778         1.3886    NaN       NaN    2844390.17       1.84439     -0.429392          0.848701          4.406895              4.92
 
 === Running rs90_100_rsi2_next_open_rsi2_gt_50 ===
                     strategy_combo rs_bucket          entry       exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_rsi2_gt_50    90_100 rsi2_next_open rsi2_gt_50         1103   0.36718         1.3224 2.1493   -1.0026    1061837.81      0.061838     -0.014005          0.021014          0.238616              0.97
+rs90_100_rsi2_next_open_rsi2_gt_50    90_100 rsi2_next_open rsi2_gt_50         1021  0.668952         1.6598    NaN       NaN    4097715.97      3.097716     -0.389565          0.590182          3.628356              2.92
 
 === Running rs90_100_rsi2_next_open_rsi2_gt_60 ===
                     strategy_combo rs_bucket          entry       exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_rsi2_gt_60    90_100 rsi2_next_open rsi2_gt_60         1095  0.357078          1.314 2.1446   -1.0027     1061921.6      0.061922     -0.016543          0.022725          0.238553              1.06
+rs90_100_rsi2_next_open_rsi2_gt_60    90_100 rsi2_next_open rsi2_gt_60          971  0.680742         1.5072    NaN       NaN    3314491.08      2.314491     -0.488367          0.719549          4.144052              3.71
 
 === Running rs90_100_rsi2_next_open_rsi2_gt_70 ===
                     strategy_combo rs_bucket          entry       exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_rsi2_gt_70    90_100 rsi2_next_open rsi2_gt_70         1086  0.335175         1.2649 2.1581    -1.003    1055586.23      0.055586     -0.018507          0.026685          0.238276              1.26
+rs90_100_rsi2_next_open_rsi2_gt_70    90_100 rsi2_next_open rsi2_gt_70          929  0.680301         1.4668    NaN       NaN    3157546.53      2.157547     -0.565506          0.926977          5.272684              4.98
 
 === Running rs90_100_rsi2_next_open_rsi2_gt_80 ===
                     strategy_combo rs_bucket          entry       exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
-rs90_100_rsi2_next_open_rsi2_gt_80    90_100 rsi2_next_open rsi2_gt_80         1075  0.291163         1.2366 1.9498   -1.0034    1053843.06      0.053843     -0.023106          0.035624          0.238529              1.72
+rs90_100_rsi2_next_open_rsi2_gt_80    90_100 rsi2_next_open rsi2_gt_80          890  0.660674         1.4005    NaN       NaN    3055613.25      2.055613     -0.653745          1.383777          9.255544              7.63
 
 strategy_summary=
                        strategy_combo rs_bucket          entry          exit  trade_count  win_rate  profit_factor  avg_r  median_r  final_equity  total_return  max_drawdown  avg_exposure_pct  max_exposure_pct  avg_holding_days
- rs90_100_rsi2_next_open_trail_0_5atr    90_100 rsi2_next_open  trail_0_5atr         1098  0.330601         1.1514 1.5576   -1.0021    1026853.14      0.026853     -0.017530          0.022883          0.228684              1.08
-   rs90_100_rsi2_next_open_trail_1atr    90_100 rsi2_next_open    trail_1atr         1077  0.260910         1.1514 1.2341   -1.0030    1032355.48      0.032355     -0.025057          0.040421          0.228588              1.96
-    rs90_100_rsi2_next_open_1_day_low    90_100 rsi2_next_open     1_day_low         1089  0.263545         1.1163 1.5816   -1.0026    1022530.27      0.022530     -0.024671          0.031610          0.228771              1.52
-    rs90_100_rsi2_next_open_2_day_low    90_100 rsi2_next_open     2_day_low         1068  0.242509         1.1395 1.2439   -1.0032    1030922.81      0.030923     -0.030578          0.048583          0.238510              2.37
-    rs90_100_rsi2_next_open_3_day_low    90_100 rsi2_next_open     3_day_low         1067  0.230553         1.1481 0.7743   -1.0035    1034568.55      0.034569     -0.031717          0.061487          0.248276              3.02
-    rs90_100_rsi2_next_open_4_day_low    90_100 rsi2_next_open     4_day_low         1067  0.217432         1.2388 0.6303   -1.0036    1058620.10      0.058620     -0.036732          0.073344          0.249118              3.61
-    rs90_100_rsi2_next_open_5_day_low    90_100 rsi2_next_open     5_day_low         1067  0.209934         1.2223 0.2145   -1.0037    1055307.44      0.055307     -0.047073          0.083983          0.249040              4.14
- rs90_100_rsi2_next_open_hold_1d_open    90_100 rsi2_next_open  hold_1d_open         1077  0.327762         1.1186 2.1966   -1.0027    1022927.34      0.022927     -0.016943          0.023935          0.228732              1.14
- rs90_100_rsi2_next_open_hold_2d_open    90_100 rsi2_next_open  hold_2d_open         1068  0.303371         1.2401 2.0000   -1.0031    1049090.64      0.049091     -0.018390          0.031532          0.238984              1.52
- rs90_100_rsi2_next_open_hold_3d_open    90_100 rsi2_next_open  hold_3d_open         1067  0.274602         1.2740 1.8457   -1.0033    1060645.25      0.060645     -0.021052          0.038416          0.249046              1.87
- rs90_100_rsi2_next_open_hold_4d_open    90_100 rsi2_next_open  hold_4d_open         1067  0.271790         1.3177 1.7017   -1.0035    1072551.96      0.072552     -0.021862          0.044427          0.249031              2.17
- rs90_100_rsi2_next_open_hold_5d_open    90_100 rsi2_next_open  hold_5d_open         1067  0.254920         1.3977 0.9603   -1.0036    1093217.03      0.093217     -0.020840          0.050251          0.249019              2.45
-rs90_100_rsi2_next_open_hold_0d_close    90_100 rsi2_next_open hold_0d_close         1124  0.374555         1.4326 2.1860   -1.0012    1071799.31      0.071799     -0.013533          0.014859          0.229082              0.68
-rs90_100_rsi2_next_open_hold_1d_close    90_100 rsi2_next_open hold_1d_close         1124  0.374555         1.4326 2.1860   -1.0012    1071799.31      0.071799     -0.013533          0.014859          0.229082              0.68
-rs90_100_rsi2_next_open_hold_2d_close    90_100 rsi2_next_open hold_2d_close         1077  0.326834         1.2291 2.1831   -1.0027    1044816.65      0.044817     -0.018583          0.023935          0.228608              1.14
-rs90_100_rsi2_next_open_hold_3d_close    90_100 rsi2_next_open hold_3d_close         1068  0.294944         1.3205 2.3619   -1.0031    1068081.07      0.068081     -0.019199          0.031536          0.238848              1.52
-rs90_100_rsi2_next_open_hold_4d_close    90_100 rsi2_next_open hold_4d_close         1067  0.275539         1.3705 2.4115   -1.0033    1082819.67      0.082820     -0.019714          0.038416          0.249185              1.87
-rs90_100_rsi2_next_open_hold_5d_close    90_100 rsi2_next_open hold_5d_close         1067  0.264292         1.3490 2.5287   -1.0035    1080569.16      0.080569     -0.020402          0.044426          0.248940              2.17
-   rs90_100_rsi2_next_open_rsi2_gt_50    90_100 rsi2_next_open    rsi2_gt_50         1103  0.367180         1.3224 2.1493   -1.0026    1061837.81      0.061838     -0.014005          0.021014          0.238616              0.97
-   rs90_100_rsi2_next_open_rsi2_gt_60    90_100 rsi2_next_open    rsi2_gt_60         1095  0.357078         1.3140 2.1446   -1.0027    1061921.60      0.061922     -0.016543          0.022725          0.238553              1.06
-   rs90_100_rsi2_next_open_rsi2_gt_70    90_100 rsi2_next_open    rsi2_gt_70         1086  0.335175         1.2649 2.1581   -1.0030    1055586.23      0.055586     -0.018507          0.026685          0.238276              1.26
-   rs90_100_rsi2_next_open_rsi2_gt_80    90_100 rsi2_next_open    rsi2_gt_80         1075  0.291163         1.2366 1.9498   -1.0034    1053843.06      0.053843     -0.023106          0.035624          0.238529              1.72
+ rs90_100_rsi2_next_open_trail_0_5atr    90_100 rsi2_next_open  trail_0_5atr         1282  0.448518         1.1431    NaN       NaN    1439104.33      0.439104     -0.250634          0.388659          2.898799              1.57
+   rs90_100_rsi2_next_open_trail_1atr    90_100 rsi2_next_open    trail_1atr         1099  0.421292         1.0941    NaN       NaN    1343728.02      0.343728     -0.441642          0.664709          3.449479              3.20
+    rs90_100_rsi2_next_open_1_day_low    90_100 rsi2_next_open     1_day_low         1178  0.389643         1.0509    NaN       NaN    1150677.15      0.150677     -0.344967          0.511354          3.401372              2.28
+    rs90_100_rsi2_next_open_2_day_low    90_100 rsi2_next_open     2_day_low         1159  0.338223         1.0065    NaN       NaN    1022112.81      0.022113     -0.443036          0.722844          3.507110              3.31
+    rs90_100_rsi2_next_open_3_day_low    90_100 rsi2_next_open     3_day_low         1157  0.308557         0.9916    NaN       NaN     972059.90     -0.027940     -0.494061          0.878030          3.506296              4.06
+    rs90_100_rsi2_next_open_4_day_low    90_100 rsi2_next_open     4_day_low         1157  0.287813         1.0275    NaN       NaN    1108812.10      0.108812     -0.558312          1.027502          3.511860              4.80
+    rs90_100_rsi2_next_open_5_day_low    90_100 rsi2_next_open     5_day_low         1155  0.273593         1.0062    NaN       NaN    1023864.24      0.023864     -0.598606          1.163561          3.511749              5.49
+ rs90_100_rsi2_next_open_hold_1d_open    90_100 rsi2_next_open  hold_1d_open         1412  0.553116         1.3595    NaN       NaN    2091165.64      1.091166     -0.221914          0.281972          2.565203              1.02
+ rs90_100_rsi2_next_open_hold_2d_open    90_100 rsi2_next_open  hold_2d_open         1061  0.544769         1.3815    NaN       NaN    2319349.31      1.319349     -0.229694          0.412627          2.991755              1.98
+ rs90_100_rsi2_next_open_hold_3d_open    90_100 rsi2_next_open  hold_3d_open          961  0.567118         1.3752    NaN       NaN    2529700.83      1.529701     -0.250565          0.555229          3.641867              2.97
+ rs90_100_rsi2_next_open_hold_4d_open    90_100 rsi2_next_open  hold_4d_open          918  0.557734         1.5012    NaN       NaN    3280397.85      2.280398     -0.360749          0.699497          3.926286              3.96
+ rs90_100_rsi2_next_open_hold_5d_open    90_100 rsi2_next_open  hold_5d_open          900  0.550000         1.5420    NaN       NaN    3759287.80      2.759288     -0.372425          0.847933          4.370219              4.92
+rs90_100_rsi2_next_open_hold_0d_close    90_100 rsi2_next_open hold_0d_close         1412  0.519830         1.1195    NaN       NaN    1251632.22      0.251632     -0.190984          0.000000          0.000000              0.00
+rs90_100_rsi2_next_open_hold_1d_close    90_100 rsi2_next_open hold_1d_close         1412  0.515581         1.2322    NaN       NaN    1823858.57      0.823859     -0.306587          0.281965          2.565499              1.02
+rs90_100_rsi2_next_open_hold_2d_close    90_100 rsi2_next_open hold_2d_close         1061  0.540999         1.2984    NaN       NaN    2160998.44      1.160998     -0.266875          0.412991          3.028619              1.98
+rs90_100_rsi2_next_open_hold_3d_close    90_100 rsi2_next_open hold_3d_close          961  0.546306         1.4323    NaN       NaN    2931279.24      1.931279     -0.330912          0.554795          3.621425              2.97
+rs90_100_rsi2_next_open_hold_4d_close    90_100 rsi2_next_open hold_4d_close          918  0.535948         1.5086    NaN       NaN    3504557.61      2.504558     -0.379357          0.699786          3.922852              3.96
+rs90_100_rsi2_next_open_hold_5d_close    90_100 rsi2_next_open hold_5d_close          900  0.537778         1.3886    NaN       NaN    2844390.17      1.844390     -0.429392          0.848701          4.406895              4.92
+   rs90_100_rsi2_next_open_rsi2_gt_50    90_100 rsi2_next_open    rsi2_gt_50         1021  0.668952         1.6598    NaN       NaN    4097715.97      3.097716     -0.389565          0.590182          3.628356              2.92
+   rs90_100_rsi2_next_open_rsi2_gt_60    90_100 rsi2_next_open    rsi2_gt_60          971  0.680742         1.5072    NaN       NaN    3314491.08      2.314491     -0.488367          0.719549          4.144052              3.71
+   rs90_100_rsi2_next_open_rsi2_gt_70    90_100 rsi2_next_open    rsi2_gt_70          929  0.680301         1.4668    NaN       NaN    3157546.53      2.157547     -0.565506          0.926977          5.272684              4.98
+   rs90_100_rsi2_next_open_rsi2_gt_80    90_100 rsi2_next_open    rsi2_gt_80          890  0.660674         1.4005    NaN       NaN    3055613.25      2.055613     -0.653745          1.383777          9.255544              7.63
