@@ -427,20 +427,35 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
         losses = trades[trades["pnl"] < 0]
         gross_profit = float(wins["pnl"].sum())
         gross_loss = float(losses["pnl"].sum())
+        avg_win_pct = float(wins["pnl_pct"].mean()) if len(wins) else None
+        avg_loss_pct = float(losses["pnl_pct"].mean()) if len(losses) else None
+        avg_win_loss_pct_ratio = (
+            round(avg_win_pct / abs(avg_loss_pct), 4)
+            if avg_win_pct is not None and avg_loss_pct is not None and avg_loss_pct < 0
+            else None
+        )
         report.update({
             "win_rate": float(len(wins) / len(trades)),
             "gross_profit": round(gross_profit, 2),
             "gross_loss": round(gross_loss, 2),
             "profit_factor": round(gross_profit / abs(gross_loss), 4) if gross_loss < 0 else None,
-            "avg_r": round(float(trades["r_multiple"].mean()), 4),
-            "median_r": round(float(trades["r_multiple"].median()), 4),
+            "avg_win_pct": round(avg_win_pct, 6) if avg_win_pct is not None else None,
+            "avg_loss_pct": round(avg_loss_pct, 6) if avg_loss_pct is not None else None,
+            "avg_win_loss_pct_ratio": avg_win_loss_pct_ratio,
             "largest_winner_r": round(float(trades["r_multiple"].max()), 4),
             "largest_loser_r": round(float(trades["r_multiple"].min()), 4),
             "max_consecutive_losses": int(max_consecutive_losses(trades["pnl"].tolist())),
             "avg_holding_days": round(float(trades["holding_days"].mean()), 2),
         })
     else:
-        report.update({"win_rate": None, "profit_factor": None, "avg_r": None, "median_r": None, "max_consecutive_losses": 0})
+        report.update({
+            "win_rate": None,
+            "profit_factor": None,
+            "avg_win_pct": None,
+            "avg_loss_pct": None,
+            "avg_win_loss_pct_ratio": None,
+            "max_consecutive_losses": 0,
+        })
     if not equity.empty:
         eq = equity["equity"].astype(float)
         dd = eq / eq.cummax() - 1
