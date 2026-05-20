@@ -59,6 +59,10 @@ matrix:
     - rsi2_intraday_limit
 
   # RS bucket tests. Use all deciles by default.
+  # Initial setup-low stop-loss matrix.
+  # both = run no_stop and setup_low_stop versions for every entry/exit/bucket combo.
+  initial_stop_loss: both
+
   rs_buckets:
     - 0_10
     - 10_20
