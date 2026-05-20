@@ -55,6 +55,18 @@ DEFAULT_EXITS = (
     "rsi2_gt_50,rsi2_gt_60,rsi2_gt_70,rsi2_gt_80"
 )
 DEFAULT_RS_BUCKETS = "0_10,10_20,20_30,30_40,40_50,50_60,60_70,70_80,80_90,90_100"
+DEFAULT_INITIAL_STOP_LOSS = "both"  # allowed: false, true, both
+
+
+def _parse_initial_stop_loss(value: str | None) -> list[tuple[str, bool]]:
+    raw = (value or DEFAULT_INITIAL_STOP_LOSS).strip().lower()
+    if raw in {"both", "all"}:
+        return [("no_stop", False), ("setup_low_stop", True)]
+    if raw in {"true", "yes", "1", "on", "setup_low_stop", "stop"}:
+        return [("setup_low_stop", True)]
+    if raw in {"false", "no", "0", "off", "no_stop", "none"}:
+        return [("no_stop", False)]
+    raise ValueError("Invalid --initial-stop-loss. Use false, true, or both.")
 
 
 def _parse_list(value: str | None, default: str) -> list[str]:
@@ -140,6 +152,7 @@ def main() -> None:
     parser.add_argument("--exits", default=DEFAULT_EXITS)
     parser.add_argument("--rs-buckets", default=DEFAULT_RS_BUCKETS)
     parser.add_argument("--slippage-bps", type=float, default=1.0)
+    parser.add_argument("--initial-stop-loss", default=DEFAULT_INITIAL_STOP_LOSS, help="false, true, or both")
     parser.add_argument("--atr-period", type=int, default=14)
     parser.add_argument("--max-open-positions", type=int, default=100000)
     parser.add_argument("--max-new-positions-per-day", type=int, default=100000)
@@ -160,6 +173,7 @@ def main() -> None:
     entries = _parse_list(args.entries, DEFAULT_ENTRIES)
     exits = _parse_list(args.exits, DEFAULT_EXITS)
     buckets = _parse_list(args.rs_buckets, DEFAULT_RS_BUCKETS)
+    stop_modes = _parse_initial_stop_loss(args.initial_stop_loss)
 
     invalid_entries = [x for x in entries if x not in ENTRY_VARIANTS]
     invalid_exits = [x for x in exits if x not in EXIT_VARIANTS]
@@ -171,6 +185,7 @@ def main() -> None:
     print(f"Selected entries={entries}")
     print(f"Selected exits={exits}")
     print(f"Selected rs_buckets={buckets}")
+    print(f"Selected initial_stop_loss={[label for label, _ in stop_modes]}")
 
     all_reports: dict[str, dict] = {}
     summary_rows: list[dict] = []
@@ -199,35 +214,38 @@ def main() -> None:
 
         for entry in entries:
             for exit_name in exits:
-                combo_name = f"rs{bucket}_{entry}_{exit_name}"
-                print(f"\n=== Running {combo_name} ===")
-                cfg = replace(
-                    base_cfg,
-                    rs_bucket=f"rs{bucket}",
-                    entry_name=ENTRY_VARIANTS[entry]["entry_name"],
-                    exit_name=EXIT_VARIANTS[exit_name]["exit_name"],
-                )
-                trades, equity, report = run_backtest(sim_df, cfg)
-                save_outputs(out_root / combo_name, trades, equity, report, membership)
-                all_reports[combo_name] = report
-                summary_rows.append({
-                    "strategy_combo": combo_name,
-                    "rs_bucket": bucket,
-                    "entry": entry,
-                    "exit": exit_name,
-                    "trade_count": report.get("trade_count"),
-                    "win_rate": report.get("win_rate"),
-                    "profit_factor": report.get("profit_factor"),
-                    "avg_r": report.get("avg_r"),
-                    "median_r": report.get("median_r"),
-                    "final_equity": report.get("final_equity"),
-                    "total_return": report.get("total_return"),
-                    "max_drawdown": report.get("max_drawdown"),
-                    "avg_exposure_pct": report.get("avg_exposure_pct"),
-                    "max_exposure_pct": report.get("max_exposure_pct"),
-                    "avg_holding_days": report.get("avg_holding_days"),
-                })
-                print(pd.DataFrame([summary_rows[-1]]).to_string(index=False))
+                for stop_label, use_stop in stop_modes:
+                    combo_name = f"rs{bucket}_{entry}_{exit_name}_{stop_label}"
+                    print(f"\n=== Running {combo_name} ===")
+                    cfg = replace(
+                        base_cfg,
+                        rs_bucket=f"rs{bucket}",
+                        entry_name=ENTRY_VARIANTS[entry]["entry_name"],
+                        exit_name=EXIT_VARIANTS[exit_name]["exit_name"],
+                        use_initial_stop_loss=use_stop,
+                    )
+                    trades, equity, report = run_backtest(sim_df, cfg)
+                    save_outputs(out_root / combo_name, trades, equity, report, membership)
+                    all_reports[combo_name] = report
+                    summary_rows.append({
+                        "strategy_combo": combo_name,
+                        "rs_bucket": bucket,
+                        "entry": entry,
+                        "exit": exit_name,
+                        "initial_stop_loss": stop_label,
+                        "trade_count": report.get("trade_count"),
+                        "win_rate": report.get("win_rate"),
+                        "profit_factor": report.get("profit_factor"),
+                        "avg_r": report.get("avg_r"),
+                        "median_r": report.get("median_r"),
+                        "final_equity": report.get("final_equity"),
+                        "total_return": report.get("total_return"),
+                        "max_drawdown": report.get("max_drawdown"),
+                        "avg_exposure_pct": report.get("avg_exposure_pct"),
+                        "max_exposure_pct": report.get("max_exposure_pct"),
+                        "avg_holding_days": report.get("avg_holding_days"),
+                    })
+                    print(pd.DataFrame([summary_rows[-1]]).to_string(index=False))
 
     if all_memberships:
         pd.concat(all_memberships, ignore_index=True).to_csv(out_root / "rs_membership_recent.csv", index=False)
