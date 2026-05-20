@@ -111,11 +111,13 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
                 break
             if (not cfg.allow_same_ticker_overlap) and cand["ticker"] in held_tickers:
                 continue
-            if cand["initial_stop"] >= cand["entry_price"]:
-                continue
-            stop_pct = (cand["entry_price"] - cand["initial_stop"]) / cand["entry_price"]
-            if cfg.max_stop_pct is not None and stop_pct > cfg.max_stop_pct:
-                continue
+            initial_stop = cand.get("initial_stop")
+            if _has_valid_stop(initial_stop):
+                if float(initial_stop) >= float(cand["entry_price"]):
+                    continue
+                stop_pct = (float(cand["entry_price"]) - float(initial_stop)) / float(cand["entry_price"])
+                if cfg.max_stop_pct is not None and stop_pct > cfg.max_stop_pct:
+                    continue
 
             notional = _mark_to_market_equity(cash_realized, positions, day) * cfg.position_pct
             shares = int(notional // cand["entry_price"])
@@ -130,7 +132,7 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
                 initial_stop=float(cand["initial_stop"]),
                 shares=shares,
                 position_size=shares * float(cand["entry_price"]),
-                risk_per_share=float(cand["entry_price"] - cand["initial_stop"]),
+                risk_per_share=_risk_per_share(float(cand["entry_price"]), cand.get("initial_stop")),
                 rs_rank_at_entry=cand.get("rs_rank_at_entry"),
                 signal_details=cand.get("signal_details", ""),
                 max_high=float(row["high"]),
@@ -142,6 +144,12 @@ def run_backtest(df: pd.DataFrame, cfg: BacktestConfig) -> tuple[pd.DataFrame, p
                 trade = _close_trade(pos, d, exit_px, "same_day_stop_loss_red_candle", cfg)
                 trades.append(trade)
                 cash_realized += trade.pnl - cfg.commission_per_trade
+            elif cfg.exit_name == "hold_0d_close":
+                exit_px = float(row["close"]) * (1 - cfg.slippage_bps / 10000)
+                trade = _close_trade(pos, d, exit_px, "hold_0d_close", cfg)
+                trades.append(trade)
+                cash_realized += trade.pnl - cfg.commission_per_trade
+                new_entries += 1
             else:
                 _update_atr_trailing_stop_after_close(pos, row, cfg)
                 positions.append(pos)
@@ -195,9 +203,9 @@ def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
                     "strategy": f"{cfg.rs_bucket or 'rs'}_{cfg.entry_name}_{cfg.exit_name}",
                     "ticker": ticker,
                     "entry_price": entry,
-                    "initial_stop": float(setup_low),
+                    "initial_stop": np.nan,
                     "rs_rank_at_entry": float(row.get("entry_rs_rank", row["rs_rank"])),
-                    "signal_details": f"entry=rsi2_next_open; setup_rsi2={float(setup_rsi2):.2f}; raw_entry=open:{raw_entry:.4f}; slippage_bps={cfg.slippage_bps}; decision_date={row.get('decision_date', '')}; filter_close={row.get('entry_filter_close', np.nan):.4f}; filter_ma50={row.get('entry_filter_ma50', np.nan):.4f}; filter_avg_value_10={row.get('entry_filter_avg_value_10', np.nan):.2f}; filter_adr20={row.get('entry_filter_adr20', np.nan):.2f}; rs_bucket={cfg.rs_bucket}",
+                    "signal_details": f"entry=rsi2_next_open; setup_rsi2={float(setup_rsi2):.2f}; raw_entry=open:{raw_entry:.4f}; slippage_bps={cfg.slippage_bps}; initial_stop=disabled; decision_date={row.get('decision_date', '')}; filter_close={row.get('entry_filter_close', np.nan):.4f}; filter_ma50={row.get('entry_filter_ma50', np.nan):.4f}; filter_avg_value_10={row.get('entry_filter_avg_value_10', np.nan):.2f}; filter_adr20={row.get('entry_filter_adr20', np.nan):.2f}; rs_bucket={cfg.rs_bucket}",
                 })
         elif cfg.entry_name == "rsi2_intraday_limit":
             trigger = row.get("rsi2_5_trigger_price")
@@ -209,9 +217,9 @@ def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
                     "strategy": f"{cfg.rs_bucket or 'rs'}_{cfg.entry_name}_{cfg.exit_name}",
                     "ticker": ticker,
                     "entry_price": entry,
-                    "initial_stop": float(setup_low),
+                    "initial_stop": np.nan,
                     "rs_rank_at_entry": float(row.get("entry_rs_rank", row["rs_rank"])),
-                    "signal_details": f"entry=rsi2_intraday_limit; rsi2<5_trigger={float(trigger):.4f}; raw_entry={raw_entry:.4f}; slippage_bps={cfg.slippage_bps}; prev_low_stop={float(setup_low):.4f}; decision_date={row.get('decision_date', '')}; filter_close={row.get('entry_filter_close', np.nan):.4f}; filter_ma50={row.get('entry_filter_ma50', np.nan):.4f}; filter_avg_value_10={row.get('entry_filter_avg_value_10', np.nan):.2f}; filter_adr20={row.get('entry_filter_adr20', np.nan):.2f}; rs_bucket={cfg.rs_bucket}",
+                    "signal_details": f"entry=rsi2_intraday_limit; rsi2<5_trigger={float(trigger):.4f}; raw_entry={raw_entry:.4f}; slippage_bps={cfg.slippage_bps}; initial_stop=disabled; decision_date={row.get('decision_date', '')}; filter_close={row.get('entry_filter_close', np.nan):.4f}; filter_ma50={row.get('entry_filter_ma50', np.nan):.4f}; filter_avg_value_10={row.get('entry_filter_avg_value_10', np.nan):.2f}; filter_adr20={row.get('entry_filter_adr20', np.nan):.2f}; rs_bucket={cfg.rs_bucket}",
                 })
         else:
             raise ValueError(f"unsupported entry_name: {cfg.entry_name}")
@@ -234,8 +242,24 @@ def _passes_common_universe_filters(row: pd.Series, cfg: BacktestConfig) -> bool
     return all(checks)
 
 
+def _has_valid_stop(value: object) -> bool:
+    try:
+        return pd.notna(value) and np.isfinite(float(value))
+    except Exception:
+        return False
+
+
+def _risk_per_share(entry_price: float, initial_stop: object) -> float:
+    if _has_valid_stop(initial_stop):
+        risk = float(entry_price) - float(initial_stop)
+        return risk if risk > 0 else np.nan
+    return np.nan
+
+
 def _same_day_initial_stop_hit(pos: Position, row: pd.Series, cfg: BacktestConfig) -> bool:
-    if float(row["low"]) > pos.initial_stop:
+    if not _has_valid_stop(pos.initial_stop):
+        return False
+    if float(row["low"]) > float(pos.initial_stop):
         return False
     if cfg.same_day_stop_rule == "always":
         return True
@@ -247,12 +271,14 @@ def _same_day_initial_stop_hit(pos: Position, row: pd.Series, cfg: BacktestConfi
 
 
 def _initial_trailing_stop(initial_stop: float, cfg: BacktestConfig) -> float | None:
-    return float(initial_stop) if cfg.exit_name.startswith("trail_") else None
+    if not cfg.exit_name.startswith("trail_"):
+        return None
+    return float(initial_stop) if _has_valid_stop(initial_stop) else None
 
 
 def _exit_for_position(pos: Position, row: pd.Series, current_date: pd.Timestamp, cfg: BacktestConfig) -> tuple[float | None, str | None]:
-    if float(row["low"]) <= pos.initial_stop:
-        return _sell_stop_fill_price(row, pos.initial_stop, cfg), "stop_loss"
+    if _has_valid_stop(pos.initial_stop) and float(row["low"]) <= float(pos.initial_stop):
+        return _sell_stop_fill_price(row, float(pos.initial_stop), cfg), "stop_loss"
 
     name = cfg.exit_name
     if name.startswith("trail_") and pos.trailing_stop is not None:
@@ -276,7 +302,7 @@ def _exit_for_position(pos: Position, row: pd.Series, current_date: pd.Timestamp
     if name.startswith("hold_"):
         n, price_type = _parse_hold_exit(name)
         days_held = int(np.busday_count(pd.Timestamp(pos.entry_date).date(), pd.Timestamp(current_date).date()))
-        if price_type == "open" and days_held >= n + 1:
+        if price_type == "open" and days_held >= n:
             return float(row["open"]) * (1 - cfg.slippage_bps / 10000), name
         if price_type == "close" and days_held >= n:
             return float(row["close"]) * (1 - cfg.slippage_bps / 10000), name
@@ -304,15 +330,21 @@ def _update_atr_trailing_stop_after_close(pos: Position, row: pd.Series, cfg: Ba
         return
     multiple = 0.5 if cfg.exit_name == "trail_0_5atr" else 1.0
     new_stop = pos.max_high - multiple * float(atr)
-    pos.trailing_stop = max(pos.trailing_stop if pos.trailing_stop is not None else pos.initial_stop, pos.initial_stop, new_stop)
+    candidates = [new_stop]
+    if pos.trailing_stop is not None and np.isfinite(float(pos.trailing_stop)):
+        candidates.append(float(pos.trailing_stop))
+    if _has_valid_stop(pos.initial_stop):
+        candidates.append(float(pos.initial_stop))
+    pos.trailing_stop = max(candidates)
 
 
 def _close_trade(pos: Position, exit_date: pd.Timestamp, exit_price: float, exit_reason: str, cfg: BacktestConfig) -> Trade:
     pnl = (exit_price - pos.entry_price) * pos.shares - cfg.commission_per_trade
     pnl_pct = (exit_price / pos.entry_price - 1) if pos.entry_price else np.nan
-    r_multiple = (exit_price - pos.entry_price) / pos.risk_per_share if pos.risk_per_share else np.nan
-    mae = (pos.min_low - pos.entry_price) / pos.risk_per_share if pos.risk_per_share else np.nan
-    mfe = (pos.max_high - pos.entry_price) / pos.risk_per_share if pos.risk_per_share else np.nan
+    valid_risk = pd.notna(pos.risk_per_share) and np.isfinite(float(pos.risk_per_share)) and float(pos.risk_per_share) > 0
+    r_multiple = (exit_price - pos.entry_price) / pos.risk_per_share if valid_risk else np.nan
+    mae = (pos.min_low - pos.entry_price) / pos.risk_per_share if valid_risk else np.nan
+    mfe = (pos.max_high - pos.entry_price) / pos.risk_per_share if valid_risk else np.nan
     holding_days = int(np.busday_count(pd.Timestamp(pos.entry_date).date(), pd.Timestamp(exit_date).date()))
     return Trade(
         strategy=pos.strategy,
