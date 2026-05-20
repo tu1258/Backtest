@@ -28,6 +28,7 @@ class BacktestConfig:
     min_adr20: float = 2.5
     max_adr20: float = 25.0
     require_close_above_ma50: bool = True
+    use_initial_stop_loss: bool = False
 
 
 @dataclass
@@ -186,6 +187,8 @@ def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
     sort_rank = "entry_rs_rank" if "entry_rs_rank" in day.columns else "rs_rank"
     sort_score = "entry_rs_score" if "entry_rs_score" in day.columns else "rs_score"
     day = day.sort_values([sort_rank, sort_score], ascending=[False, False])
+    stop_label = "setup_low_stop" if cfg.use_initial_stop_loss else "no_stop"
+
     for _, row in day.iterrows():
         ticker = str(row["ticker"])
         if not bool(row.get("in_rs_universe", row.get("in_rs90", False))):
@@ -198,28 +201,44 @@ def _generate_entries(day: pd.DataFrame, cfg: BacktestConfig) -> list[dict]:
             setup_low = row.get("setup_low")
             if pd.notna(setup_rsi2) and pd.notna(setup_low) and float(setup_rsi2) < 5:
                 raw_entry = float(row["open"])
+                initial_stop = float(setup_low) if cfg.use_initial_stop_loss else np.nan
+
+                # If next open is already below/equal to setup-day low, the setup has failed.
+                # Do not create an artificial buy-and-immediate-stop trade.
+                if cfg.use_initial_stop_loss and raw_entry <= initial_stop:
+                    continue
+
                 entry = raw_entry * (1 + cfg.slippage_bps / 10000)
+                if cfg.use_initial_stop_loss and initial_stop >= entry:
+                    continue
+
                 out.append({
-                    "strategy": f"{cfg.rs_bucket or 'rs'}_{cfg.entry_name}_{cfg.exit_name}",
+                    "strategy": f"{cfg.rs_bucket or 'rs'}_{cfg.entry_name}_{cfg.exit_name}_{stop_label}",
                     "ticker": ticker,
                     "entry_price": entry,
-                    "initial_stop": np.nan,
+                    "initial_stop": initial_stop,
                     "rs_rank_at_entry": float(row.get("entry_rs_rank", row["rs_rank"])),
-                    "signal_details": f"entry=rsi2_next_open; setup_rsi2={float(setup_rsi2):.2f}; raw_entry=open:{raw_entry:.4f}; slippage_bps={cfg.slippage_bps}; initial_stop=disabled; decision_date={row.get('decision_date', '')}; filter_close={row.get('entry_filter_close', np.nan):.4f}; filter_ma50={row.get('entry_filter_ma50', np.nan):.4f}; filter_avg_value_10={row.get('entry_filter_avg_value_10', np.nan):.2f}; filter_adr20={row.get('entry_filter_adr20', np.nan):.2f}; rs_bucket={cfg.rs_bucket}",
+                    "signal_details": f"entry=rsi2_next_open; setup_rsi2={float(setup_rsi2):.2f}; raw_entry=open:{raw_entry:.4f}; slippage_bps={cfg.slippage_bps}; initial_stop_mode={stop_label}; initial_stop={initial_stop if pd.notna(initial_stop) else np.nan}; decision_date={row.get('decision_date', '')}; filter_close={row.get('entry_filter_close', np.nan):.4f}; filter_ma50={row.get('entry_filter_ma50', np.nan):.4f}; filter_avg_value_10={row.get('entry_filter_avg_value_10', np.nan):.2f}; filter_adr20={row.get('entry_filter_adr20', np.nan):.2f}; rs_bucket={cfg.rs_bucket}",
                 })
+
         elif cfg.entry_name == "rsi2_intraday_limit":
             trigger = row.get("rsi2_5_trigger_price")
-            setup_low = row.get("prev_low")
-            if pd.notna(trigger) and pd.notna(setup_low) and float(row["low"]) <= float(trigger):
+            if pd.notna(trigger) and float(row["low"]) <= float(trigger):
                 raw_entry = float(row["open"]) if float(row["open"]) <= float(trigger) else float(trigger)
+                # For intraday entry, setup day is the entry day. The stop is only active from next day.
+                initial_stop = float(row["low"]) if cfg.use_initial_stop_loss else np.nan
                 entry = raw_entry * (1 + cfg.slippage_bps / 10000)
+
+                if cfg.use_initial_stop_loss and initial_stop >= entry:
+                    continue
+
                 out.append({
-                    "strategy": f"{cfg.rs_bucket or 'rs'}_{cfg.entry_name}_{cfg.exit_name}",
+                    "strategy": f"{cfg.rs_bucket or 'rs'}_{cfg.entry_name}_{cfg.exit_name}_{stop_label}",
                     "ticker": ticker,
                     "entry_price": entry,
-                    "initial_stop": np.nan,
+                    "initial_stop": initial_stop,
                     "rs_rank_at_entry": float(row.get("entry_rs_rank", row["rs_rank"])),
-                    "signal_details": f"entry=rsi2_intraday_limit; rsi2<5_trigger={float(trigger):.4f}; raw_entry={raw_entry:.4f}; slippage_bps={cfg.slippage_bps}; initial_stop=disabled; decision_date={row.get('decision_date', '')}; filter_close={row.get('entry_filter_close', np.nan):.4f}; filter_ma50={row.get('entry_filter_ma50', np.nan):.4f}; filter_avg_value_10={row.get('entry_filter_avg_value_10', np.nan):.2f}; filter_adr20={row.get('entry_filter_adr20', np.nan):.2f}; rs_bucket={cfg.rs_bucket}",
+                    "signal_details": f"entry=rsi2_intraday_limit; rsi2<5_trigger={float(trigger):.4f}; raw_entry={raw_entry:.4f}; slippage_bps={cfg.slippage_bps}; initial_stop_mode={stop_label}; initial_stop={initial_stop if pd.notna(initial_stop) else np.nan}; initial_stop_active_from=next_trading_day; decision_date={row.get('decision_date', '')}; filter_close={row.get('entry_filter_close', np.nan):.4f}; filter_ma50={row.get('entry_filter_ma50', np.nan):.4f}; filter_avg_value_10={row.get('entry_filter_avg_value_10', np.nan):.2f}; filter_adr20={row.get('entry_filter_adr20', np.nan):.2f}; rs_bucket={cfg.rs_bucket}",
                 })
         else:
             raise ValueError(f"unsupported entry_name: {cfg.entry_name}")
@@ -261,6 +280,18 @@ def _same_day_initial_stop_hit(pos: Position, row: pd.Series, cfg: BacktestConfi
         return False
     if float(row["low"]) > float(pos.initial_stop):
         return False
+
+    # rsi2_next_open enters at the open, so an entry-day low below setup-day low
+    # is a valid stop-order exit. No red/green candle assumption is needed.
+    if "entry=rsi2_next_open" in pos.signal_details:
+        return True
+
+    # rsi2_intraday_limit enters during the day. With daily bars we cannot know
+    # whether the entry-day low happened before or after the intraday entry, so
+    # the setup-low stop becomes active only from the next trading day.
+    if "entry=rsi2_intraday_limit" in pos.signal_details:
+        return False
+
     if cfg.same_day_stop_rule == "always":
         return True
     if cfg.same_day_stop_rule == "never":
@@ -387,6 +418,7 @@ def performance_report(trades: pd.DataFrame, equity: pd.DataFrame, cfg: Backtest
         "exit_name": cfg.exit_name,
         "slippage_bps_each_side": cfg.slippage_bps,
         "same_day_stop_rule": cfg.same_day_stop_rule,
+        "use_initial_stop_loss": cfg.use_initial_stop_loss,
         "trade_count": int(len(trades)),
         "leverage_model": "allowed: every accepted entry uses equity * position_pct; cash is not reserved/deducted, so gross exposure can exceed 100%",
     }
