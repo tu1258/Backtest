@@ -1,155 +1,158 @@
 max_tickers is empty: downloading full ticker list
-Downloading 5287 tickers from 2024-04-29 to 2026-05-20 in 67 batches
+Downloading 5287 tickers from 2021-04-30 to 2026-05-21 in 67 batches
 [1/67] A ... ADEA
-  rows=40118
+  rows=93066
 [2/67] ADGM ... AIFF
-  rows=36543
+  rows=84574
 [3/67] AIFU ... ALX
-  rows=38958
+  rows=90513
 [4/67] ALXO ... APAM
-  rows=39187
+  rows=90332
 [5/67] APC ... ASIC
-  rows=39038
+  rows=90145
 [6/67] ASIX ... AVGO
-  rows=39425
+  rows=90182
 [7/67] AVIR ... BBVA
-  rows=40112
+  rows=92884
 [8/67] BBW ... BIAF
-  rows=39683
+  rows=92851
 [9/67] BIDU ... BODI
-  rows=38166
+  rows=87854
 [10/67] BOF ... BUR
-  rows=37454
+  rows=84574
 [11/67] BURL ... CATX
-  rows=38632
+  rows=91384
 [12/67] CATY ... CETY
-  rows=38946
+  rows=89377
 [13/67] CEVA ... CLIR
-  rows=39156
+  rows=90930
 [14/67] CLLS ... CODA
 HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: CLRS"}}}
 $CLRS: possibly delisted; no timezone found
 
 1 Failed download:
 ['CLRS']: possibly delisted; no timezone found
-  rows=39930
+  rows=96646
 [15/67] CODI ... CRNC
-  rows=40299
+  rows=94209
 [16/67] CRNT ... CVLG
-  rows=38907
+  rows=89088
 [17/67] CVLT ... DECK
-  rows=40233
+  rows=95682
 [18/67] DEFT ... DRH
-  rows=39694
+  rows=93954
 [19/67] DRI ... EEIQ
-  rows=40463
+  rows=94659
 [20/67] EEX ... EOG
-  rows=37499
+  rows=86469
 [21/67] EOLS ... EWCZ
-  rows=39047
+  rows=92971
 [22/67] EWTX ... FFIN
-  rows=39593
+  rows=92045
 [23/67] FFIV ... FORTY
-  rows=38737
+  rows=88776
 [24/67] FOSL ... GALT
-  rows=39407
+  rows=93458
 [25/67] GAMB ... GIS
-  rows=39767
+  rows=90618
 [26/67] GITS ... GREE
-  rows=37423
+  rows=84321
 [27/67] GRFS ... HCKT
-  rows=39790
+  rows=91345
 [28/67] HCM ... HPE
-  rows=39727
+  rows=90085
 [29/67] HPK ... IBM
-  rows=38962
+  rows=91300
 [30/67] IBN ... INDB
-  rows=40918
+  rows=95726
 [31/67] INDI ... IRWD
-  rows=39758
+  rows=91358
 [32/67] ISBA ... JRSH
-  rows=38743
+  rows=89260
 [33/67] JRVR ... KOF
-  rows=38528
+  rows=87989
 [34/67] KOP ... LCTX
-  rows=39579
+  rows=90084
 [35/67] LCUT ... LNG
+$LFTO: possibly delisted; no timezone found
 
 1 Failed download:
-['LFTO']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=37920
+['LFTO']: possibly delisted; no timezone found
+  rows=85980
 [36/67] LNKS ... LYFT
-  rows=40574
+  rows=92099
 [37/67] LYG ... MDU
-  rows=38127
+  rows=87440
 [38/67] MDV ... MLYS
-$MHM: possibly delisted; no price data found  (1d 2024-04-29 -> 2026-05-20)
+$MHM: possibly delisted; no price data found  (1d 2021-04-30 -> 2026-05-21)
 
 1 Failed download:
-['MHM']: possibly delisted; no price data found  (1d 2024-04-29 -> 2026-05-20)
-  rows=37664
+['MHM']: possibly delisted; no price data found  (1d 2021-04-30 -> 2026-05-21)
+  rows=84881
 [39/67] MMA ... MSGM
-  rows=39241
+  rows=89519
 [40/67] MSGS ... NBBK
-  rows=38559
+  rows=87363
 [41/67] NBHC ... NJR
-  rows=38804
+  rows=89510
 [42/67] NKE ... NTNX
-  rows=38382
+  rows=87943
 [43/67] NTR ... OCGN
-  rows=39893
+  rows=92673
 [44/67] OCS ... OPTT
-  rows=39274
+  rows=92536
 [45/67] OPTU ... PATK
-  rows=39204
+  rows=90316
 [46/67] PAVM ... PH
-  rows=39953
+  rows=94341
 [47/67] PHAR ... POLA
-  rows=37976
+  rows=87021
 [48/67] POM ... PTHS
-  rows=39695
+  rows=93546
 [49/67] PTLE ... RCAT
-  rows=38246
+  rows=87810
 [50/67] RCEL ... RIVN
-  rows=39746
+  rows=93116
 [51/67] RJET ... RVMD
-  rows=38534
+  rows=91528
 [52/67] RVP ... SCOR
-  rows=38772
+  rows=89977
 [53/67] SCSC ... SIBN
-  rows=39127
+  rows=87025
 [54/67] SID ... SMP
-  rows=39258
+  rows=91297
 [55/67] SMPL ... SPRO
+$SPACEX: possibly delisted; no timezone found
 
 1 Failed download:
-['SPACEX']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=39271
+['SPACEX']: possibly delisted; no timezone found
+  rows=87088
 [56/67] SPRU ... STUB
-  rows=39390
+  rows=91188
 [57/67] STVN ... TCBK
-  rows=39069
+  rows=88038
 [58/67] TCBS ... TKNO
-  rows=39440
+  rows=91860
 [59/67] TKO ... TRNS
+$TKVA: possibly delisted; no timezone found
 
 1 Failed download:
-['TKVA']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
-  rows=38849
+['TKVA']: possibly delisted; no timezone found
+  rows=90399
 [60/67] TRON ... UBCP
-  rows=40430
+  rows=94122
 [61/67] UBER ... UTI
-  rows=40901
+  rows=95035
 [62/67] UTL ... VMET
-  rows=38629
+  rows=91227
 [63/67] VMI ... WBD
-  rows=39261
+  rows=90464
 [64/67] WBI ... WRBY
-  rows=39219
+  rows=90684
 [65/67] WRD ... XTLB
-  rows=37441
+  rows=86414
 [66/67] XTNT ... ZTS
-  rows=36265
+  rows=76450
 [67/67] ZUMZ ... ZYME
-  rows=3431
-Saved data/stock_data.csv rows=2582967 tickers=5282
+  rows=7424
+Saved data/stock_data.csv rows=5965023 tickers=5282
