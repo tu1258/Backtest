@@ -35,6 +35,15 @@ on:
         description: "Slippage per side in bps. 1 bp = 0.01%."
         required: true
         default: "1.0"
+      initial_stop_loss:
+        description: "Initial setup-low stop loss: false, true, or both"
+        required: true
+        default: "both"
+        type: choice
+        options:
+          - "both"
+          - "false"
+          - "true"
       atr_period:
         description: "ATR period for trail exits"
         required: true
@@ -84,6 +93,7 @@ jobs:
             "rs_buckets": "${{ github.event.inputs.rs_buckets }}",
             "position_pct": "${{ github.event.inputs.position_pct }}",
             "slippage_bps": "${{ github.event.inputs.slippage_bps }}",
+            "initial_stop_loss": "${{ github.event.inputs.initial_stop_loss }}",
             "atr_period": "${{ github.event.inputs.atr_period }}"
           }
           JSON
@@ -143,6 +153,7 @@ jobs:
             --exits "${{ github.event.inputs.exits }}" \
             --rs-buckets "${{ github.event.inputs.rs_buckets }}" \
             --slippage-bps "${{ github.event.inputs.slippage_bps }}" \
+            --initial-stop-loss "${{ github.event.inputs.initial_stop_loss }}" \
             --output-dir outputs/backtest 2>&1 | tee logs/04_run_backtest.log
 
       - name: Save RS bucket and report summary
@@ -166,6 +177,8 @@ jobs:
           lines.append('RS buckets: ${{ github.event.inputs.rs_buckets }}')
           lines.append('')
           lines.append('Slippage bps: ${{ github.event.inputs.slippage_bps }}')
+          lines.append('')
+          lines.append('Initial stop loss: ${{ github.event.inputs.initial_stop_loss }}')
           lines.append('')
           if (out / 'data_summary.json').exists():
               lines.append('## Data summary')
